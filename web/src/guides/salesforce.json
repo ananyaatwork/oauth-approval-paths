@@ -1,0 +1,629 @@
+{
+  "slug": "salesforce",
+  "origin": "library",
+  "researchedOn": "2026-10-21",
+  "model": "claude-opus-5-5",
+  "verification": null,
+  "name": "Salesforce",
+  "website": "https://developer.salesforce.com",
+  "category": "CRM",
+  "verdict": {
+    "difficulty": 4,
+    "headline": "You don't need Salesforce review to call the API. To reach customer orgs, build an External Client App, put it in a managed package, and have each customer admin install it.",
+    "nextAction": "Enable Dev Hub and register a namespace in a Developer Edition org, then create the External Client App in Setup > External Client App Manager."
+  },
+  "appType": "Use an External Client App (ECA), not a Connected App. New Connected Apps are disabled by default since Spring '26.",
+  "paths": [
+    {
+      "name": "Connect customer orgs (managed package, no listing)",
+      "whenThisApplies": "Your app needs to work in customer orgs other than your own, and you don't need an AppExchange listing.",
+      "difficulty": 4,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Create the ECA and set OAuth policies",
+          "min": 1,
+          "max": 4,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Hours, by our estimate. No exact range given.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "setup",
+          "label": "Settings take effect",
+          "min": null,
+          "max": 10,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Up to about 10 minutes. The figure is from Okta's docs, not Salesforce.",
+          "confidence": "secondary",
+          "sources": [
+            "s11"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Dev Hub, namespace, managed package",
+          "min": 1,
+          "max": 5,
+          "unit": "days",
+          "basis": "estimated",
+          "note": "Our estimate.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Each customer admin installs the app or package",
+          "min": null,
+          "max": null,
+          "unit": "weeks",
+          "basis": "no_stated_sla",
+          "note": "Minutes to weeks, depending on each customer's change control.",
+          "confidence": "unconfirmed",
+          "sources": []
+        }
+      ]
+    },
+    {
+      "name": "AppExchange listing",
+      "whenThisApplies": "You want your app listed on AppExchange. This requires a Salesforce partner (ISV) account and a security review.",
+      "difficulty": 5,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Create the ECA and set OAuth policies",
+          "min": 1,
+          "max": 4,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Hours, by our estimate. No exact range given.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "setup",
+          "label": "Settings take effect",
+          "min": null,
+          "max": 10,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Up to about 10 minutes. The figure is from Okta's docs, not Salesforce.",
+          "confidence": "secondary",
+          "sources": [
+            "s11"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Dev Hub, namespace, managed package",
+          "min": 1,
+          "max": 5,
+          "unit": "days",
+          "basis": "estimated",
+          "note": "Our estimate.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Partner (ISV) onboarding",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "On top of the Dev Hub, namespace and package setup. No time found.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "submission",
+          "label": "Prepare scans and documents",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "estimated",
+          "note": "Days, by our estimate. No exact range given.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "provider_review",
+          "label": "Next-steps email from Salesforce",
+          "min": null,
+          "max": 2,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Salesforce states an email within 2 business days. Seen only in a search excerpt.",
+          "confidence": "secondary",
+          "sources": [
+            "s14"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Security review after verification",
+          "min": null,
+          "max": 4,
+          "unit": "weeks",
+          "basis": "stated",
+          "note": "Salesforce states \"up to 4 weeks\". Seen only in a search excerpt, and no 2026 queue data was found.",
+          "confidence": "secondary",
+          "sources": [
+            "s13"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Fix findings and retest",
+          "min": null,
+          "max": null,
+          "unit": "weeks",
+          "basis": "no_stated_sla",
+          "note": "Each retest costs a fee.",
+          "confidence": "secondary",
+          "sources": [
+            "s13"
+          ]
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Each customer admin installs the app or package",
+          "min": null,
+          "max": null,
+          "unit": "weeks",
+          "basis": "no_stated_sla",
+          "note": "A listing doesn't remove this. Each customer still has to install. Minutes to weeks, depending on their change control.",
+          "confidence": "unconfirmed",
+          "sources": []
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "In your own org, OAuth (web-server flow + PKCE) works right after you create the ECA. No review is needed.",
+      "detail": "A local ECA works only in the org where you create it.",
+      "confidence": "confirmed",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "item": "Any customer org can install a managed package containing the ECA from an install link, without AppExchange.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s8",
+        "s9"
+      ]
+    },
+    {
+      "item": "It is not confirmed whether an unlisted package needs a security review before customers install it.",
+      "detail": null,
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "A legacy Connected App created before Spring '26 still works cross-org and can still be edited.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s3"
+      ]
+    },
+    {
+      "item": "In customer orgs, a legacy Connected App counts as \"uninstalled\" until their admin installs it.",
+      "detail": "Since Sept 2025, non-admin users can't authorize uninstalled connected apps.",
+      "confidence": "secondary",
+      "sources": [
+        "s4",
+        "s5"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "Developer Edition org enabled as a Dev Hub, plus a registered namespace (2GP)",
+      "detail": "The docs say packageable ECAs must be developed in a Dev Hub org.",
+      "confidence": "confirmed",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "item": "Salesforce CLI and a 2GP managed package",
+      "detail": "1GP is also supported.",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "item": "For a listing: a Salesforce partner (ISV) account, Partner Console access, and a listing org",
+      "detail": null,
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "Callback URL(s) over HTTPS and a chosen set of scopes",
+      "detail": "For example api and refresh_token.",
+      "confidence": "unconfirmed",
+      "sources": []
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the External Client App",
+      "detail": "In Setup > External Client App Manager, enable OAuth and set the callback URL and scopes. Keep PKCE required (the default), and keep the secret required for refresh. These settings are in the ECA's Policies and Settings.",
+      "owner": "you",
+      "agentHelp": "Draft the scope list with a justification for each scope, plus a settings checklist for the callback URL, PKCE and refresh.",
+      "url": "https://developer.salesforce.com/docs/atlas.en-us.248.0.api_meta.meta/api_meta/meta_extlclntappglobaloauthsettings.htm",
+      "confidence": "confirmed",
+      "sources": [
+        "s8",
+        "s10"
+      ]
+    },
+    {
+      "title": "Wait about 10 minutes, then test the web-server flow",
+      "detail": "Test against login.salesforce.com, or test.salesforce.com for sandboxes. The 10-minute figure is from Okta's docs.",
+      "owner": "you",
+      "agentHelp": "Write a step-by-step test script for the web-server flow with PKCE against both login endpoints.",
+      "url": null,
+      "confidence": "secondary",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "title": "Set Distribution State to Packaged and add the ECA to a managed package",
+      "detail": "Change Distribution State from Local to Packaged. Global OAuth settings, including the consumer secret, are never packaged.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://help.salesforce.com/s/articleView?id=sf.configure_packageable_external_client_apps.htm&type=5",
+      "confidence": "confirmed",
+      "sources": [
+        "s8",
+        "s9"
+      ]
+    },
+    {
+      "title": "Generate the package version, install link and admin install guide",
+      "detail": "Produce the package version and install link, and write a guide that tells customer admins how to install and assign access.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/package-and-distribute-external-client-apps",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "title": "Customer admin installs the app",
+      "detail": "The customer admin installs the package, or installs the app from Setup > Connected Apps OAuth Usage. If their policy calls for it, they set Permitted Users to admin-approved. They then assign profiles or permission sets.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "secondary",
+      "sources": [
+        "s4",
+        "s5"
+      ]
+    },
+    {
+      "title": "Customer admin allowlists the app (if API Access Control is on)",
+      "detail": "If the customer has API Access Control on and doesn't allowlist the app, users get blocked.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "secondary",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Submit for security review and pay the fee (AppExchange listing only)",
+      "detail": "Submit the solution for AppExchange security review. A 2023 blog gives the fee as $999 per attempt, and free solutions are exempt.",
+      "owner": "you",
+      "agentHelp": "Assemble the submission checklist, and draft the architecture and data-flow docs.",
+      "url": "https://developer.salesforce.com/docs/platform/isvforce/guide/security-review-submit-solution.html",
+      "confidence": "secondary",
+      "sources": [
+        "s12",
+        "s13"
+      ]
+    },
+    {
+      "title": "Salesforce runs the security review",
+      "detail": "Salesforce emails next steps within 2 business days and states the review takes \"up to 4 weeks\" after verification.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": "https://developer.salesforce.com/docs/atlas.en-us.packagingGuide.meta/packagingGuide/security_review_how_it_works.htm",
+      "confidence": "secondary",
+      "sources": [
+        "s13",
+        "s14"
+      ]
+    },
+    {
+      "title": "Fix the findings and resubmit",
+      "detail": "Each retest costs a fee.",
+      "owner": "you",
+      "agentHelp": "Draft false-positive documentation for scanner findings and a list of fixes.",
+      "url": null,
+      "confidence": "secondary",
+      "sources": [
+        "s13"
+      ]
+    }
+  ],
+  "submissionChecklist": [
+    {
+      "item": "Managed package version",
+      "detail": "Keep only the related packages in the review org.",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "Code scanner results",
+      "detail": "Code Analyzer or Checkmarx, plus a DAST scan for external endpoints.",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "False-positive documentation, architecture and data-flow docs",
+      "detail": null,
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "Test credentials for your SaaS",
+      "detail": null,
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "Review fee paid",
+      "detail": "A 2023 blog gives the fee as $999 per attempt. Free solutions are exempt.",
+      "confidence": "secondary",
+      "sources": [
+        "s12",
+        "s13"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "Connected App creation is off by default (Spring '26)",
+      "detail": "Creation is blocked in both the UI and the Metadata API. Support can enable it for now, but Salesforce says that option will be removed. Editing and installing existing Connected Apps still work.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s2"
+      ]
+    },
+    {
+      "title": "Users can't authorize uninstalled apps (Sept 2025)",
+      "detail": "Non-admin users can't authorize uninstalled connected apps. Users who already authorized can keep using the app, except with device flow, which is blocked for everyone.",
+      "confidence": "secondary",
+      "sources": [
+        "s4",
+        "s5"
+      ]
+    },
+    {
+      "title": "Bypass permissions are being narrowed",
+      "detail": "The Approve Uninstalled Connected Apps permission is the bypass when API Access Control is off, and Use Any API Client is the bypass when it is on. A later Salesforce article says Use Any API Client will stop allowing self-authorization of uninstalled apps. The rollout was reported to start the week of Dec 8, 2025.",
+      "confidence": "secondary",
+      "sources": [
+        "s5",
+        "s6"
+      ]
+    },
+    {
+      "title": "Local ECAs are not copied to sandboxes on refresh",
+      "detail": "A sandbox refresh does not carry over an ECA whose Distribution State is Local. We found no source for this.",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "title": "Professional Edition and some API limits may depend on the partner program",
+      "detail": "Access for Professional Edition orgs and some API limits may depend on the partner program or the security review. Not confirmed.",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "title": "Customer admins will see your blocked attempts",
+      "detail": "Spring '26 release notes say blocked attempts to use uninstalled apps are now tracked, so customer admins will see your app in that tracking.",
+      "confidence": "secondary",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Each security review attempt costs a fee",
+      "detail": "A 2023 blog gives the fee as $999 per attempt, and each retest also costs a fee. Free solutions pay no fee.",
+      "confidence": "secondary",
+      "sources": [
+        "s12",
+        "s13"
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "OAUTH_APPROVAL_ERROR_GENERIC, or the app is blocked",
+      "whatToDo": "Have the customer admin install the app or package. Don't ask them to grant broad bypass permissions.",
+      "contact": "The customer's Salesforce admin"
+    },
+    {
+      "symptom": "You can't create a Connected App",
+      "whatToDo": "Use an External Client App. Open a Support case only for a short-term exception.",
+      "contact": "Salesforce Help case"
+    },
+    {
+      "symptom": "The security review fails",
+      "whatToDo": "Fix the findings, pay the retest fee, and resubmit.",
+      "contact": "Partner Operations"
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "Salesforce Help case",
+        "url": null,
+        "note": "Org permissions"
+      },
+      {
+        "label": "Partner Community / Partner Account Manager",
+        "url": null,
+        "note": "ISV questions"
+      },
+      {
+        "label": "Partner Operations",
+        "url": null,
+        "note": "Security review logistics"
+      },
+      {
+        "label": "Trailblazer Community",
+        "url": null,
+        "note": null
+      }
+    ],
+    "haveReady": []
+  },
+  "unknowns": [
+    "Whether an unlisted managed package needs a security review before customers install it.",
+    "Current security review queue times. Salesforce states \"up to 4 weeks\", and no 2026 data was found.",
+    "The current listing or annual fee alongside the $999 per-attempt fee. The $999 figure is from a 2023 blog and may be stale.",
+    "How long settings take to propagate, according to help.salesforce.com. The 10-minute figure is from Okta.",
+    "Whether the Use Any API Client change is fully enforced.",
+    "Whether access for Professional Edition orgs and some API limits depend on the partner program or the security review."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://help.salesforce.com/s/articleView?id=005228017&type=1",
+      "title": "Salesforce Help: Connected app creation disabled (Spring '26)",
+      "accessed": "2026-10-21",
+      "supports": "Connected App creation disabled in Spring '26; the Support exception is being removed; the API is blocked too; editing and installing are unaffected.",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://help.salesforce.com/s/articleView?id=release-notes.rn_security_identity_connected_app_creation_disabled.htm&release=260&type=5",
+      "title": "Spring '26 release notes: Connected app creation disabled",
+      "accessed": "2026-10-21",
+      "supports": "Connected App creation disabled by default; preference removed.",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://developer.salesforce.com/blogs/2026/01/developers-guide-to-the-spring-26-release",
+      "title": "Developer's Guide to the Spring '26 Release",
+      "accessed": "2026-10-21",
+      "supports": "Existing connected apps are unaffected.",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://help.salesforce.com/s/articleView?id=005132365&type=1",
+      "title": "Salesforce Help: Uninstalled connected app restriction",
+      "accessed": "2026-10-21",
+      "supports": "Uninstalled-app restriction from Sept 2025. Read only via a search excerpt (direct fetch blocked), so claims are secondary.",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://admin.salesforce.com/blog/2025/get-ready-for-changes-to-connected-app-usage-restrictions",
+      "title": "Get Ready for Changes to Connected App Usage Restrictions",
+      "accessed": "2026-10-21",
+      "supports": "Scope of the restriction, the device flow block, and the bypass permissions. Read only via a search excerpt (direct fetch blocked), so claims are secondary.",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://help.salesforce.com/s/articleView?id=005228838&type=1",
+      "title": "Salesforce Help: Use Any API Client change",
+      "accessed": "2026-10-21",
+      "supports": "Use Any API Client will stop allowing self-authorization of uninstalled apps. The rollout date (week of Dec 8, 2025) came from a third-party Alibaba notice, so the claim is secondary.",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://help.salesforce.com/s/articleView?id=release-notes.rn_security_track_blocked_apps.htm&release=260&type=5",
+      "title": "Spring '26 release notes: Track blocked apps",
+      "accessed": "2026-10-21",
+      "supports": "Blocked attempts to use uninstalled apps are tracked. Only the title was seen (direct fetch blocked), so the claim is secondary.",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "https://help.salesforce.com/s/articleView?id=sf.configure_packageable_external_client_apps.htm&type=5",
+      "title": "Configure Packageable External Client Apps",
+      "accessed": "2026-10-21",
+      "supports": "Local vs Packaged distribution state; managed package distribution; packageable ECAs developed in a Dev Hub org.",
+      "kind": "primary"
+    },
+    {
+      "id": "s9",
+      "url": "https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/package-and-distribute-external-client-apps",
+      "title": "Trailhead: Package and Distribute External Client Apps",
+      "accessed": "2026-10-21",
+      "supports": "2GP distribution of ECAs; secrets are not packaged.",
+      "kind": "primary"
+    },
+    {
+      "id": "s10",
+      "url": "https://developer.salesforce.com/docs/atlas.en-us.248.0.api_meta.meta/api_meta/meta_extlclntappglobaloauthsettings.htm",
+      "title": "Metadata API: ExtlClntAppGlobalOauthSettings",
+      "accessed": "2026-10-21",
+      "supports": "PKCE required by default; secret required for refresh.",
+      "kind": "primary"
+    },
+    {
+      "id": "s11",
+      "url": "https://help.okta.com/en-us/content/topics/provisioning/salesforce/sfdc-configure-provisioning-rest.htm",
+      "title": "Okta: Configure Salesforce provisioning (REST)",
+      "accessed": "2026-10-21",
+      "supports": "About 10 minutes for Salesforce app settings to take effect. Third-party figure.",
+      "kind": "secondary"
+    },
+    {
+      "id": "s12",
+      "url": "https://developer.salesforce.com/blogs/2023/04/prepare-your-app-to-pass-the-appexchange-security-review",
+      "title": "Prepare Your App to Pass the AppExchange Security Review (2023)",
+      "accessed": "2026-10-21",
+      "supports": "$999 security review fee per attempt; free solutions exempt. A 2023 blog that may be stale, so the claims are secondary.",
+      "kind": "primary"
+    },
+    {
+      "id": "s13",
+      "url": "https://developer.salesforce.com/docs/platform/isvforce/guide/security-review-submit-solution.html",
+      "title": "ISVforce Guide: Submit Your Solution for Security Review",
+      "accessed": "2026-10-21",
+      "supports": "Retest fee; review takes \"up to 4 weeks\"; free solutions pay no fee. Read only via a search excerpt (direct fetch blocked), so claims are secondary.",
+      "kind": "primary"
+    },
+    {
+      "id": "s14",
+      "url": "https://developer.salesforce.com/docs/atlas.en-us.packagingGuide.meta/packagingGuide/security_review_how_it_works.htm",
+      "title": "Packaging Guide: How the Security Review Works",
+      "accessed": "2026-10-21",
+      "supports": "Five review stages; next-steps email within 2 business days. Read only via a search excerpt (direct fetch blocked), so claims are secondary.",
+      "kind": "primary"
+    },
+    {
+      "id": "s15",
+      "url": "https://nango.dev/blog/fix-salesforce-oauth-approval-error-generic",
+      "title": "Nango: Fix Salesforce OAUTH_APPROVAL_ERROR_GENERIC",
+      "accessed": "2026-10-21",
+      "supports": "OAUTH_APPROVAL_ERROR_GENERIC is the error a blocked app produces.",
+      "kind": "secondary"
+    }
+  ]
+}

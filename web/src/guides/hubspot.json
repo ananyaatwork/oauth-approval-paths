@@ -1,0 +1,722 @@
+{
+  "slug": "hubspot",
+  "origin": "library",
+  "researchedOn": "2026-10-21",
+  "model": "claude-opus-5-5",
+  "verification": null,
+  "name": "HubSpot",
+  "website": "https://developers.hubspot.com",
+  "category": "CRM",
+  "verdict": {
+    "difficulty": 3,
+    "headline": "OAuth works immediately in developer test accounts; sign the AUP to install unlisted in up to 25 production accounts, and get 3 active unaffiliated installs before you can submit a Marketplace listing.",
+    "nextAction": "Create a HubSpot developer account, install and authenticate HubSpot CLI v7.6.0+, and sign the Acceptable Use Policy so the app can install outside developer test accounts."
+  },
+  "appType": "Marketplace-distribution OAuth app built as a project on developer platform 2025.2 or later (new legacy public apps cannot be created since 2026-06-23)",
+  "paths": [
+    {
+      "name": "Unlisted (up to 25 installs)",
+      "whenThisApplies": "You install the app into a small number of customer accounts without a Marketplace listing. Developer test accounts don't count toward the 25.",
+      "difficulty": 2,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Account, CLI, project and OAuth server",
+          "min": 1,
+          "max": 24,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Hours to 1 day.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s5"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Sign the AUP and run test installs",
+          "min": 0,
+          "max": 1,
+          "unit": "days",
+          "basis": "estimated",
+          "note": "Under 1 day. HubSpot states no SLA for the AUP.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1",
+            "s5"
+          ]
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Customer admin installs the app",
+          "min": 1,
+          "max": 60,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Minutes per install. If the customer's org uses an app approval workflow, that has no stated SLA.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s10"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "App Marketplace listing",
+      "whenThisApplies": "You need more than 25 installs or a public App Marketplace listing. Approval removes the 25-install cap.",
+      "difficulty": 3,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Account, CLI, project and OAuth server",
+          "min": 1,
+          "max": 24,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Hours to 1 day.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s5"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "AUP, test installs and 3 active unaffiliated production installs",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "The AUP and test installs take under 1 day (estimated). Getting 3 unaffiliated production accounts with activity in the last 30 days depends on your customers.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "Complete the 7-tab listing wizard",
+          "min": 1,
+          "max": 2,
+          "unit": "days",
+          "basis": "estimated",
+          "note": null,
+          "confidence": "unconfirmed",
+          "sources": [
+            "s4"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "First response from HubSpot on the listing",
+          "min": null,
+          "max": 10,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "HubSpot states an initial review within 10 business days. This is the first response, not the full review time.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Address review feedback",
+          "min": null,
+          "max": 60,
+          "unit": "days",
+          "basis": "stated",
+          "note": "Up to 60 days from when feedback is shared. Unknown whether the review clock pauses during revisions.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3"
+          ]
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Customer admin installs the app",
+          "min": 1,
+          "max": 60,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Minutes per install. If the customer's org uses an app approval workflow, that has no stated SLA.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s10"
+          ]
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "Unlisted Marketplace-distribution apps on platform 2025.2+ can be installed in 25 accounts. Developer test accounts don't count. The cap lifts when the listing is approved.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s2"
+      ]
+    },
+    {
+      "item": "Private OAuth distribution allows 10 allowlisted accounts, or 100 for a Solutions Partner portal.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Until the AUP is signed, a Marketplace OAuth app installs only into developer test accounts.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Installers have to tick \"authorize an unverified app\".",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "A HubSpot developer account, with Super Admin rights to submit a listing.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "item": "HubSpot CLI v7.6.0 or later, authenticated with `hs account auth`.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "item": "Your own hosted OAuth backend.",
+      "detail": "HubSpot doesn't host one. A Node quickstart is provided.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5",
+        "s7"
+      ]
+    },
+    {
+      "item": "A signed Acceptable Use Policy (AUP).",
+      "detail": "Without it the app installs only into developer test accounts.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Acceptance of the Technology Partner Program Agreement.",
+      "detail": null,
+      "confidence": "secondary",
+      "sources": [
+        "s12"
+      ]
+    },
+    {
+      "item": "Live public URLs for setup docs, support, Terms of Service, Privacy Policy and pricing.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "item": "3 active installs from unaffiliated production accounts before you can list.",
+      "detail": "Each must make API calls or signed requests within the last 30 days.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a developer account and set up the CLI",
+      "detail": "Create a HubSpot developer account, install HubSpot CLI v7.6.0 or later, and authenticate with `hs account auth`.",
+      "owner": "you",
+      "agentHelp": "Find the current CLI install instructions and write out the exact commands to run.",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Create the project",
+      "detail": "Run `hs project create` and choose App, Marketplace distribution and OAuth.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Configure app-hsmeta.json",
+      "detail": "Set a stable `uid`, `name`, `auth.type: oauth`, `redirectUrls`, `requiredScopes`, `conditionallyRequiredScopes`, `optionalScopes`, `permittedUrls` and `support`.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s5",
+        "s6"
+      ]
+    },
+    {
+      "title": "Upload the project",
+      "detail": "Run `hs project upload` to trigger the build.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Copy the client credentials",
+      "detail": "Copy the Client ID and secret from the project's Auth tab into the OAuth server.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Implement the OAuth flow",
+      "detail": "Send the user to `app.hubspot.com/oauth/authorize` with `client_id`, `scope`, `redirect_uri`, optional `optional_scope` and `state`. Exchange the code at `POST api.hubspot.com/oauth/v3/token`, then refresh with `grant_type=refresh_token`.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://developers.hubspot.com/docs/api-reference/auth-oauth-v3/guide",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Test install",
+      "detail": "Create a test account. On the Distribution tab, add a test install and connect.",
+      "owner": "you",
+      "agentHelp": "Write a test checklist covering the authorize redirect, code exchange and token refresh.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Sign the AUP",
+      "detail": "Sign the Acceptable Use Policy so the app can be installed into standard (production) accounts.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Customer installs the app",
+      "detail": "The installer needs Super Admin or the App Marketplace Access permission, plus the permissions the requested scopes imply.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    },
+    {
+      "title": "Get 3 active unaffiliated installs",
+      "detail": "Get 3 unaffiliated production accounts making API calls or signed requests within 30 days.",
+      "owner": "you",
+      "agentHelp": "Draft a pilot outreach note and install instructions for customers.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Create and submit the listing",
+      "detail": "Go to Development, then App Listings, then Create listing. Complete the 7 tabs, run validation, then Agree & submit.",
+      "owner": "you",
+      "agentHelp": "Draft the listing copy, setup docs, privacy policy and Terms of Service, and check them against the submission checklist.",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/listing-your-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "HubSpot reviews the listing",
+      "detail": "The Ecosystem Quality team reviews manually and replies by email.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s4"
+      ]
+    },
+    {
+      "title": "Address review feedback",
+      "detail": "Fix what the reviewers raise. Once approved, the 25-install cap is removed.",
+      "owner": "you",
+      "agentHelp": "Turn the review email into a fix list and draft the changes and replies.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s2"
+      ]
+    }
+  ],
+  "submissionChecklist": [
+    {
+      "item": "OAuth is the only auth method, using one app ID and client ID.",
+      "detail": "No redirecting to, or depending on, another app.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "One use case per app, not a duplicate of an existing listing.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "3 or more active installs from unaffiliated accounts.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Every requested scope is used.",
+      "detail": "Scopes some users won't have are marked conditional or optional. The \"Shared data\" table matches the scopes.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s6"
+      ]
+    },
+    {
+      "item": "If you request read and write on an object, the sync is advertised as bi-directional.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "No classic CRM cards.",
+      "detail": "Apps with app cards request no sensitive-data scopes.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Listing fields complete.",
+      "detail": "Name, company, tagline, install option, 800×800 icon, support email and support languages.",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "item": "Setup docs, ToS, privacy policy and support URLs are live.",
+      "detail": "Max 250 characters each. The HubSpot Crawler is allowlisted.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s4"
+      ]
+    },
+    {
+      "item": "Pricing matches your website.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Brand and trademark guidelines are followed.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "AI connectors use user-level permissions and HubSpot's MCP Server.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "Access token lasts 30 minutes",
+      "detail": "`expires_in` is 1800. Read `expires_in` instead of hard-coding it, because older docs showed 21600. An expired refresh token returns `invalid_grant`.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Refresh token lifetime is only in a blog post",
+      "detail": "A HubSpot blog says the refresh token doesn't expire until the app is uninstalled or the token is revoked. The reference docs say nothing.",
+      "confidence": "secondary",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "title": "A conditionally required scope can fail the install",
+      "detail": "Required scopes must appear in the install URL's `scope` parameter. If a conditionally required scope is in the URL and the user lacks that feature (for example a tier-gated scope), the install fails. The `oauth` scope is added by default. Sensitive scopes are mostly Enterprise-only.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "Legacy apps",
+      "detail": "No new legacy public apps can be created since 2026-06-23. Existing ones keep working without new features. Migrating an unlisted legacy app with more than 25 installs to 2025.2+ auto-enforces the 25-install cap.",
+      "confidence": "confirmed",
+      "sources": [
+        "s9",
+        "s2"
+      ]
+    },
+    {
+      "title": "Platform versions",
+      "detail": "2025.1 apps had to migrate by 2026-08-01. 2025.2 is supported through March 2027. 2026.03 is current. Listing is refused on unsupported versions.",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "title": "Changing the uid creates a new app",
+      "detail": "Changing the `uid` after upload creates a new app.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "One submission at a time",
+      "detail": "Any other submissions are auto-rejected.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Certification is separate from listing",
+      "detail": "It needs 60 active installs (raised from 6 on 2024-05-15), at least 6 months listed, and a technical review.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "\"Developer has not signed the AUP\"",
+      "whatToDo": "Accept the AUP and program terms in the developer account.",
+      "contact": null
+    },
+    {
+      "symptom": "Hit 25 installs",
+      "whatToDo": "List the app. Community moderators say HubSpot makes no exceptions to the cap.",
+      "contact": null
+    },
+    {
+      "symptom": "Fewer than 3 active installs",
+      "whatToDo": "Run pilots with unaffiliated customers making real API calls.",
+      "contact": null
+    },
+    {
+      "symptom": "Installer lacks permission",
+      "whatToDo": "A Super Admin grants App Marketplace Access, or approves the app request.",
+      "contact": "The customer's Super Admin"
+    },
+    {
+      "symptom": "Listing stuck in Draft",
+      "whatToDo": "Fix the missing fields flagged on Review info.",
+      "contact": null
+    },
+    {
+      "symptom": "Errors after migration",
+      "whatToDo": "Submit a developer support request.",
+      "contact": "HubSpot developer support"
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "HubSpot Developer Community forum",
+        "url": "https://community.hubspot.com",
+        "note": "Try first."
+      },
+      {
+        "label": "Developer support request",
+        "url": null,
+        "note": "Submitted from the developer account."
+      },
+      {
+        "label": "Ecosystem Quality team",
+        "url": null,
+        "note": "Reply via the listing review emails."
+      },
+      {
+        "label": "Tech Partner Program contacts",
+        "url": null,
+        "note": "Available once you're listed."
+      }
+    ],
+    "haveReady": []
+  },
+  "unknowns": [
+    "No stated SLA for the AUP, the customer's org approval workflow, or certification review.",
+    "The refresh-token lifetime is stated only in a blog post. The reference docs say nothing.",
+    "One community thread cited \"<10 installs\" as a migration limit, which conflicts with the official 25.",
+    "Whether the listing review clock pauses during revisions.",
+    "The AUP-error fix and \"no exceptions to the 25-install cap\" come only from community threads.",
+    "All setup, prerequisite, submission and per-install durations are estimates, not HubSpot figures."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/manage-apps-in-hubspot",
+      "title": "Manage apps in HubSpot",
+      "accessed": "2026-10-21",
+      "supports": "Install limits (1/10/25/unlimited), AUP gating to test accounts",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://developers.hubspot.com/changelog/new-marketplace-distribution-app-install-limits",
+      "title": "Changelog: new Marketplace distribution app install limits",
+      "accessed": "2026-10-21",
+      "supports": "25 cap on 2025.2 from 2025-09-22, migration enforcement, private limits 10/100",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/app-marketplace-listing-requirements",
+      "title": "App Marketplace listing requirements",
+      "accessed": "2026-10-21",
+      "supports": "3 active installs, scope rules, 10 business days and 60 days, one submission at a time",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/listing-your-app",
+      "title": "Listing your app",
+      "accessed": "2026-10-21",
+      "supports": "Listing wizard steps, required fields, Super Admin",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+      "title": "Create an app",
+      "accessed": "2026-10-21",
+      "supports": "CLI steps, config fields, test installs, unverified-app checkbox",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes",
+      "title": "Scopes",
+      "accessed": "2026-10-21",
+      "supports": "Required, conditional and optional scopes; failure modes; tiers",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://developers.hubspot.com/docs/api-reference/auth-oauth-v3/guide",
+      "title": "OAuth v3 API guide",
+      "accessed": "2026-10-21",
+      "supports": "Endpoints, 30-minute access token, invalid_grant",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "https://developers.hubspot.com/blog/oauth-token-management-hubspot-integrations",
+      "title": "HubSpot developer blog: OAuth token management for HubSpot integrations",
+      "accessed": "2026-10-21",
+      "supports": "Refresh token doesn't expire",
+      "kind": "primary"
+    },
+    {
+      "id": "s9",
+      "url": "https://developers.hubspot.com/docs/apps/legacy-apps/overview",
+      "title": "Legacy apps overview",
+      "accessed": "2026-10-21",
+      "supports": "Legacy creation cutoff 2026-06-23; version support dates",
+      "kind": "primary"
+    },
+    {
+      "id": "s10",
+      "url": "https://developers.hubspot.com/changelog/new-permission-requirements-for-installing-public-apps",
+      "title": "Changelog: new permission requirements for installing public apps",
+      "accessed": "2026-10-21",
+      "supports": "App Marketplace Access permission to install",
+      "kind": "primary"
+    },
+    {
+      "id": "s11",
+      "url": "https://developers.hubspot.com/changelog/active-install-requirement-increase-for-app-certification",
+      "title": "Changelog: active install requirement increase for app certification",
+      "accessed": "2026-10-21",
+      "supports": "Certification needs 60 installs",
+      "kind": "primary"
+    },
+    {
+      "id": "s12",
+      "url": "https://developers.hubspot.com/app-partners/set-up",
+      "title": "App partners: set up",
+      "accessed": "2026-10-21",
+      "supports": "Tech Partner Program Agreement",
+      "kind": "primary"
+    },
+    {
+      "id": "s13",
+      "url": "https://community.hubspot.com",
+      "title": "HubSpot Community threads (AUP error; install limits)",
+      "accessed": "2026-10-21",
+      "supports": "AUP fix, no cap exceptions",
+      "kind": "secondary"
+    }
+  ]
+}

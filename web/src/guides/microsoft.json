@@ -1,0 +1,705 @@
+{
+  "slug": "microsoft",
+  "origin": "library",
+  "researchedOn": "2026-10-21",
+  "model": "claude-opus-5-5",
+  "verification": null,
+  "name": "Microsoft (Entra ID / Graph)",
+  "website": "https://learn.microsoft.com/entra/identity-platform/",
+  "category": "Identity and productivity (Microsoft 365 / Graph)",
+  "verdict": {
+    "difficulty": 3,
+    "headline": "App registration takes minutes and publisher verification is free once your Partner Center (CPP) account is verified in 3–5 business days, but since Aug 2025 the default consent policy sends Mail, Calendar, Files and Chat scopes to each customer's admin even for verified apps, so plan for per-tenant admin consent.",
+    "nextAction": "Enroll in the Microsoft AI Cloud Partner Program and start Partner Center verification now, using a business email on the same domain you will set as the publisher domain."
+  },
+  "appType": "Multi-tenant Entra ID app registration (supported account type: Multiple Entra ID tenants), registered in a work or school tenant, not a personal Microsoft account",
+  "paths": [
+    {
+      "name": "Low-risk delegated scopes (User.Read, openid, profile)",
+      "whenThisApplies": "Your app only asks for basic sign-in and profile scopes. If the app is publisher verified and the customer tenant allows user consent, users can consent themselves and no admin approval is needed.",
+      "difficulty": 2,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Register the multi-tenant app",
+          "min": 5,
+          "max": 15,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Minutes.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Verify your CPP account in Partner Center",
+          "min": 3,
+          "max": 5,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Longer if Microsoft asks for more information.",
+          "confidence": "confirmed",
+          "sources": [
+            "s4"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "Enter Partner ID and verify publisher",
+          "min": null,
+          "max": null,
+          "unit": "minutes",
+          "basis": "stated",
+          "note": "Microsoft states \"a few minutes\". Publisher verification itself is automated, with no separate provider review.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3",
+            "s2"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Appeal if verification is rejected",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Only if Partner Center verification is rejected; no SLA for appeals.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s4"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin-consent or blocked-by-default scopes (application permissions, Mail.*, Files.Read.All, etc.)",
+      "whenThisApplies": "Your app uses application permissions (always admin consent), or delegated scopes the Microsoft-managed default policy blocks from user consent: Files.Read/ReadWrite.All, Sites.Read/ReadWrite.All, Mail.*, Calendars.*, Chat.*, OnlineMeetings.*, Contacts/Tasks.*, People.Read, EWS/IMAP/POP/EAS.",
+      "difficulty": 3,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Register the multi-tenant app",
+          "min": 5,
+          "max": 15,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Minutes.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Verify your CPP account in Partner Center",
+          "min": 3,
+          "max": 5,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Longer if Microsoft asks for more information.",
+          "confidence": "confirmed",
+          "sources": [
+            "s4"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "Enter Partner ID and verify publisher",
+          "min": null,
+          "max": null,
+          "unit": "minutes",
+          "basis": "stated",
+          "note": "Microsoft states \"a few minutes\". Publisher verification is automated.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3",
+            "s2"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Optional Microsoft 365 Certification audit",
+          "min": null,
+          "max": null,
+          "unit": "weeks",
+          "basis": "no_stated_sla",
+          "note": "Optional yearly third-party audit with Claranet; no stated SLA. Publisher verification itself has no provider review.",
+          "confidence": "confirmed",
+          "sources": [
+            "s13"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Appeal if verification is rejected",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Only if Partner Center verification is rejected; no SLA for appeals.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s4"
+          ]
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Admin consent in every customer tenant (the critical wait)",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Needed in every tenant. Since Aug 2025 the Microsoft-managed default consent policy (microsoft-user-default-recommended) for new tenants blocks user consent to Files, Mail, Calendar, Chat and similar scopes even for verified apps, so each customer's admin must grant consent. How fast admins approve is unknown and outside your control.",
+          "confidence": "confirmed",
+          "sources": [
+            "s6",
+            "s9",
+            "s8"
+          ]
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "Users in other tenants see an \"unverified\" publisher on the consent screen and no blue verified badge.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Risk-based step-up consent is on by default: user consent goes to admin approval for newly registered multi-tenant apps that are not publisher verified and ask for more than basic sign-in and profile.",
+      "detail": "Users get AADSTS90094, or an \"admin approval needed\" request if the tenant has the admin consent workflow turned on.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "item": "In your own tenant everything works, and any admin can consent.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "item": "No user caps or token quotas tied to verification were found.",
+      "detail": null,
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "Tenants using microsoft-user-default-low allow user consent only to apps from verified publishers or apps registered in that tenant.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "An Entra work or school tenant",
+      "detail": "Apps registered with a personal Microsoft account (MSA) can't be verified. B2C and national clouds aren't supported.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "A fully verified CPP Partner Global Account (PGA) Partner One ID",
+      "detail": "A location ID won't work.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "The app's tenant is linked to the PGA",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "A publisher domain other than *.onmicrosoft.com",
+      "detail": "It must match the email domain used for CPP verification, or be a DNS-verified custom domain.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "One person holding both roles",
+      "detail": "Entra: Application Administrator or Cloud Application Administrator. Partner Center: CPP Partner Admin or Account Admin.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "That person signs in with MFA and accepts the identity platform Terms of Use",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Partner Center verification passes",
+      "detail": "Checks your business email, identity (government ID), employment (domain registrar documents) and business registration documents.",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create an Entra tenant",
+      "detail": "Create an Entra work or school tenant and give yourself at least the Application Developer role.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://learn.microsoft.com/entra/identity-platform/quickstart-register-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Register the app as multi-tenant",
+      "detail": "App registrations → New registration, choosing Multiple Entra ID tenants.",
+      "owner": "you",
+      "agentHelp": "An agent can write the exact click path and field values to enter.",
+      "url": "https://learn.microsoft.com/entra/identity-platform/quickstart-register-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Add redirect URIs and a credential",
+      "detail": "Add redirect URIs that follow Microsoft's rules (see gotchas) and a credential. Prefer a certificate or federated credential for production.",
+      "owner": "you",
+      "agentHelp": "An agent can draft the redirect URI list, check it against the redirect URI rules, and prepare manifest edits.",
+      "url": "https://learn.microsoft.com/entra/identity-platform/reply-url",
+      "confidence": "confirmed",
+      "sources": [
+        "s11",
+        "s12"
+      ]
+    },
+    {
+      "title": "Add Graph permissions",
+      "detail": "Delegated (scopes): users can consent to some, and admins can consent for everyone. Application (app roles): always need admin consent and must be requested with /.default.",
+      "owner": "you",
+      "agentHelp": "An agent can map your features to the minimal permission list, mark each delegated or application, and suggest narrower scopes such as Sites.Selected.",
+      "url": "https://learn.microsoft.com/entra/identity-platform/permissions-consent-overview",
+      "confidence": "confirmed",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "title": "Make the code multi-tenant",
+      "detail": "Point code at /organizations or /common, validate iss against tid, and cache tokens per tenant.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://learn.microsoft.com/entra/identity-platform/howto-convert-app-to-be-multi-tenant",
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    },
+    {
+      "title": "Enroll in CPP and complete Partner Center verification",
+      "detail": "Submit business email, government ID, domain registrar documents and business registration documents.",
+      "owner": "you",
+      "agentHelp": "An agent can prepare a checklist of the documents and make sure the email domain matches your planned publisher domain.",
+      "url": "https://learn.microsoft.com/partner-center/enroll/understand-the-verification-process",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Microsoft verifies your Partner Center account",
+      "detail": "3–5 business days, longer if Microsoft asks for more information.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": "https://learn.microsoft.com/partner-center/enroll/understand-the-verification-process",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Mark the app as publisher verified",
+      "detail": "In Branding & properties, set the publisher domain, choose Add Partner ID, then Verify and save. Takes a few minutes.",
+      "owner": "you",
+      "agentHelp": "An agent can run through the submission checklist with you before you click Verify.",
+      "url": "https://learn.microsoft.com/entra/identity-platform/mark-app-as-publisher-verified",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Test the verified badge",
+      "detail": "Sign in with prompt=consent to see the consent screen and badge. Use prompt=consent for testing only.",
+      "owner": "you",
+      "agentHelp": "An agent can build the test sign-in URL.",
+      "url": "https://learn.microsoft.com/entra/identity-platform/mark-app-as-publisher-verified",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Each customer's admin grants consent",
+      "detail": "The admin opens https://login.microsoftonline.com/{tenant}/v2.0/adminconsent?client_id=…&scope=…/.default&redirect_uri=…. Success returns admin_consent=True, and consent creates the app's service principal in their tenant.",
+      "owner": "customer_admin",
+      "agentHelp": "An agent can build the admin-consent link and a \"connect\" page for customer admins.",
+      "url": "https://learn.microsoft.com/entra/identity-platform/v2-admin-consent",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "title": "Optional: Microsoft 365 Publisher Attestation",
+      "detail": "A self-assessment. Most take an hour or less.",
+      "owner": "you",
+      "agentHelp": "An agent can draft answers from your security and data-handling practices for you to review.",
+      "url": "https://learn.microsoft.com/microsoft-365-app-certification/overview",
+      "confidence": "confirmed",
+      "sources": [
+        "s13"
+      ]
+    },
+    {
+      "title": "Optional: Microsoft 365 Certification",
+      "detail": "A yearly third-party audit with Claranet. Optional, though the docs say it \"may be required\" in some tenants.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://learn.microsoft.com/microsoft-365-app-certification/overview",
+      "confidence": "confirmed",
+      "sources": [
+        "s13"
+      ]
+    }
+  ],
+  "submissionChecklist": [
+    {
+      "item": "Partner One ID is the PGA ID, and its status is Authorized",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s3"
+      ]
+    },
+    {
+      "item": "Tenant is linked to the PGA",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Publisher domain is set, matches the CPP email domain, and is not onmicrosoft.com",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Your account has both roles and signs in with MFA",
+      "detail": "Entra Application Administrator or Cloud Application Administrator, plus CPP Partner Admin or Account Admin.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Permissions are minimal and listed correctly as delegated or application",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "item": "There's an admin-consent link or \"connect\" page for customer admins",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "Default consent policy blocks common scopes even for verified apps",
+      "detail": "\"Let Microsoft manage your consent settings\" (microsoft-user-default-recommended) is the default for new tenants, and Microsoft updates its list automatically. It blocks user consent to Files.Read/ReadWrite.All, Sites.Read/ReadWrite.All, Mail.*, Calendars.*, Chat.*, OnlineMeetings.*, Contacts/Tasks.*, People.Read, and EWS/IMAP/POP/EAS, even for verified apps. Consequence: customers' users can't self-onboard, and every tenant needs admin consent.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "The Aug 2025 rollout broke ISV onboarding",
+      "detail": "ISVs on Microsoft Q&A reported the policy change broke onboarding in Aug 2025 and say it was poorly announced. A secondary writeup tracks the expansion, with rollout by July 2026.",
+      "confidence": "secondary",
+      "sources": [
+        "s15",
+        "s16"
+      ]
+    },
+    {
+      "title": "Redirect URI rules",
+      "detail": "HTTPS only, except localhost. Case-sensitive, max 256 characters each. Max 256 per app for org-only apps, or 100 if you add personal accounts. No wildcards if personal accounts are enabled; for org-only apps they're possible through the manifest but discouraged. Query parameters are allowed only for org-only apps. Localhost ignores the port, and IPv6 [::1] isn't supported. http://127.0.0.1 can only be added by editing the manifest.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "title": "Client secrets expire and are shown once",
+      "detail": "Max 24 months, and Microsoft recommends under 12. The value is shown only once. Microsoft recommends a certificate or federated credential for production.",
+      "confidence": "confirmed",
+      "sources": [
+        "s12"
+      ]
+    },
+    {
+      "title": "App ID URI must be globally unique",
+      "detail": "For multi-tenant apps the App ID URI must be globally unique, or the switch to multi-tenant fails. You can't move an app registration to another tenant.",
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    },
+    {
+      "title": "Admin consent without prompt=consent covers only the admin",
+      "detail": "If an admin signs in without prompt=consent, consent applies only to that admin's own account, not the whole tenant.",
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    },
+    {
+      "title": "Requiring user assignment forces admin consent",
+      "detail": "If a tenant requires user assignment for the app, admin consent is required.",
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "AADSTS90094 \"needs admin permission\"",
+      "whatToDo": "Get publisher verified. Ask the customer to turn on the admin consent workflow, or send their admin the adminconsent URL.",
+      "contact": null
+    },
+    {
+      "symptom": "Scope blocked by the Microsoft-managed consent policy",
+      "whatToDo": "Plan for admin consent. Use a narrower scope, such as Sites.Selected or User.Read, where you can.",
+      "contact": null
+    },
+    {
+      "symptom": "Partner Center verification rejected or stuck",
+      "whatToDo": "Upload matching business and domain documents, then submit an appeal.",
+      "contact": "Partner Center support ticket"
+    },
+    {
+      "symptom": "Publisher domain doesn't match the CPP email domain",
+      "whatToDo": "Add a DNS-verified custom domain to the tenant.",
+      "contact": null
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "Microsoft Q&A",
+        "url": null,
+        "note": "Tag \"Microsoft Entra ID\"."
+      },
+      {
+        "label": "GitHub issues on the MSAL libraries",
+        "url": null,
+        "note": null
+      },
+      {
+        "label": "Azure support request or Microsoft Support for business",
+        "url": null,
+        "note": "An Azure support request needs a support plan."
+      },
+      {
+        "label": "Partner Center support ticket",
+        "url": null,
+        "note": "For CPP verification."
+      },
+      {
+        "label": "Azure feedback",
+        "url": "https://feedback.azure.com",
+        "note": null
+      }
+    ],
+    "haveReady": [
+      "The AADSTS error code, e.g. AADSTS90094",
+      "Your Partner One ID (PGA ID) for CPP verification issues",
+      "The scopes you request, marked delegated or application"
+    ]
+  },
+  "unknowns": [
+    "No SLA for verification appeals.",
+    "No SLA for Microsoft 365 Certification.",
+    "No data on how fast customer admins approve consent.",
+    "What \"newly registered\" means for step-up consent beyond \"registered after 8 Nov 2020\".",
+    "Whether verified apps are exempt from any part of the Microsoft-managed policy; the docs list scope exclusions only.",
+    "The future blocked-scope list. Microsoft updates it automatically, so check policies/permissionGrantPolicies/microsoft-user-default-recommended live.",
+    "Whether there are user caps or token quotas tied to verification; none were found.",
+    "Exact setup time; \"minutes\" is our estimate."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://learn.microsoft.com/entra/identity-platform/quickstart-register-app",
+      "title": "Quickstart: Register an application",
+      "accessed": "2026-10-21",
+      "supports": "Registration steps, account types, roles",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview",
+      "title": "Publisher verification overview",
+      "accessed": "2026-10-21",
+      "supports": "Requirements, \"verified in minutes\", free, Nov 2020 rule",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://learn.microsoft.com/entra/identity-platform/mark-app-as-publisher-verified",
+      "title": "Mark an app as publisher verified",
+      "accessed": "2026-10-21",
+      "supports": "Steps, \"a few minutes\"",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://learn.microsoft.com/partner-center/enroll/understand-the-verification-process",
+      "title": "Understand the Partner Center verification process",
+      "accessed": "2026-10-21",
+      "supports": "CPP checks, \"3–5 business days\"",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://learn.microsoft.com/entra/identity/enterprise-apps/configure-risk-based-step-up-consent",
+      "title": "Configure risk-based step-up consent",
+      "accessed": "2026-10-21",
+      "supports": "Step-up on by default, AADSTS90094",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://learn.microsoft.com/entra/identity/enterprise-apps/manage-app-consent-policies",
+      "title": "Manage app consent policies",
+      "accessed": "2026-10-21",
+      "supports": "Microsoft-managed default and its scope exclusions",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://learn.microsoft.com/entra/identity/enterprise-apps/configure-user-consent",
+      "title": "Configure user consent",
+      "accessed": "2026-10-21",
+      "supports": "Consent settings, microsoft-user-default-low",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "https://learn.microsoft.com/entra/identity-platform/permissions-consent-overview",
+      "title": "Permissions and consent overview",
+      "accessed": "2026-10-21",
+      "supports": "Delegated vs application permissions",
+      "kind": "primary"
+    },
+    {
+      "id": "s9",
+      "url": "https://learn.microsoft.com/entra/identity-platform/v2-admin-consent",
+      "title": "Admin consent on the Microsoft identity platform",
+      "accessed": "2026-10-21",
+      "supports": "Admin consent endpoint",
+      "kind": "primary"
+    },
+    {
+      "id": "s10",
+      "url": "https://learn.microsoft.com/entra/identity-platform/howto-convert-app-to-be-multi-tenant",
+      "title": "Convert an app to be multi-tenant",
+      "accessed": "2026-10-21",
+      "supports": "Multi-tenant code and consent gotchas",
+      "kind": "primary"
+    },
+    {
+      "id": "s11",
+      "url": "https://learn.microsoft.com/entra/identity-platform/reply-url",
+      "title": "Redirect URI (reply URL) restrictions",
+      "accessed": "2026-10-21",
+      "supports": "Redirect URI rules",
+      "kind": "primary"
+    },
+    {
+      "id": "s12",
+      "url": "https://learn.microsoft.com/entra/identity-platform/how-to-add-credentials",
+      "title": "Add credentials to an app",
+      "accessed": "2026-10-21",
+      "supports": "24-month secret limit",
+      "kind": "primary"
+    },
+    {
+      "id": "s13",
+      "url": "https://learn.microsoft.com/microsoft-365-app-certification/overview",
+      "title": "Microsoft 365 App Compliance Program overview",
+      "accessed": "2026-10-21",
+      "supports": "Attestation (about 1 hr), Certification (yearly audit, Claranet)",
+      "kind": "primary"
+    },
+    {
+      "id": "s14",
+      "url": "https://learn.microsoft.com/entra/identity-platform/developer-support-help-options",
+      "title": "Support and help options for developers",
+      "accessed": "2026-10-21",
+      "supports": "Support channels",
+      "kind": "primary"
+    },
+    {
+      "id": "s15",
+      "url": "https://learn.microsoft.com/answers/questions/5526830",
+      "title": "Microsoft Q&A thread on consent policy change",
+      "accessed": "2026-10-21",
+      "supports": "Aug 2025 rollout broke ISV onboarding",
+      "kind": "primary"
+    },
+    {
+      "id": "s16",
+      "url": "https://blog-en.topedia.com",
+      "title": "Topedia blog (2025-11 and 2026-05 posts)",
+      "accessed": "2026-10-21",
+      "supports": "Expansion timeline, rollout by July 2026",
+      "kind": "secondary"
+    }
+  ]
+}

@@ -1,0 +1,598 @@
+{
+  "slug": "notion",
+  "origin": "library",
+  "researchedOn": "2026-10-21",
+  "model": "claude-opus-5-5",
+  "verification": null,
+  "name": "Notion",
+  "website": "https://notion.com",
+  "category": "Workspace and docs",
+  "verdict": {
+    "difficulty": 2,
+    "headline": "OAuth works for any Notion workspace as soon as you create a public connection, with no review; only the optional Marketplace listing is reviewed (5 to 10 business days).",
+    "nextAction": "Decide between \"Any workspace\" and \"Selected workspaces only\" before you create the connection in the Developer portal, because the scope can't be changed afterwards."
+  },
+  "appType": "Public connection (OAuth). Notion now calls integrations \"connections\"; they are managed in the Developer portal (app.notion.com/developers), launched 2026-05-12. There are no OAuth scopes: you choose capabilities on the connection.",
+  "paths": [
+    {
+      "name": "Public connection (no listing)",
+      "whenThisApplies": "You only need OAuth to work for your users. An unlisted connection with the \"Any workspace\" scope can be authorised by any Notion user in any workspace, with no review.",
+      "difficulty": 2,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Create connection, get credentials",
+          "min": 0,
+          "max": 1,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Under 1 hour.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Notion account, dev workspace, HTTPS redirect",
+          "min": 0,
+          "max": 1,
+          "unit": "days",
+          "basis": "estimated",
+          "note": null,
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Enterprise allow-list",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Only where an Enterprise workspace restricts installs.",
+          "confidence": "confirmed",
+          "sources": [
+            "s8"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Marketplace listing",
+      "whenThisApplies": "You want the connection listed in Notion's Marketplace. Optional; requires a connection with the \"Any workspace\" scope.",
+      "difficulty": 2,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Create connection, get credentials",
+          "min": 0,
+          "max": 1,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Under 1 hour.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Notion account, dev workspace, HTTPS redirect",
+          "min": 0,
+          "max": 1,
+          "unit": "days",
+          "basis": "estimated",
+          "note": null,
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "Draft and submit the listing",
+          "min": 1,
+          "max": 3,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": null,
+          "confidence": "unconfirmed",
+          "sources": [
+            "s3"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Notion Marketplace review",
+          "min": 5,
+          "max": 10,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Notion replies by email: approval or feedback.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Revise and resubmit after feedback",
+          "min": null,
+          "max": null,
+          "unit": "business_days",
+          "basis": "no_stated_sla",
+          "note": "Number of review rounds and revision time are unknown.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Enterprise allow-list",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Only where an Enterprise workspace restricts installs.",
+          "confidence": "confirmed",
+          "sources": [
+            "s8"
+          ]
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "Without any review, a connection with the \"Any workspace\" scope can be authorised by any Notion user in any workspace.",
+      "detail": "Listing is optional, and an unlisted connection still works through OAuth.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s3"
+      ]
+    },
+    {
+      "item": "\"Selected workspaces only\" limits installs to workspaces you choose, and those connections can never be listed.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s3"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "A Notion account and a development workspace",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Redirect URI(s)",
+      "detail": "HTTPS redirect.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "A decision on installation scope",
+      "detail": "\"Any workspace\" or \"Selected workspaces only\". It can't be changed after creation.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "For a listing: name, description, category, tags, images and logo",
+      "detail": "Listing also requires a connection with the \"Any workspace\" scope.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create a public connection",
+      "detail": "Open Developer portal > Build > Public connections > Create new connection.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://app.notion.com/developers",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s7"
+      ]
+    },
+    {
+      "title": "Enter connection details",
+      "detail": "Enter the name, dev workspace, redirect URIs, installation scope and capabilities. The installation scope can't be changed later. Capabilities: Content (read, update, insert), Comments (read, insert), User info (none, without email, or with email).",
+      "owner": "you",
+      "agentHelp": "Can map your app's features to the minimum capabilities needed and lay out the \"Any workspace\" vs \"Selected workspaces only\" trade-off for your decision.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s4"
+      ]
+    },
+    {
+      "title": "Store the client ID and secret",
+      "detail": "Copy the OAuth client ID and secret from the Configuration tab into a secret store.",
+      "owner": "you",
+      "agentHelp": "Can wire the app's config to read the client ID and secret from the secret store once you add them.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Build the authorize URL",
+      "detail": "Use https://api.notion.com/v1/oauth/authorize with client_id, redirect_uri, response_type=code, owner=user and an optional state.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://api.notion.com/v1/oauth/authorize",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "User approves and picks pages",
+      "detail": "Each customer user approves the capabilities and picks pages in the page picker. Your app only sees the pages they share.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Exchange the code for tokens",
+      "detail": "POST the code to /v1/oauth/token with HTTP Basic auth. The response returns access_token, refresh_token, bot_id and workspace info.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://api.notion.com/v1/oauth/token",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Enterprise admin approval",
+      "detail": "On Enterprise, the workspace owner approves the connection (Settings > Connections) if the workspace restricts installs.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "title": "Draft and submit a Marketplace listing (optional)",
+      "detail": "Listings > Connections. Draft the listing, then submit it.",
+      "owner": "you",
+      "agentHelp": "Can draft the listing name and description, suggest a category and tags, check the name for obvious brand conflicts, and prepare the submission checklist.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Notion reviews the listing",
+      "detail": "Notion reviews and replies by email within 5 to 10 business days, with approval or feedback.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    }
+  ],
+  "submissionChecklist": [
+    {
+      "item": "Connection created with the \"Any workspace\" scope",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Listing name and description",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Category and tags",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Logo and listing images",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Linked public connection",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Name with no brand or trademark conflict",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "OAuth flow tested end to end",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "Installation scope is permanent",
+      "detail": "\"Any workspace\" vs \"Selected workspaces only\" can't be changed after creation. Picking the wrong one means creating a new connection, and a \"Selected workspaces only\" connection can never be listed.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s3"
+      ]
+    },
+    {
+      "title": "Users must share pages with the connection",
+      "detail": "Access is granted per page, not per workspace; child pages inherit access. Your app sees nothing the user didn't share. The picker only shows pages the user has full access to, and new pages aren't shared automatically unless they sit under a shared parent. This is the number one support issue.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Allow without token exchange leaves no access",
+      "detail": "Clicking Allow without finishing the token exchange leaves the connection with no page access.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Authorisation is per user and per workspace",
+      "detail": "Every user must authorise separately, and tokens are tied to a single workspace.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Each refresh rotates both tokens",
+      "detail": "Store the new refresh token every time you refresh.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s5"
+      ]
+    },
+    {
+      "title": "Re-authorisation returns a new token pair",
+      "detail": "Since 2026-06-08, each new authorisation returns a new token pair instead of the existing token.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Read expires_in instead of assuming a lifetime",
+      "detail": "The docs don't state an access-token lifetime for the REST API. Notion MCP tokens last about 8 hours.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Rate limits per connection and per workspace",
+      "detail": "180 requests per minute per connection, or 600 on Business and Enterprise plans, in a fixed 60-second window. A shared per-workspace limit applies on top. Handle 429 and 529 by honouring Retry-After; the per-workspace limit can return a Retry-After longer than 60 seconds.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6",
+        "s7"
+      ]
+    },
+    {
+      "title": "Payload size caps",
+      "detail": "Payloads are capped at 1,000 blocks and 500KB. Rich text is capped at 2,000 characters.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "API version 2026-03-11 has breaking changes",
+      "detail": "archived became in_trash, after became position, and the transcription block became meeting_notes.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "SDK v5+ requires API version 2025-09-03 or newer",
+      "detail": "That version splits databases into data sources.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Older third-party docs list fields the current portal doesn't ask for",
+      "detail": "Make's help page lists company name, website, privacy URL, terms URL and support-email fields as part of the older form. The current Notion docs list none of them. Not confirmed either way.",
+      "confidence": "secondary",
+      "sources": [
+        "s9"
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "Empty search results or 404s on pages",
+      "whatToDo": "Prompt the user to reshare pages. You can also attach a template so Notion duplicates and shares it on install.",
+      "contact": null
+    },
+    {
+      "symptom": "Enterprise \"approved only\" policy",
+      "whatToDo": "The customer's workspace owner adds the connection under Settings > Connections.",
+      "contact": "Customer's workspace owner"
+    },
+    {
+      "symptom": "Listing rejected",
+      "whatToDo": "Read the emailed feedback, revise and resubmit.",
+      "contact": "Reply to the review email"
+    },
+    {
+      "symptom": "Installation scope chosen wrong",
+      "whatToDo": "Create a new connection.",
+      "contact": null
+    },
+    {
+      "symptom": "public_api_request_blocked error",
+      "whatToDo": "Don't retry. API access is restricted.",
+      "contact": null
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "Reply to the Marketplace review email",
+        "url": null,
+        "note": "For Marketplace listing issues."
+      },
+      {
+        "label": "Notion general support",
+        "url": null,
+        "note": "No dedicated developer support channel or SLA was found."
+      },
+      {
+        "label": "Notion developer community",
+        "url": null,
+        "note": "No dedicated developer support channel or SLA was found."
+      }
+    ],
+    "haveReady": []
+  },
+  "unknowns": [
+    "Whether privacy, terms or company fields are still required anywhere in the current listing form. Only a third-party page (Make) describes them, as fields of the older form.",
+    "The access-token lifetime for REST public connections.",
+    "How many review rounds there are and how long revisions take.",
+    "Whether a security or privacy review applies to \"featured\" partners. A Notion directory FAQ search snippet says one does; unverified. Featured partners are picked by Notion."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://developers.notion.com/guides/get-started/public-connections",
+      "title": "Public connections",
+      "accessed": "2026-10-21",
+      "supports": "Steps, fields, installation scope, per-user authorisation",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://developers.notion.com/guides/get-started/authorization",
+      "title": "Authorization",
+      "accessed": "2026-10-21",
+      "supports": "OAuth URLs, params, page picker, refresh rotation",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://developers.notion.com/guides/get-started/marketplace-listing",
+      "title": "Marketplace listing",
+      "accessed": "2026-10-21",
+      "supports": "Listing fields, eligibility, 5 to 10 business days review, rejection reasons, OAuth works unlisted",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://developers.notion.com/reference/capabilities",
+      "title": "Capabilities",
+      "accessed": "2026-10-21",
+      "supports": "Capabilities list",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://developers.notion.com/reference/refresh-a-token",
+      "title": "Refresh a token",
+      "accessed": "2026-10-21",
+      "supports": "Token rotation",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://developers.notion.com/reference/request-limits",
+      "title": "Request limits",
+      "accessed": "2026-10-21",
+      "supports": "Rate and size limits",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://developers.notion.com/page/changelog",
+      "title": "Changelog",
+      "accessed": "2026-10-21",
+      "supports": "Developer portal, token change on 2026-06-08, MCP token lifetime, API versions, rate-limit history",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "https://notion.com/help/enterprise-connection-settings",
+      "title": "Enterprise connection settings",
+      "accessed": "2026-10-21",
+      "supports": "Enterprise install restrictions",
+      "kind": "primary"
+    },
+    {
+      "id": "s9",
+      "url": "https://make.com/en/help/app/notion",
+      "title": "Make: Notion app help",
+      "accessed": "2026-10-21",
+      "supports": "Privacy, terms and support fields (older form)",
+      "kind": "secondary"
+    },
+    {
+      "id": "s10",
+      "url": "Notion directory FAQ (search snippet; URL not recorded)",
+      "title": "Notion directory FAQ",
+      "accessed": "2026-10-21",
+      "supports": "Security review for featured integrations (unconfirmed)",
+      "kind": "primary"
+    }
+  ]
+}

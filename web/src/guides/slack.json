@@ -1,0 +1,738 @@
+{
+  "slug": "slack",
+  "origin": "library",
+  "researchedOn": "2026-10-21",
+  "model": "claude-opus-5-5",
+  "verification": null,
+  "name": "Slack",
+  "website": "https://api.slack.com/apps",
+  "category": "Communication",
+  "verdict": {
+    "difficulty": 3,
+    "headline": "The app works in your own workspace right away and unlisted distribution needs no review, but any data-reading product effectively needs a Marketplace listing, which requires 10+ active workspaces before you submit and then up to 10 business days plus up to 10 weeks of review.",
+    "nextAction": "Create the app at api.slack.com/apps, build OAuth v2, activate public distribution, and run an unlisted pilot to reach 10 active workspaces."
+  },
+  "appType": "Slack app with bot and/or user scopes, installed via OAuth v2. Distribute unlisted through Manage Distribution, or list it on the Slack Marketplace.",
+  "paths": [
+    {
+      "name": "Your own workspace only",
+      "whenThisApplies": "You only need the app in your development workspace. Install to Workspace gives a single-workspace token with no OAuth build.",
+      "difficulty": 1,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Create the app, add scopes, Install to Workspace",
+          "min": 5,
+          "max": 30,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Slack gives no figure for a single-workspace install. No review is involved.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unlisted public distribution",
+      "whenThisApplies": "You want other workspaces to install via an Add to Slack button or install URL, without a Marketplace listing. Commercial unlisted apps get Tier 1 limits on conversations.history and conversations.replies.",
+      "difficulty": 2,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "App, OAuth v2 and Activate Public Distribution",
+          "min": 1,
+          "max": 48,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Hours to 1–2 days of build time. This is our estimate; Slack states no figure. No review is needed.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s3",
+            "s4"
+          ]
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Workspace admin approval where a workspace requires it",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Enterprise org installs and workspaces that require admin approval add friction. No time is known.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s3"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slack Marketplace listing",
+      "whenThisApplies": "You read Slack data at scale (unlisted commercial apps are throttled since May 29, 2025) or want to be listed. Requires 10+ active workspaces before submission.",
+      "difficulty": 3,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "App, OAuth v2 and public distribution",
+          "min": 1,
+          "max": 48,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Hours to 1–2 days of build time. Our estimate; Slack states no figure.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s3",
+            "s4"
+          ]
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Reach 10+ active workspaces",
+          "min": null,
+          "max": null,
+          "unit": "weeks",
+          "basis": "no_stated_sla",
+          "note": "Active means used in the last 28 days. Time depends on your unlisted pilot.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "Submission prep: landing page, privacy policy, support page, demo video, test accounts, scope justifications",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "estimated",
+          "note": "Days to weeks. Our estimate; Slack states no figure.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1",
+            "s2"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Preliminary review (listing, docs, scopes, installability)",
+          "min": null,
+          "max": 10,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Slack's stated maximum. Cannot be skipped or expedited.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Functional review (a reviewer tests the app and its scopes)",
+          "min": null,
+          "max": 10,
+          "unit": "weeks",
+          "basis": "stated",
+          "note": "Up to 10 weeks for new apps; updates take up to 6 weeks. Slack's stated maximums.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Fix and resubmit",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Resubmitting during preliminary review resets your place in the queue; resubmitting during functional review does not.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Workspace admin approval where a workspace requires it",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Enterprise org installs and workspaces that require admin approval add friction. No time is known.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s3"
+          ]
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "The app works right away in your own development workspace.",
+      "detail": "Install to Workspace gives a single-workspace token with no OAuth build needed.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Unlisted public distribution needs no review.",
+      "detail": "Activate Public Distribution gives an Add to Slack button, a shareable install URL and a meta tag.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Unlisted commercially distributed apps: conversations.history and conversations.replies are Tier 1, 1 request/min, max 15 objects per call.",
+      "detail": "Applies since May 29, 2025 to new apps and new installs of existing unlisted apps. Internal apps keep 50+ requests/min and 1,000 objects. Marketplace apps are unaffected.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "App installed on 10+ active workspaces",
+      "detail": "Active means used in the last 28 days. You cannot submit to the Marketplace before this.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "App type and category must be eligible",
+      "detail": "Coded workflows are not eligible. Some categories are not accepted.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Public distribution activated and app publicly installable",
+      "detail": "Manage Distribution checklist done: OAuth flow and SSL on every request URL.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s3"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the app",
+      "detail": "At api.slack.com/apps choose Create New App, From scratch or From a manifest (YAML/JSON). Pick a development workspace.",
+      "owner": "you",
+      "agentHelp": "Write the app manifest (YAML/JSON) with scopes and redirect URLs.",
+      "url": "https://api.slack.com/apps",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Generate an app configuration token",
+      "detail": "Needed if an agent creates the app through the API. Config tokens expire after 12h; rotate them with tooling.tokens.rotate.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://docs.slack.dev/app-manifests/configuring-apps-with-app-manifests",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Create the app via the manifest API",
+      "detail": "Call apps.manifest.create with the app configuration token.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://docs.slack.dev/app-manifests/configuring-apps-with-app-manifests",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Add scopes and install to your workspace",
+      "detail": "Add bot scopes and/or user scopes. Install to Workspace gives a single-workspace token with no OAuth build.",
+      "owner": "you",
+      "agentHelp": "Pick the minimum scopes for the features that exist and add them to the manifest.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s4"
+      ]
+    },
+    {
+      "title": "Build the OAuth v2 handler",
+      "detail": "Redirect to https://slack.com/oauth/v2/authorize with client_id, scope (bot), user_scope, redirect_uri and state. The returned code expires after 10 minutes; verify state. POST code, client_id and client_secret to oauth.v2.access. It returns an xoxb- bot token and, if user scopes were requested, an xoxp- user token under authed_user.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://docs.slack.dev/authentication/installing-with-oauth",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Register redirect URLs",
+      "detail": "Redirect URLs must be HTTPS, have no #, and match (or be a subpath of) a URL registered in app settings. If several are registered, send the same redirect_uri in both steps.",
+      "owner": "you",
+      "agentHelp": "List the exact redirect URLs and add them to the manifest.",
+      "url": "https://docs.slack.dev/authentication/installing-with-oauth",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Activate Public Distribution",
+      "detail": "In Manage Distribution, finish the checklist (OAuth flow, SSL on every request URL) and click Activate Public Distribution.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://docs.slack.dev/distribution",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Recruit 10+ active workspaces",
+      "detail": "Run an unlisted pilot until 10+ workspaces have used the app in the last 28 days.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Draft scope justifications, privacy policy, support page and landing page",
+      "detail": "Justify each scope. Privacy policy covers what data is collected, use, retention, access/transfer/deletion, a contact, and data received but not used. Landing page is public with screenshots/GIFs and an Add to Slack path.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Provide legal entity details and approve the privacy policy",
+      "detail": "The policy and listing need your legal details and sign-off.",
+      "owner": "you",
+      "agentHelp": "Draft the privacy policy for review.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Run pre-submission checks",
+      "detail": "Automated pre-submission checks must pass. Remove test slash commands.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Record the demo video",
+      "detail": "Cover install, OAuth, setup, end-to-end use and uninstall.",
+      "owner": "you",
+      "agentHelp": "Script the demo storyboard.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Submit to the Slack Marketplace",
+      "detail": "Submit from the app's settings once eligible, with test credentials and dummy data.",
+      "owner": "you",
+      "agentHelp": "Prepare the submission checklist and scope justifications.",
+      "url": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Preliminary review",
+      "detail": "Slack reviews the listing, docs, scopes and installability. Up to 10 business days.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Functional review",
+      "detail": "A reviewer tests the app and its scopes. Up to 10 weeks for new apps, up to 6 weeks for updates.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Answer reviewer messages and staff support",
+      "detail": "Respond to reviewer messages, and to support requests within 2 business days.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Workspace admin approval",
+      "detail": "Workspaces that require admin approval, and Enterprise org installs, need an admin to approve the install.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "unconfirmed",
+      "sources": [
+        "s3"
+      ]
+    }
+  ],
+  "submissionChecklist": [
+    {
+      "item": "App fully functional, publicly installable, and tested on a non-dev workspace",
+      "detail": "Test install, onboarding, use and uninstall.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "No test slash commands left in",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Automated pre-submission checks pass",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Each scope justified",
+      "detail": "No scopes for features that don't exist yet. Avoid legacy, restricted or broad scopes (admin.*, search:read, triggers:*).",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s2"
+      ]
+    },
+    {
+      "item": "Test credentials with dummy data",
+      "detail": "For your service and any third-party service it connects to.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Install path that doesn't need your workspace",
+      "detail": "Reviewers can't access Slack workspaces.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Video demo",
+      "detail": "Covers install, OAuth, setup, end-to-end use and uninstall.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Landing page",
+      "detail": "Public, not a PDF or repo, with screenshots/GIFs and an Add to Slack install path.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Privacy policy",
+      "detail": "States what data is collected, how it's used, how long it's kept, and how users can access, transfer or delete it. Includes a contact email or form and discloses data the app receives but doesn't use.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Support contact",
+      "detail": "An email or form that doesn't require an account. Respond within 2 business days.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Security requirements",
+      "detail": "TLS 1.2+, signing-secret verification (verification tokens are deprecated), state in OAuth, tokens never logged or exposed.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "No training LLMs on Slack data",
+      "detail": "AI agent apps must not store Slack data.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Security & Compliance section",
+      "detail": "Includes AI fields: model, retention, tenancy.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "Rate-limit cliff for unlisted commercial apps (May 29, 2025)",
+      "detail": "conversations.history and conversations.replies dropped to Tier 1: 1 request/min, max 15 objects per call, for new apps and new installs of existing unlisted apps. Internal apps keep 50+ requests/min and 1,000 objects; Marketplace apps are unaffected. Any data-reading product effectively needs a Marketplace listing.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "Existing unlisted installs may also be throttled",
+      "detail": "Secondary copies of the changelog cite March 3, 2026 as the date the Tier 1 limits reach existing installs. The current changelog page does not state that date.",
+      "confidence": "secondary",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Updated ToS dates",
+      "detail": "The updated ToS took effect immediately for apps created on or after May 29, 2025, and on June 30, 2025 for older apps.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "10 installs before you can submit",
+      "detail": "You need 10 active installs before submitting, so plan an unlisted pilot phase.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Resubmitting in preliminary review resets your queue position",
+      "detail": "Resubmitting during functional review does not reset it.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Review cannot be skipped or expedited",
+      "detail": "Not even for launches.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Broad scopes get enhanced review",
+      "detail": "Apps with broad history or private-channel scopes get enhanced review.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Slack may security-review the app at any time",
+      "detail": "Even after listing.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Scopes are additive on reinstall",
+      "detail": "Revoke with auth.revoke to reset.",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Turning off distribution uninstalls the app everywhere else",
+      "detail": "It uninstalls the app from every other workspace. Once the app is listed, you must discontinue the listing instead.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Direct-install URLs must 302-redirect",
+      "detail": "They must redirect to a full oauth/v2/authorize URL.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Short-lived codes and config tokens",
+      "detail": "The OAuth code expires after 10 minutes. App configuration tokens expire after 12h.",
+      "confidence": "confirmed",
+      "sources": [
+        "s4",
+        "s5"
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "bad_redirect_uri error",
+      "whatToDo": "Send the same redirect_uri in the authorize and oauth.v2.access steps, and make sure it is HTTPS, has no #, and matches (or is a subpath of) a registered URL.",
+      "contact": null
+    },
+    {
+      "symptom": "Submission returned or rejected",
+      "whatToDo": "Check the common reasons: app in beta or untested, bugs that block testing, scopes for features that don't exist yet, legacy/restricted/broad scopes, missing or inaccessible test accounts, incomplete submission, earlier feedback not addressed.",
+      "contact": null
+    },
+    {
+      "symptom": "History reads throttled to 1 request/min",
+      "whatToDo": "The app is an unlisted commercial app under Tier 1 limits. Get it listed on the Marketplace.",
+      "contact": null
+    },
+    {
+      "symptom": "Review appears stuck",
+      "whatToDo": "Check estimated timing and reviewer messages on the Marketplace submission page, then contact Slack developer support. There is no stated SLA and review cannot be expedited.",
+      "contact": "feedback@slack.com"
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "Marketplace submission page",
+        "url": null,
+        "note": "Shows estimated timing and reviewer messages."
+      },
+      {
+        "label": "Slack developer support",
+        "url": null,
+        "note": "feedback@slack.com or the Slack Help Center, for stuck reviews. No stated SLA."
+      },
+      {
+        "label": "Slack Help Center",
+        "url": null,
+        "note": "For reporting security issues."
+      }
+    ],
+    "haveReady": [
+      "Reviewer messages from the Marketplace submission page"
+    ]
+  },
+  "unknowns": [
+    "When the Tier 1 history limits apply to existing installs of unlisted apps. Secondary copies of the changelog cite March 3, 2026, but the current changelog page does not state that date.",
+    "Security review questionnaire details: the security review guide link returned 404.",
+    "Setup and submission-prep durations are estimates; Slack states no figure.",
+    "No stated SLA for revisions or for stuck reviews.",
+    "How long workspace admin approval or Enterprise org installs take."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+      "title": "Slack Marketplace review guide",
+      "accessed": "2026-10-21",
+      "supports": "Eligibility (10 workspaces), checklist, review stages, timelines, rejection reasons",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements",
+      "title": "Slack Marketplace app guidelines and requirements",
+      "accessed": "2026-10-21",
+      "supports": "Privacy policy, landing page, support (2 business days), security, scope and token rules",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://docs.slack.dev/distribution",
+      "title": "Distributing your app",
+      "accessed": "2026-10-21",
+      "supports": "Single-workspace, unlisted and listed options; Manage Distribution checklist",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://docs.slack.dev/authentication/installing-with-oauth",
+      "title": "Installing with OAuth",
+      "accessed": "2026-10-21",
+      "supports": "OAuth v2 flow, redirect rules, token types",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://docs.slack.dev/app-manifests/configuring-apps-with-app-manifests",
+      "title": "Configuring apps with app manifests",
+      "accessed": "2026-10-21",
+      "supports": "Manifest UI and API, app configuration tokens",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps",
+      "title": "Rate limit changes for non-Marketplace apps (changelog, May 29, 2025)",
+      "accessed": "2026-10-21",
+      "supports": "Tier 1 limits, who is affected, May 29 and June 30, 2025 dates",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq",
+      "title": "Terms and rate limit update FAQ (seen only as a search snippet)",
+      "accessed": "2026-10-21",
+      "supports": "March 3, 2026 date for existing installs (unverified, search excerpt only)",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "",
+      "title": "Slack security review guide (link returned 404)",
+      "accessed": "2026-10-21",
+      "supports": "Security questionnaire details (not read)",
+      "kind": "primary"
+    }
+  ]
+}

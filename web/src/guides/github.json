@@ -1,0 +1,609 @@
+{
+  "slug": "github",
+  "origin": "library",
+  "researchedOn": "2026-10-21",
+  "model": "claude-opus-5-5",
+  "verification": null,
+  "name": "GitHub",
+  "website": "https://github.com",
+  "category": "Developer tools",
+  "verdict": {
+    "difficulty": 1,
+    "headline": "GitHub has no review before your app works: register a GitHub App and you can get a working token in minutes, but each customer org owner must approve it, with no stated timeline.",
+    "nextAction": "Register a GitHub App with the minimum permissions and \"Any account\" installation, then send each customer org instructions for requesting approval."
+  },
+  "appType": "Use a GitHub App. Use an OAuth App only if you need enterprise-level resources, which GitHub Apps can't yet be granted.",
+  "paths": [
+    {
+      "name": "GitHub App (recommended)",
+      "whenThisApplies": "Most integrations, including any multi-user integration. GitHub recommends this for most cases: fine-grained permissions, short-lived tokens and rate limits that scale with installs.",
+      "difficulty": 1,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Register the app and get credentials",
+          "min": 5,
+          "max": 15,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Inferred from a single settings form, not stated by GitHub. Nothing is submitted to GitHub and there is no GitHub review or revision round.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Org owner approves installs that ask for org permissions",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Repo admins can request an install, but an org owner must approve installs that ask for org permissions. GitHub Apps aren't subject to the OAuth app restriction policy.",
+          "confidence": "confirmed",
+          "sources": [
+            "s2"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OAuth App",
+      "whenThisApplies": "Only when you need enterprise-level resources, which GitHub Apps can't yet be granted.",
+      "difficulty": 1,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Register the app and get credentials",
+          "min": 5,
+          "max": 15,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Inferred from a single settings form, not stated by GitHub. Nothing is submitted to GitHub and there is no GitHub review or revision round.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Org owner approves the OAuth App",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "OAuth app access restrictions are on by default for new orgs. Members can request approval, but only an owner can grant it.",
+          "confidence": "confirmed",
+          "sources": [
+            "s4"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GitHub Marketplace listing (optional)",
+      "whenThisApplies": "Only if you want to sell through or list on GitHub Marketplace. A working app doesn't need it.",
+      "difficulty": 2,
+      "timeline": [
+        {
+          "kind": "prerequisites",
+          "label": "Paid listings only: verified publisher org and 100 installs (GitHub App) or 200 users (OAuth App)",
+          "min": null,
+          "max": null,
+          "unit": "weeks",
+          "basis": "no_stated_sla",
+          "note": "You must request publisher verification. No time is stated for verification, and reaching the install or user threshold depends on your adoption.",
+          "confidence": "confirmed",
+          "sources": [
+            "s10",
+            "s11"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "Org owner submits the listing",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Only org owners can submit.",
+          "confidence": "confirmed",
+          "sources": [
+            "s11"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "GitHub Marketplace review",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "Requirements are listed, timing is not.",
+          "confidence": "confirmed",
+          "sources": [
+            "s11"
+          ]
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "No GitHub-side review for a working app, private or public, and no cap on users or installs before approval.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    },
+    {
+      "item": "Each account can own up to 100 OAuth Apps and 100 GitHub Apps.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s3"
+      ]
+    },
+    {
+      "item": "Until an org owner approves it, an OAuth App loses access to that org's private resources and can't make privileged writes.",
+      "detail": "OAuth app access restrictions are on by default for new orgs.",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "item": "GitHub App installs that ask for org permissions need an org owner's approval.",
+      "detail": "Repo admins can request an install.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "A logged-in, 2FA-capable GitHub browser session to create the app.",
+      "detail": "There's no public API for registering OAuth Apps.",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "Paid Marketplace listing: an org that is a verified publisher.",
+      "detail": "You must request verification.",
+      "confidence": "confirmed",
+      "sources": [
+        "s10",
+        "s11"
+      ]
+    },
+    {
+      "item": "Paid Marketplace listing: at least 100 installs for a GitHub App, or at least 200 users for an OAuth App.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Prepare field values and the permission set",
+      "detail": "Choose an app name (at most 34 characters, unique on GitHub), homepage URL (your repo URL works if you have no site), callback URLs (up to 10), and each permission at the minimum you need (Read-only, Read & write or No access).",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Register the GitHub App",
+      "detail": "Go to Settings (or Org > Settings) > Developer settings > GitHub Apps > New GitHub App. Fill App name, Homepage URL and Permissions. Set \"Where can it be installed\" to \"Any account\" for multi-user. Optional: Callback URL (up to 10, needed for user tokens), Expire user tokens (keep it on), Request user authorization during installation, Device flow, Setup URL, Webhook (you can turn Active off; if it's on, a URL is required and a secret is strongly recommended). Click Create GitHub App.",
+      "owner": "you",
+      "agentHelp": "An agent can prepare every field value and the minimum permission set to paste in.",
+      "url": "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Generate the client secret and private key",
+      "detail": "Generate a client secret, and a private key if you need installation tokens. Keep both in a vault, never in client apps.",
+      "owner": "you",
+      "agentHelp": "An agent can write the code that loads them from your vault.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s8"
+      ]
+    },
+    {
+      "title": "Or: register an OAuth App (only if you need enterprise-level resources)",
+      "detail": "Go to Settings > Developer settings > OAuth apps > New OAuth App. Required: Application name, Homepage URL, Authorization callback URL (up to 10). Optional: Description, Device Flow. Expire user access tokens is on by default. Click Register application, then use \"Generate a new client secret\". Request scopes in the authorize URL, separated by spaces (for example repo, read:org, user:email, offline_access).",
+      "owner": "you",
+      "agentHelp": "An agent can prepare the field values and the scope list.",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s5"
+      ]
+    },
+    {
+      "title": "Write the authorize, callback, refresh and PKCE code",
+      "detail": "Send the user to GET github.com/login/oauth/authorize with client_id, redirect_uri, state and PKCE (S256 only). GitHub returns a code that expires after 10 minutes. Exchange it with POST github.com/login/oauth/access_token, then call the API with a Bearer token. Implicit grant is not supported, and the token endpoint doesn't support CORS.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "Build rate-limit backoff",
+      "detail": "Handle the 5,000 requests per hour user limit, installation limits and secondary limits (100 concurrent requests, 900 points per minute per endpoint, 2,000 OAuth token requests per hour).",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Test with your token",
+      "detail": "An agent can test the integration using a token you provide.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "title": "Write approval-request instructions for customer orgs",
+      "detail": "Explain how members request approval and that only an org owner can grant it.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Get customer org owners to approve the app",
+      "detail": "Send the approval-request instructions to each customer org.",
+      "owner": "you",
+      "agentHelp": "An agent can write the approval-request instructions.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s4"
+      ]
+    },
+    {
+      "title": "Org owner approves the app",
+      "detail": "For OAuth Apps, an owner grants access under the org's OAuth app access restrictions. For GitHub Apps, an owner approves installs that ask for org permissions. No stated SLA.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": "https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions",
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s4"
+      ]
+    },
+    {
+      "title": "Draft the privacy policy, support page and listing copy (Marketplace only)",
+      "detail": "Needed only if you list on GitHub Marketplace.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "title": "Accept the Marketplace agreement and submit the listing (Marketplace only)",
+      "detail": "Complete publisher verification if the listing is paid. Only org owners can submit.",
+      "owner": "you",
+      "agentHelp": "An agent can draft the privacy policy, support page and listing copy.",
+      "url": "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app",
+      "confidence": "confirmed",
+      "sources": [
+        "s10",
+        "s11"
+      ]
+    },
+    {
+      "title": "GitHub reviews the Marketplace listing (Marketplace only)",
+      "detail": "No stated SLA.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    }
+  ],
+  "submissionChecklist": [
+    {
+      "item": "Privacy policy",
+      "detail": "Marketplace free and paid listings.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "item": "Support contact",
+      "detail": "Marketplace free and paid listings.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "item": "Value beyond authentication",
+      "detail": "Marketplace free and paid listings.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "item": "Plan-change webhooks",
+      "detail": "Marketplace free and paid listings.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "item": "Verified publisher org",
+      "detail": "Paid listings only. Request verification first.",
+      "confidence": "confirmed",
+      "sources": [
+        "s10",
+        "s11"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "redirect_uri_mismatch",
+      "detail": "The redirect must exactly match a registered callback unless you enable wildcard matching. For loopback, use 127.0.0.1 rather than localhost; the port may differ.",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "title": "Org data comes back empty",
+      "detail": "This is usually the org's OAuth app access restrictions, not your code. Point customers to \"request approval\".",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Users can grant fewer scopes than you asked for",
+      "detail": "OAuth Apps: check the X-OAuth-Scopes header. With no scope, the token can read public data only. GitHub drops redundant scopes when it stores them.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Token cap of 10 per user, app and scope",
+      "detail": "Past 10 tokens for the same user, app and scope combination, GitHub silently revokes the oldest one. Token creation is also limited to 10 per hour.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "Refresh tokens rotate",
+      "detail": "Each refresh invalidates the old pair. Refresh tokens expire after 6 months unused, and access tokens after 8 hours. A race between two refreshes can lock a user out.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s8"
+      ]
+    },
+    {
+      "title": "Shared rate limit",
+      "detail": "User tokens draw on the user's 5,000 requests per hour, shared with all their other apps. Installation tokens start at 5,000 per hour and scale up to 12,500 (15,000 on Enterprise Cloud). Secondary limits: 100 concurrent requests, 900 points per minute per endpoint, and 2,000 OAuth token requests per hour.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Keep secrets out of client apps",
+      "detail": "Keep the private key and client secret in a vault, never in client apps. Public clients should use PKCE.",
+      "confidence": "confirmed",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "title": "Rotating a leaked secret",
+      "detail": "Generate a new secret, deploy it, then delete the old one.",
+      "confidence": "secondary",
+      "sources": [
+        "s12"
+      ]
+    },
+    {
+      "title": "Abuse reports can suspend the app",
+      "detail": "An app reported for abuse can get application_suspended. Only GitHub Support can fix that.",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "title": "Store numeric ids",
+      "detail": "Store numeric ids, not logins or emails, which can change.",
+      "confidence": "unconfirmed",
+      "sources": []
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "redirect_uri_mismatch error",
+      "whatToDo": "Make the redirect exactly match a registered callback, or enable wildcard matching. For loopback, use 127.0.0.1 rather than localhost.",
+      "contact": null
+    },
+    {
+      "symptom": "Org data comes back empty",
+      "whatToDo": "Ask the customer to request approval; an org owner must grant it.",
+      "contact": "The customer's org owner"
+    },
+    {
+      "symptom": "application_suspended",
+      "whatToDo": "Contact GitHub Support. Only Support can fix a suspension.",
+      "contact": "GitHub Support (support.github.com)"
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "Docs: troubleshooting authorization request errors",
+        "url": "https://docs.github.com/en/apps/oauth-apps/maintaining-oauth-apps/troubleshooting-authorization-request-errors",
+        "note": null
+      },
+      {
+        "label": "GitHub Community Discussions (Apps/API category)",
+        "url": null,
+        "note": "Secondary source."
+      },
+      {
+        "label": "GitHub Support",
+        "url": "https://support.github.com",
+        "note": "Needed for suspensions. Response time is plan-dependent, no stated SLA."
+      },
+      {
+        "label": "Marketplace onboarding contact",
+        "url": null,
+        "note": "Unconfirmed."
+      }
+    ],
+    "haveReady": []
+  },
+  "unknowns": [
+    "Setup time of 5–15 minutes is inferred from the form length, not stated by GitHub.",
+    "Time to the first working token (minutes, once the callback handler is coded) is inferred, not stated by GitHub.",
+    "No stated SLA for an org owner to approve an OAuth App or a GitHub App install.",
+    "No stated review time for a GitHub Marketplace listing.",
+    "GitHub Support response time is plan-dependent; no SLA found.",
+    "The Marketplace onboarding contact is unconfirmed.",
+    "Whether the client secret is shown only once: common practice, not found in the docs.",
+    "A \"manifest\" flow may let an agent pre-fill a GitHub App (the human still clicks confirm); not verified."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+      "title": "Creating an OAuth app",
+      "accessed": "2026-10-21",
+      "supports": "OAuth App steps, fields, 100-app and 10-callback caps",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps",
+      "title": "Differences between GitHub Apps and OAuth apps",
+      "accessed": "2026-10-21",
+      "supports": "Recommendation, token expiry, org approval",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app",
+      "title": "Registering a GitHub App",
+      "accessed": "2026-10-21",
+      "supports": "GitHub App fields, 34-character name, optional webhook, 100-app cap",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions",
+      "title": "About OAuth app access restrictions",
+      "accessed": "2026-10-21",
+      "supports": "Restrictions on by default, owner approval, no SLA",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps",
+      "title": "Scopes for OAuth apps",
+      "accessed": "2026-10-21",
+      "supports": "Scopes model, normalization, headers",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+      "title": "Authorizing OAuth apps",
+      "accessed": "2026-10-21",
+      "supports": "Flow, PKCE, expiry, 10-token cap, device flow",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api",
+      "title": "Rate limits for the REST API",
+      "accessed": "2026-10-21",
+      "supports": "Rate-limit numbers",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/best-practices-for-creating-a-github-app",
+      "title": "Best practices for creating a GitHub App",
+      "accessed": "2026-10-21",
+      "supports": "Secret and key handling, token lifetimes",
+      "kind": "primary"
+    },
+    {
+      "id": "s9",
+      "url": "https://docs.github.com/en/apps/oauth-apps/maintaining-oauth-apps/troubleshooting-authorization-request-errors",
+      "title": "Troubleshooting authorization request errors",
+      "accessed": "2026-10-21",
+      "supports": "Error causes, Support for suspension",
+      "kind": "primary"
+    },
+    {
+      "id": "s10",
+      "url": "https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/about-github-marketplace-for-apps",
+      "title": "About GitHub Marketplace for apps",
+      "accessed": "2026-10-21",
+      "supports": "Marketplace optional, verified publisher for paid",
+      "kind": "primary"
+    },
+    {
+      "id": "s11",
+      "url": "https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app",
+      "title": "Requirements for listing an app",
+      "accessed": "2026-10-21",
+      "supports": "Listing requirements, 100/200 thresholds",
+      "kind": "primary"
+    },
+    {
+      "id": "s12",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/best-practices-for-creating-an-oauth-app",
+      "title": "Best practices for creating an OAuth app (search snippet only)",
+      "accessed": "2026-10-21",
+      "supports": "Secret rotation steps",
+      "kind": "primary"
+    }
+  ]
+}

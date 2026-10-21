@@ -1,0 +1,762 @@
+{
+  "slug": "linkedin",
+  "origin": "library",
+  "researchedOn": "2026-10-21",
+  "model": "claude-opus-5-5",
+  "verification": null,
+  "name": "LinkedIn",
+  "website": "https://developer.linkedin.com",
+  "category": "Social / Marketing",
+  "verdict": {
+    "difficulty": 4,
+    "headline": "Sign In with LinkedIn and Share on LinkedIn are self-serve and granted instantly, but Community Management needs a legal entity, a verified business email, a dedicated app and vetting with no stated review time.",
+    "nextAction": "Create or confirm your organization's LinkedIn Page, then create the app; if you need Community Management, request it on a new app that has no other products."
+  },
+  "appType": "Use a dedicated app for Community Management: it must be the only product on that app. Self-serve products (Sign In with LinkedIn using OpenID Connect, Share on LinkedIn) can go on a separate app.",
+  "paths": [
+    {
+      "name": "Sign In with LinkedIn / Share (self-serve)",
+      "whenThisApplies": "You only need member sign-in (openid profile email) or posting as the member (w_member_social). Events Management is described as self-serve on request.",
+      "difficulty": 1,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Create the app and configure redirect URLs",
+          "min": 30,
+          "max": 90,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Our estimate.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Confirm or create a LinkedIn Page",
+          "min": null,
+          "max": 1,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Under 1 hour if a Page has to be created (our estimate).",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "submission",
+          "label": "Add the product in the Products tab",
+          "min": null,
+          "max": null,
+          "unit": "minutes",
+          "basis": "stated",
+          "note": "Minutes. Self-serve products are granted instantly with no provider review. Each user still gives per-user consent.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Community Management / Marketing APIs (vetted access)",
+      "whenThisApplies": "You need to post or read as an organization, or use Advertising, Community Management, Lead Sync or Conversions. These are open to any vetted legal entity.",
+      "difficulty": 4,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Create a dedicated app and request the product",
+          "min": 1,
+          "max": 3,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Our estimate.",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "prerequisites",
+          "label": "Legal entity, business email, website and privacy policy",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "estimated",
+          "note": "Days to weeks if any of these are missing (our estimate).",
+          "confidence": "unconfirmed",
+          "sources": []
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Page super admin verifies the app",
+          "min": null,
+          "max": 30,
+          "unit": "days",
+          "basis": "stated",
+          "note": "The super admin has 30 days to approve the verification request. What happens when the window expires is not documented.",
+          "confidence": "confirmed",
+          "sources": [
+            "s11",
+            "s3"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "Complete the vetting survey",
+          "min": null,
+          "max": 21,
+          "unit": "days",
+          "basis": "stated",
+          "note": "The survey must be completed within 21 days, and the business email must be verified.",
+          "confidence": "confirmed",
+          "sources": [
+            "s5"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Development tier review (Access Form Review, Identity Vetting, App Review)",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "No review time is published. Restricted APIs have \"no fixed timeline\" (stated).",
+          "confidence": "confirmed",
+          "sources": [
+            "s2",
+            "s12"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Rejection: create a new app and start again",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "A rejected app cannot re-apply. The exception is \"Insufficient Details\", which enables a Reapply button on the same app.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3",
+            "s12"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Standard tier upgrade review (required later)",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "A second required review after Development tier. You must reach Standard within 12 months of approval or LinkedIn removes access for inactivity.",
+          "confidence": "confirmed",
+          "sources": [
+            "s2",
+            "s6"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Ads Standard tier review (Advertising API only)",
+          "min": null,
+          "max": 30,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Up to 30 business days. Requests for analytics-only use cases are rejected.",
+          "confidence": "confirmed",
+          "sources": [
+            "s5"
+          ]
+        },
+        {
+          "kind": "customer_admin_approval",
+          "label": "Each customer's Page admin authorizes through OAuth",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "End-user customers need the ADMINISTRATOR Page role, which can only be granted in the LinkedIn UI.",
+          "confidence": "confirmed",
+          "sources": [
+            "s3"
+          ]
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "Community Management starts on Development tier once approved",
+      "detail": "500 calls per app per 24 h, 100 calls per member per 24 h, no BATCH_GET, social-action webhooks disabled. Standard tier has no restrictions.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Reach Standard tier within 12 months",
+      "detail": "Otherwise LinkedIn removes access for inactivity.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s6"
+      ]
+    },
+    {
+      "item": "Ads Development tier limits",
+      "detail": "Unlimited reads, 1 test ad account created through the API, and edits on up to 5 ad accounts, which you map in the Products tab.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "item": "Self-serve apps get no refresh token",
+      "detail": "Access tokens last 60 days; users must re-run OAuth. Consent is skipped if the user is still logged in and the token is still valid.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7",
+        "s8"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "A LinkedIn Page for your organization",
+      "detail": "You must select a default Page when creating the app, even as an individual developer. The app is permanently tied to that Page and cannot be moved.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11",
+        "s4"
+      ]
+    },
+    {
+      "item": "Page super admin verification (vetted Marketing products)",
+      "detail": "Documented as required for vetted products such as Community Management. Not documented as required for self-serve products.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s11"
+      ]
+    },
+    {
+      "item": "Registered legal organization with a commercial use case (Community Management)",
+      "detail": "Without a legal entity, only self-serve products are available.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Verified business email (Community Management)",
+      "detail": "Personal email addresses fail.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Legal name, registered address, website and privacy policy (Community Management)",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Community Management must be the app's only product",
+      "detail": "The request button is greyed out if the app has any other product or pending request.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "item": "App name with no \"LinkedIn\" or \"Microsoft\" fragments",
+      "detail": "Fragments such as \"Linked\" or \"In\" are not allowed.",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "HTTPS absolute redirect URLs",
+      "detail": "No \"#\" allowed; query parameters are ignored.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "item": "Partner-only and closed products are not available through the standard request flow",
+      "detail": "Sales Navigator (SNAP), Talent (RSC, Apply Connect and others), Audience Insights, Media Planning and Matched Audiences are partner or restricted; apply through the business.linkedin.com partner forms. Compliance, Company Intelligence, r_full_profile and r_member_social are closed.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s6"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create or confirm the LinkedIn Page",
+      "detail": "The app will be permanently tied to this Page.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s4",
+        "s11"
+      ]
+    },
+    {
+      "title": "Create the app in the Developer Portal and select the Page",
+      "detail": "Use an app name with no \"LinkedIn\" or \"Microsoft\" fragments.",
+      "owner": "you",
+      "agentHelp": "An agent can check the proposed app name for disallowed fragments.",
+      "url": "https://developer.linkedin.com",
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Page super admin approves the verification request",
+      "detail": "The super admin has 30 days. If they don't respond, get the admin role or chase them.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "title": "Configure redirect URLs and record the Client ID and Secret",
+      "detail": "Redirect URLs must be HTTPS and absolute, with no \"#\"; query parameters are ignored.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Add or request products in the Products tab",
+      "detail": "Self-serve: add Sign In with LinkedIn using OpenID Connect or Share on LinkedIn, granted instantly. Community Management: request it on a dedicated app that has no other products.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s5"
+      ]
+    },
+    {
+      "title": "Complete the vetting survey and verify the business email",
+      "detail": "The survey must be completed within 21 days. Check the spam and promotions folders for the verification email.",
+      "owner": "you",
+      "agentHelp": "An agent can draft the use-case answers and check them against the restricted-use-cases list.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s5",
+        "s3"
+      ]
+    },
+    {
+      "title": "LinkedIn reviews the request",
+      "detail": "Access Form Review, then Identity Vetting, then App Review. No review time is stated.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s12",
+        "s5"
+      ]
+    },
+    {
+      "title": "Build against Development tier limits with 3-legged OAuth",
+      "detail": "Implement the authorization code flow with state checking. The auth code expires after 30 minutes. Stay within 500 calls per app and 100 calls per member per 24 h.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s7",
+        "s2"
+      ]
+    },
+    {
+      "title": "Submit the Standard tier request",
+      "detail": "Include a company and product overview, use cases, test credentials, and a narrated, downloadable, high-resolution screencast per use case.",
+      "owner": "you",
+      "agentHelp": "An agent can draft the company and product overview, the use-case descriptions and a screencast script per use case.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s4",
+        "s3"
+      ]
+    },
+    {
+      "title": "LinkedIn reviews the Standard tier request",
+      "detail": "No SLA is stated. Must be reached within 12 months of Development tier approval.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Each customer's Page admin authorizes through OAuth",
+      "detail": "Customers need the ADMINISTRATOR Page role. Page roles can only be granted in the LinkedIn UI, not through the API.",
+      "owner": "customer_admin",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    }
+  ],
+  "submissionChecklist": [
+    {
+      "item": "Page verified by a super admin",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s11"
+      ]
+    },
+    {
+      "item": "Business email verified",
+      "detail": "Check the spam and promotions folders for the verification email.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Legal entity details, website and domain match the Page's organization",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Valid privacy policy URL",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "item": "Use case checked against the restricted-use-cases list",
+      "detail": "For example, displaying a Page feed off LinkedIn is not approved.",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "App name compliant",
+      "detail": "No \"LinkedIn\" or \"Microsoft\" fragments such as \"Linked\" or \"In\".",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "item": "Standard tier only: screencast per use case",
+      "detail": "Narrated, downloadable, high resolution. Show the full OAuth flow, posting, how comments and commenter profile fields are displayed, and analytics.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s4"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "A rejection means building a new app",
+      "detail": "You cannot re-apply with a rejected app; fix the issue and create a new app, or file a vetting appeal. The exception is \"Insufficient Details\" (survey not submitted within 21 days), which enables a Reapply button on the same app.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s12",
+        "s5"
+      ]
+    },
+    {
+      "title": "Community Management must be the app's only product",
+      "detail": "The request button is greyed out if the app has any other product or pending request.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "Access is removed if Standard tier isn't reached within 12 months",
+      "detail": "Development tier is a starting point, not a permanent state. The Standard tier upgrade is a second required review with no stated SLA.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s6"
+      ]
+    },
+    {
+      "title": "The app is permanently tied to its Page",
+      "detail": "The Page link cannot be moved after app creation.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "title": "Token lifetimes",
+      "detail": "Access tokens last 60 days. Programmatic refresh tokens last 365 days with a fixed TTL and are only for approved MDP partners. Self-serve apps get no refresh token and must re-run OAuth.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7",
+        "s8"
+      ]
+    },
+    {
+      "title": "Changing scopes invalidates every prior access token",
+      "detail": "All users are forced to re-authenticate.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Users can't pick scopes",
+      "detail": "They must accept all requested scopes or none.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7"
+      ]
+    },
+    {
+      "title": "Share on LinkedIn rate limits and member-only posting",
+      "detail": "150 requests per member per day and 100,000 per app per day. It posts as the member only; posting as an organization needs Community Management.",
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    },
+    {
+      "title": "OIDC does not verify identity",
+      "detail": "The email field may be absent from the response.",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "title": "All Marketing permissions are 3-legged",
+      "detail": "There is no 2-legged option.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "Ads Standard requests for analytics-only use cases are rejected",
+      "detail": "Ads Standard review takes up to 30 business days.",
+      "confidence": "unconfirmed",
+      "sources": []
+    },
+    {
+      "title": "Partner-only and closed products",
+      "detail": "Sales Navigator, Talent and Audience Insights are partner or restricted (apply through business.linkedin.com partner forms; difficulty 5/5). Compliance, Company Intelligence, r_full_profile and r_member_social are closed.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s6"
+      ]
+    },
+    {
+      "title": "Marketing API version 202511 sunsets on 2026-11-16",
+      "detail": "Integrations on that version need to move before the sunset date.",
+      "confidence": "unconfirmed",
+      "sources": []
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "No legal entity or business email",
+      "whatToDo": "Use self-serve products only; Community Management is unavailable.",
+      "contact": null
+    },
+    {
+      "symptom": "Super admin unresponsive",
+      "whatToDo": "Get the admin role or chase the super admin; the request lapses after 30 days.",
+      "contact": null
+    },
+    {
+      "symptom": "Denied, for example \"Fail Organization Verification\" or \"Invalid Company Page\"",
+      "whatToDo": "File a vetting appeal through the dsapi form, or fix the issue and create a new app.",
+      "contact": "https://www.linkedin.com/help/linkedin/ask/dsapi"
+    },
+    {
+      "symptom": "\"Insufficient Details\"",
+      "whatToDo": "Use the Reapply button on the same app.",
+      "contact": null
+    },
+    {
+      "symptom": "Development tier limits too low",
+      "whatToDo": "Finish the integration, then apply for Standard tier.",
+      "contact": null
+    },
+    {
+      "symptom": "Need Sales Navigator (SNAP) or Talent",
+      "whatToDo": "Apply through the business.linkedin.com partner forms.",
+      "contact": "https://business.linkedin.com"
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "Developer Support Portal",
+        "url": "https://www.linkedin.com/help/linkedin/ask/dsapi",
+        "note": "Form types: Developer Support and Vetting Appeal. No support response SLA is stated."
+      },
+      {
+        "label": "Help Assistant chat",
+        "url": "https://developer.linkedin.com",
+        "note": null
+      },
+      {
+        "label": "Partner representative",
+        "url": null,
+        "note": "For approved Marketing partners only."
+      }
+    ],
+    "haveReady": [
+      "Client ID",
+      "Endpoint",
+      "Request body",
+      "Response UUID",
+      "Error",
+      "Number of customers affected"
+    ]
+  },
+  "unknowns": [
+    "Typical review durations for Development or Standard tier; none are published.",
+    "Whether Page verification is enforced for self-serve products.",
+    "Whether self-serve apps can request refresh tokens at all.",
+    "Matched Audiences status: the Increasing Access page says \"apply\", but the FAQ says it uses a private interest form with LinkedIn replying within 60 days only if there is a fit.",
+    "What happens when the 30-day super-admin window expires.",
+    "No support response SLA is stated.",
+    "Setup and prerequisite durations are our estimates, not provider figures.",
+    "A third-party writeup says approval times \"vary widely\"; not confirmed by LinkedIn."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://learn.microsoft.com/en-us/linkedin/shared/authentication/getting-access",
+      "title": "Getting Access to LinkedIn APIs",
+      "accessed": "2026-10-21",
+      "supports": "Open Permissions list; Marketing, SNAP, Talent and Compliance gating",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://learn.microsoft.com/en-us/linkedin/marketing/increasing-access",
+      "title": "Increasing Access (Marketing)",
+      "accessed": "2026-10-21",
+      "supports": "Product availability table; Development and Standard tier limits; 12-month rule; restricted APIs have no fixed timeline",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://learn.microsoft.com/en-us/linkedin/marketing/community-management-app-review",
+      "title": "Community Management App Review",
+      "accessed": "2026-10-21",
+      "supports": "Legal entity, business email, Page verification; screencast; reject means new app",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://learn.microsoft.com/en-us/linkedin/marketing/quick-start",
+      "title": "Marketing API Quick Start",
+      "accessed": "2026-10-21",
+      "supports": "Steps; Page creation; Standard tier materials",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://learn.microsoft.com/en-us/linkedin/shared/linkedin-api-partner-support-guide",
+      "title": "LinkedIn API Partner Support Guide",
+      "accessed": "2026-10-21",
+      "supports": "21-day survey; Community Management must be the only product; Ads Standard up to 30 business days; appeals; ticket contents",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://learn.microsoft.com/en-us/linkedin/marketing/lms-faq",
+      "title": "LinkedIn Marketing API FAQ",
+      "accessed": "2026-10-21",
+      "supports": "Access removed after 12 months; closed permissions; Matched Audiences 60 days; 3-legged only",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow",
+      "title": "Authorization Code Flow (3-legged OAuth)",
+      "accessed": "2026-10-21",
+      "supports": "60-day tokens; 30-minute auth code; redirect rules; scope invalidation",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "https://learn.microsoft.com/en-us/linkedin/shared/authentication/programmatic-refresh-tokens",
+      "title": "Programmatic Refresh Tokens",
+      "accessed": "2026-10-21",
+      "supports": "365-day refresh tokens for approved MDP partners only",
+      "kind": "primary"
+    },
+    {
+      "id": "s9",
+      "url": "https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2",
+      "title": "Sign In with LinkedIn using OpenID Connect",
+      "accessed": "2026-10-21",
+      "supports": "OIDC scopes; no identity verification",
+      "kind": "primary"
+    },
+    {
+      "id": "s10",
+      "url": "https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/share-on-linkedin",
+      "title": "Share on LinkedIn",
+      "accessed": "2026-10-21",
+      "supports": "w_member_social; rate limits",
+      "kind": "primary"
+    },
+    {
+      "id": "s11",
+      "url": "https://www.linkedin.com/help/linkedin/answer/a548360",
+      "title": "LinkedIn Help: app verification by Page super admin",
+      "accessed": "2026-10-21",
+      "supports": "Super admin approves; 30 days; Page link is permanent; default Page required",
+      "kind": "primary"
+    },
+    {
+      "id": "s12",
+      "url": "https://www.linkedin.com/help/linkedin/answer/a1449586",
+      "title": "LinkedIn Help: API review statuses",
+      "accessed": "2026-10-21",
+      "supports": "Review statuses and denial reasons",
+      "kind": "primary"
+    },
+    {
+      "id": "s13",
+      "url": "https://bundle.social/blog/linkedin-api-permissions",
+      "title": "LinkedIn API permissions (bundle.social blog)",
+      "accessed": "2026-10-21",
+      "supports": "Says approval times \"vary widely\"",
+      "kind": "secondary"
+    }
+  ]
+}

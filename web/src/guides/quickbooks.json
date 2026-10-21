@@ -1,0 +1,832 @@
+{
+  "slug": "quickbooks",
+  "origin": "library",
+  "researchedOn": "2026-10-21",
+  "model": "claude-opus-5-5",
+  "verification": null,
+  "name": "Intuit QuickBooks Online",
+  "website": "https://developer.intuit.com",
+  "category": "Accounting",
+  "verdict": {
+    "difficulty": 3,
+    "headline": "Sandbox keys are available right away, but production keys need an App Details form plus an App Assessment Questionnaire that Intuit must approve, with no stated review time.",
+    "nextAction": "Create an Intuit Developer account and app, build and test connect/disconnect/reconnect against the sandbox, then fill in Production > App Details and start the questionnaire."
+  },
+  "appType": null,
+  "paths": [
+    {
+      "name": "Production keys (unlisted)",
+      "whenThisApplies": "You need production Client ID and secret to connect real QuickBooks companies, including private or internal apps, without a QuickBooks App Store listing.",
+      "difficulty": 3,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Account, app, sandbox and OAuth flow",
+          "min": null,
+          "max": 2,
+          "unit": "days",
+          "basis": "estimated",
+          "note": "Hours to 1–2 days of build work. Our estimate; no official figure.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s3",
+            "s11"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "App Details form",
+          "min": 30,
+          "max": 30,
+          "unit": "minutes",
+          "basis": "stated",
+          "note": "Intuit says \"about 30 minutes\".",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "App Assessment Questionnaire",
+          "min": 30,
+          "max": 30,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "No stated length from Intuit. Codat says roughly 30 minutes.",
+          "confidence": "secondary",
+          "sources": [
+            "s16"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Intuit questionnaire approval",
+          "min": null,
+          "max": null,
+          "unit": "business_days",
+          "basis": "no_stated_sla",
+          "note": "No review time stated for questionnaire approval.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Fixes requested by Intuit",
+          "min": null,
+          "max": null,
+          "unit": "business_days",
+          "basis": "no_stated_sla",
+          "note": "No stated SLA.",
+          "confidence": "unconfirmed",
+          "sources": []
+        }
+      ]
+    },
+    {
+      "name": "Intuit App Store listing",
+      "whenThisApplies": "Optional. You want the app listed on the QuickBooks App Store. A separate, much heavier 3-part review (technical, security, marketing).",
+      "difficulty": 4,
+      "timeline": [
+        {
+          "kind": "provider_review",
+          "label": "Intuit emails to set up a call",
+          "min": null,
+          "max": 2,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Within 2 business days. Intuit says these are \"estimates only\".",
+          "confidence": "confirmed",
+          "sources": [
+            "s12"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Technical review",
+          "min": 10,
+          "max": 10,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Intuit says \"estimates only\".",
+          "confidence": "confirmed",
+          "sources": [
+            "s12"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Security review",
+          "min": null,
+          "max": 30,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Up to 30 business days. Intuit says \"estimates only\".",
+          "confidence": "confirmed",
+          "sources": [
+            "s12"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Marketing review",
+          "min": 5,
+          "max": 5,
+          "unit": "business_days",
+          "basis": "stated",
+          "note": "Intuit says \"estimates only\". Total is about 9–10 weeks before any fixes.",
+          "confidence": "confirmed",
+          "sources": [
+            "s12"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Fixing review findings",
+          "min": null,
+          "max": null,
+          "unit": "business_days",
+          "basis": "no_stated_sla",
+          "note": "All critical, high and medium security findings must be fixed. No stated time for re-review.",
+          "confidence": "unconfirmed",
+          "sources": []
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "Development keys work with sandbox companies only",
+      "detail": "Production Client ID and secret are accessible only after the Production Key questionnaire is approved.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s1"
+      ]
+    },
+    {
+      "item": "A US sandbox company is created automatically",
+      "detail": "Up to 10 sandboxes, each lasting 2 years.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "item": "Sandbox limitations",
+      "detail": "No payroll, live bank feeds, or import/export. Sample data can't be reset. Region and SKU are fixed once created. 40 emails per day.",
+      "confidence": "confirmed",
+      "sources": [
+        "s11"
+      ]
+    },
+    {
+      "item": "Localhost over plain HTTP is allowed for Development redirect URIs only",
+      "detail": "Production redirect URIs must be HTTPS and cannot be IP addresses.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "item": "Sandbox calls are not metered under the App Partner Program",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "item": "Partner Program tier eligibility requires an approved questionnaire",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "Intuit Developer account with a workspace and verified email",
+      "detail": "Review My Hub > Account Profile and verify your email before starting the questionnaire.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s1"
+      ]
+    },
+    {
+      "item": "Hosted EULA and Privacy Policy URLs",
+      "detail": "Required fields in Production > App Details.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Production > App Details completed",
+      "detail": "Comes before Production > Compliance > Start Questionnaire.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "App Store listing: a valid SaaS domain",
+      "detail": "Needed for a listed app.",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create an Intuit Developer account and workspace",
+      "detail": "Sign up, accept the Developer Terms, and create a workspace with basic company info.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/get-started/start-developing-your-app.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Create the app and choose scopes",
+      "detail": "My Hub > App dashboard > \"+\". Scopes: com.intuit.quickbooks.accounting, com.intuit.quickbooks.payment, openid (plus profile/email/phone/address). Scopes can be added later but never removed; users must re-authorize when scopes change.",
+      "owner": "you",
+      "agentHelp": "List the minimum scopes the app needs, since scopes can't be removed later.",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/learn/scopes.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s4",
+        "s5"
+      ]
+    },
+    {
+      "title": "Copy Development credentials",
+      "detail": "Keys and credentials > Development > Show credentials. These keys work with sandbox companies only. A US sandbox company is created automatically.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/get-started/get-client-id-and-client-secret.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s11"
+      ]
+    },
+    {
+      "title": "Set Development redirect URIs",
+      "detail": "Localhost over plain HTTP is allowed here. The URI must match exactly, and you must click Save.",
+      "owner": "you",
+      "agentHelp": "Check that redirect URIs match the app's callback exactly.",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/develop/authentication-and-authorization/set-redirect-uri.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "Build and test the OAuth flow against the sandbox",
+      "detail": "Test connect, disconnect and reconnect. Handle refresh-token rotation (store the newest value from every response), a reconnect flow, and intuit_tid logging. The OAuth 2.0 Playground is fine for quick checks.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/develop/authentication-and-authorization/faq.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s7",
+        "s2"
+      ]
+    },
+    {
+      "title": "Draft EULA and privacy policy text",
+      "detail": "Needed for the EULA URL and Privacy Policy URL fields in App Details.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Host the EULA and privacy pages on a real domain",
+      "detail": "Forum answers say a placeholder URL is accepted for apps you use yourself.",
+      "owner": "you",
+      "agentHelp": "Draft the page text and check the URLs are HTTPS.",
+      "url": null,
+      "confidence": "secondary",
+      "sources": [
+        "s1",
+        "s18"
+      ]
+    },
+    {
+      "title": "Fill in Production > App Details",
+      "detail": "Contact email, EULA URL, Privacy Policy URL, host domain, launch URL, disconnect URL, connect/reconnect URL, up to 4 categories, regulated industries, hosting regions. About 30 minutes.",
+      "owner": "you",
+      "agentHelp": "Prepare the value for each field in a checklist.",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/publish-app.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s5"
+      ]
+    },
+    {
+      "title": "Review account profile and verify email",
+      "detail": "My Hub > Account Profile.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Draft questionnaire answers",
+      "detail": "Cover app info, auth, API usage, Accounting API, error handling and security sections.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://docs.codat.io/integrations/accounting/quickbooksonline/qbo-app-assessment-questionnaire",
+      "confidence": "secondary",
+      "sources": [
+        "s16"
+      ]
+    },
+    {
+      "title": "Submit the App Assessment Questionnaire",
+      "detail": "Production > Compliance > Start Questionnaire, then submit. Answer truthfully, especially the security and breach questions.",
+      "owner": "you",
+      "agentHelp": "Prepare draft answers for each section for you to review.",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/publish-app.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Intuit reviews the questionnaire",
+      "detail": "No stated review time.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "unconfirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Copy production credentials and set production redirect URIs",
+      "detail": "After approval the \"Show Credentials\" switch appears under Production. Copy the production Client ID and secret, and set HTTPS production redirect URIs (no IP addresses).",
+      "owner": "you",
+      "agentHelp": "Check that production redirect URIs are HTTPS and match exactly.",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/get-started/get-client-id-and-client-secret.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s2",
+        "s6"
+      ]
+    },
+    {
+      "title": "Add a payment method if moving to Silver",
+      "detail": "Only if you need more than the Builder tier's 500K CorePlus calls per month.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/get-started/partner-faq.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "title": "Optional: take the App Store setup call and handle security-scan correspondence",
+      "detail": "Intuit emails within 2 business days to set up a call.",
+      "owner": "you",
+      "agentHelp": "Prepare a checklist against the technical and security requirements.",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/list-on-the-app-store/what-to-expect-during-the-review.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s12"
+      ]
+    },
+    {
+      "title": "Optional: Intuit's 3-part App Store review",
+      "detail": "Technical review 10 business days, security review up to 30 business days, marketing review 5 business days. Estimates only.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/list-on-the-app-store/what-to-expect-during-the-review.html",
+      "confidence": "confirmed",
+      "sources": [
+        "s12"
+      ]
+    }
+  ],
+  "submissionChecklist": [
+    {
+      "item": "App Details fields",
+      "detail": "Contact email, EULA URL, Privacy Policy URL, host domain, launch URL, disconnect URL, connect/reconnect URL, up to 4 categories, regulated industries, hosting regions.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s5"
+      ]
+    },
+    {
+      "item": "Questionnaire: app info",
+      "detail": "How the app was built, platforms, public or private, user types.",
+      "confidence": "secondary",
+      "sources": [
+        "s16"
+      ]
+    },
+    {
+      "item": "Questionnaire: auth",
+      "detail": "Whether you tested connect/disconnect/reconnect, how often you refresh tokens, retries, how you handle invalid_grant and CSRF, whether you use the discovery document.",
+      "confidence": "secondary",
+      "sources": [
+        "s16"
+      ]
+    },
+    {
+      "item": "Questionnaire: API usage",
+      "detail": "Categories used, call frequency.",
+      "confidence": "secondary",
+      "sources": [
+        "s16"
+      ]
+    },
+    {
+      "item": "Questionnaire: Accounting API",
+      "detail": "Versions supported, multi-currency, sales tax, webhooks, CDC.",
+      "confidence": "secondary",
+      "sources": [
+        "s16"
+      ]
+    },
+    {
+      "item": "Questionnaire: error handling",
+      "detail": "Capturing intuit_tid, logging, in-app support contact.",
+      "confidence": "secondary",
+      "sources": [
+        "s16"
+      ]
+    },
+    {
+      "item": "Questionnaire: security",
+      "detail": "Past breaches, a security team, storage of the secret, MFA, captcha, who can access the data.",
+      "confidence": "secondary",
+      "sources": [
+        "s16"
+      ]
+    },
+    {
+      "item": "Questionnaire: lending",
+      "detail": "Appears only if you flag the app as a lender.",
+      "confidence": "secondary",
+      "sources": [
+        "s16"
+      ]
+    },
+    {
+      "item": "App Store listing: technical requirements",
+      "detail": "Connect to QuickBooks and Sign in with Intuit buttons, an emailVerified check, a disconnect action that calls revoke, multi-company support for accountant apps, and Intuit-approved logos.",
+      "confidence": "confirmed",
+      "sources": [
+        "s13",
+        "s14"
+      ]
+    },
+    {
+      "item": "App Store listing: security requirements",
+      "detail": "All critical, high and medium security findings fixed. HTTPS everywhere, TLS 1.2 recommended, Secure and HttpOnly cookies.",
+      "confidence": "secondary",
+      "sources": [
+        "s15"
+      ]
+    },
+    {
+      "item": "App Store listing: industry review for regulated apps",
+      "detail": "Lending, insurance, investment and payments apps go through an extra industry review.",
+      "confidence": "confirmed",
+      "sources": [
+        "s13"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "Refresh tokens rotate about every 24 hours",
+      "detail": "Store the newest refresh token from every response, because the old one stops working. Refresh tokens expire after 100 days unused (rolling), with a 5-year hard maximum (Feb 2026 release notes). Access tokens last 1 hour.",
+      "confidence": "confirmed",
+      "sources": [
+        "s7",
+        "s8"
+      ]
+    },
+    {
+      "title": "First 5-year refresh-token expiries are coming",
+      "detail": "Reported for Feb 2027 (granular scopes) and Oct 2028 (accounting/payments). Build a reconnect flow now. A Reconnect URL field was added to the portal in Feb 2026.",
+      "confidence": "secondary",
+      "sources": [
+        "s17",
+        "s8"
+      ]
+    },
+    {
+      "title": "Builder tier blocks read calls above 500K per month",
+      "detail": "The App Partner Program (US since 2025-07-28; UK/AU/CA from 2025-11-03) puts every app on the free Builder tier, with no opt-out. It is capped at 500K CorePlus (read) calls per month, and calls above the cap are blocked, not billed. Core (write) calls and sandbox calls are not metered. Quebec is excluded.",
+      "confidence": "confirmed",
+      "sources": [
+        "s9",
+        "s8"
+      ]
+    },
+    {
+      "title": "Silver tier costs money",
+      "detail": "$300/month (US example), includes 1M calls, then $3.50 per 1K. Tier eligibility requires an approved questionnaire.",
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "title": "Rate limits",
+      "detail": "500 requests per minute per realm, 10 per second per realm and app, and 40 batch requests per minute. A 429 means wait 60 seconds.",
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    },
+    {
+      "title": "Throttling below the documented limits",
+      "detail": "Forum users report hitting throttles below the documented rate limits.",
+      "confidence": "secondary",
+      "sources": [
+        "s18"
+      ]
+    },
+    {
+      "title": "Scopes can't be removed",
+      "detail": "Scopes can be added later but never removed, and users must re-authorize when scopes change.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5",
+        "s4"
+      ]
+    },
+    {
+      "title": "Private and internal apps still need the questionnaire",
+      "detail": "Intuit support says production keys require questionnaire approval even for private or internal apps.",
+      "confidence": "secondary",
+      "sources": [
+        "s18"
+      ]
+    },
+    {
+      "title": "Placeholder EULA and privacy URLs",
+      "detail": "Forum answers say a placeholder EULA or privacy URL is accepted for apps you use yourself.",
+      "confidence": "secondary",
+      "sources": [
+        "s18"
+      ]
+    },
+    {
+      "title": "Approved apps can still fail to connect",
+      "detail": "June–July 2026 forum threads describe apps approved for production that still fail with \"undefined didn't connect\" or route to sandbox companies. No official fix has been posted.",
+      "confidence": "secondary",
+      "sources": [
+        "s18"
+      ]
+    },
+    {
+      "title": "Redirect URI never saved",
+      "detail": "A common cause of redirect_uri errors is a redirect URI that was never saved. The URI must match exactly, and you must click Save.",
+      "confidence": "unconfirmed",
+      "sources": [
+        "s6"
+      ]
+    },
+    {
+      "title": "Listed apps have ongoing compliance duties",
+      "detail": "There is an annual compliance review, and the security affidavit is due within 2 weeks of Intuit's request.",
+      "confidence": "secondary",
+      "sources": [
+        "s13",
+        "s15"
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "No production Client ID or secret visible",
+      "whatToDo": "Complete App Details and the App Assessment Questionnaire; the \"Show Credentials\" switch under Production appears only after approval.",
+      "contact": null
+    },
+    {
+      "symptom": "redirect_uri error",
+      "whatToDo": "Check the redirect URI matches exactly, is HTTPS for production with no IP address, and that you clicked Save.",
+      "contact": null
+    },
+    {
+      "symptom": "HTTP 429 response",
+      "whatToDo": "Wait 60 seconds before retrying.",
+      "contact": null
+    },
+    {
+      "symptom": "Approved app fails with \"undefined didn't connect\" or routes to sandbox companies",
+      "whatToDo": "No official fix has been posted. Open a support case with your App ID, intuit_tid and the authorization URL.",
+      "contact": "Support case from the developer portal"
+    },
+    {
+      "symptom": "Read calls blocked after 500K in a month",
+      "whatToDo": "Builder tier cap reached. Move to Silver (requires an approved questionnaire and a payment method).",
+      "contact": null
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "Intuit Developer Community",
+        "url": "https://help.developer.intuit.com",
+        "note": "Answers come from staff and peers."
+      },
+      {
+        "label": "Support case from the developer portal",
+        "url": null,
+        "note": "Include your App ID, intuit_tid and the authorization URL."
+      },
+      {
+        "label": "App Store review-team email thread",
+        "url": null,
+        "note": "For App Store reviews, reply to the thread. Keeping your account contact details current speeds this up."
+      }
+    ],
+    "haveReady": [
+      "App ID",
+      "intuit_tid",
+      "Authorization URL"
+    ]
+  },
+  "unknowns": [
+    "Questionnaire approval turnaround: no stated SLA found.",
+    "Revision turnaround after Intuit requests changes: no stated SLA.",
+    "Questionnaire length: Intuit states none; only Codat's roughly 30 minutes.",
+    "Setup time (hours to 1–2 days) is our own estimate, not an official figure.",
+    "First 5-year refresh-token expiry dates (Feb 2027, Oct 2028) come from a secondary source.",
+    "Security requirements for listing were seen only in a search summary.",
+    "No official fix for approved apps failing with \"undefined didn't connect\" or routing to sandbox companies."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/publish-app.html",
+      "title": "Publish your app (go live)",
+      "accessed": "2026-10-21",
+      "supports": "App Details fields, \"about 30 minutes\", questionnaire gates Show Credentials, no review time",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/get-started/get-client-id-and-client-secret.html",
+      "title": "Get your client ID and client secret",
+      "accessed": "2026-10-21",
+      "supports": "Dev keys sandbox-only; production keys after questionnaire approval",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/get-started/start-developing-your-app.html",
+      "title": "Start developing your app",
+      "accessed": "2026-10-21",
+      "supports": "Account, workspace and app creation; scopes",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/learn/scopes.html",
+      "title": "Scopes",
+      "accessed": "2026-10-21",
+      "supports": "Scope list; incremental scopes; re-auth needed when scopes change",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/get-started/app-settings.html",
+      "title": "App settings",
+      "accessed": "2026-10-21",
+      "supports": "Settings fields; scopes can't be removed; up to 4 categories",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/develop/authentication-and-authorization/set-redirect-uri.html",
+      "title": "Set your redirect URI",
+      "accessed": "2026-10-21",
+      "supports": "HTTPS only, no IPs, localhost allowed for sandbox only",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/develop/authentication-and-authorization/faq.html",
+      "title": "Authentication and authorization FAQ",
+      "accessed": "2026-10-21",
+      "supports": "100-day rolling refresh, 5-year max, 24h rotation, 1h access token",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/release-notes/general-release-notes.html",
+      "title": "General release notes",
+      "accessed": "2026-10-21",
+      "supports": "Feb 2026 5-year max and Reconnect URL field; partner program dates",
+      "kind": "primary"
+    },
+    {
+      "id": "s9",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/get-started/partner-faq.html",
+      "title": "Intuit App Partner Program FAQ",
+      "accessed": "2026-10-21",
+      "supports": "Tiers, Builder 500K cap blocked, Core vs CorePlus, fees (updated 2026-10-20)",
+      "kind": "primary"
+    },
+    {
+      "id": "s10",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/learn/limits-and-throttles.html",
+      "title": "Limits and throttles",
+      "accessed": "2026-10-21",
+      "supports": "Rate limits, 429 handling",
+      "kind": "primary"
+    },
+    {
+      "id": "s11",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/develop/sandboxes/sandbox-faqs.html",
+      "title": "Sandbox FAQs",
+      "accessed": "2026-10-21",
+      "supports": "Sandbox count, lifetime, limitations",
+      "kind": "primary"
+    },
+    {
+      "id": "s12",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/list-on-the-app-store/what-to-expect-during-the-review.html",
+      "title": "What to expect during the review",
+      "accessed": "2026-10-21",
+      "supports": "3-part review and its business-day estimates",
+      "kind": "primary"
+    },
+    {
+      "id": "s13",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/publish-app/technical-requirements.html",
+      "title": "Technical requirements",
+      "accessed": "2026-10-21",
+      "supports": "Listing requirements",
+      "kind": "primary"
+    },
+    {
+      "id": "s14",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/publish-app/common-reasons-for-rejection.html",
+      "title": "Common reasons for rejection",
+      "accessed": "2026-10-21",
+      "supports": "Rejection reasons",
+      "kind": "primary"
+    },
+    {
+      "id": "s15",
+      "url": "https://static.developer.intuit.com/output_html/qbo/docs/go-live/publish-app/security-requirements.html",
+      "title": "Security requirements",
+      "accessed": "2026-10-21",
+      "supports": "Security requirements (seen in search summary only)",
+      "kind": "primary"
+    },
+    {
+      "id": "s16",
+      "url": "https://docs.codat.io/integrations/accounting/quickbooksonline/qbo-app-assessment-questionnaire",
+      "title": "Codat: QBO App Assessment Questionnaire",
+      "accessed": "2026-10-21",
+      "supports": "Questionnaire question list",
+      "kind": "secondary"
+    },
+    {
+      "id": "s17",
+      "url": "https://apideck.com/blog/ai-built-accounting-integrations-maintenance",
+      "title": "Apideck blog: AI-built accounting integrations maintenance",
+      "accessed": "2026-10-21",
+      "supports": "First expiry dates Feb 2027 / Oct 2028",
+      "kind": "secondary"
+    },
+    {
+      "id": "s18",
+      "url": "https://help.developer.intuit.com",
+      "title": "Intuit Developer Community forum threads",
+      "accessed": "2026-10-21",
+      "supports": "Questionnaire required for private apps; placeholder URLs; post-approval failures",
+      "kind": "primary"
+    }
+  ]
+}
