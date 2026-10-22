@@ -81,6 +81,34 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
     { id: "sources", label: "Sources" },
   ];
 
+  // The provider's own pages, in the order the steps first need them, so the
+  // official setup docs are one click from the top of the guide.
+  const firstUse = (id: string) => {
+    const i = guide.steps.findIndex((s) => s.sources.includes(id));
+    return i < 0 ? Infinity : i;
+  };
+  const setupPages = guide.sources
+    .filter((s) => s.kind === "primary" && /^https?:\/\//.test(s.url))
+    .map((s, order) => ({ s, at: firstUse(s.id), order }))
+    .sort((a, b) => a.at - b.at || a.order - b.order)
+    .slice(0, 6)
+    .map(({ s }) => s);
+
+  // Page titles from the web often carry the site name or an export prefix
+  // ("Microsoft Word - Terms - SecurePay: ..."); keep the part that names the page.
+  const pageTitle = (t: string) => {
+    const parts = t.replace(/^Microsoft Word\s*-\s*/i, "").split(/\s+[-|–—]\s+/);
+    return (parts[0].length >= 3 ? parts[0] : t).trim();
+  };
+  const pageAddress = (u: string) => {
+    try {
+      const { hostname, pathname } = new URL(u);
+      return (hostname.replace(/^www\./, "") + pathname).replace(/\/$/, "");
+    } catch {
+      return u;
+    }
+  };
+
   const StepRef = ({ s }: { s: Step }) => (
     <a href={`#step-${stepNo.get(s)}`} className="text-muted hover:text-ink">
       {stepNo.get(s)}.
@@ -104,6 +132,33 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
           </div>
           {actions}
         </div>
+        {setupPages.length > 0 && (
+          <nav aria-labelledby="setup-pages" className="mt-6 max-w-3xl">
+            <h2 id="setup-pages" className="text-[15px] font-semibold">
+              {guide.name.split(" (")[0]}&rsquo;s setup pages
+            </h2>
+            <ul className="mt-2 grid gap-x-8 gap-y-2.5 text-sm sm:grid-cols-2">
+              {setupPages.map((s) => (
+                <li key={s.id} className="min-w-0">
+                  <a href={s.url} target="_blank" rel="noreferrer" className="group block min-w-0" title={s.title}>
+                    <span className="flex items-baseline gap-1.5">
+                      <span className="truncate font-medium underline decoration-line underline-offset-2 group-hover:decoration-ink">
+                        {pageTitle(s.title)}
+                      </span>
+                      <span aria-hidden className="text-muted group-hover:text-ink">↗</span>
+                    </span>
+                    <span className="block truncate text-[13px] text-muted">{pageAddress(s.url)}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {guide.sources.length > setupPages.length && (
+              <a href="#sources" className="mt-2 inline-block text-[13px] text-muted underline underline-offset-2 hover:text-ink">
+                All {guide.sources.length} sources
+              </a>
+            )}
+          </nav>
+        )}
         <p className="mt-5 text-[13px] text-muted">
           {guide.origin === "library" ? "Library guide" : "Generated live by an agent"}, researched {formatDate(guide.researchedOn)}
           {guide.model ? ` with ${guide.model}` : ""}. {guide.sources.length} sources, {primary} from the provider. {confirmed} of {facts} facts
