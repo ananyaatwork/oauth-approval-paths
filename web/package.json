@@ -15,9 +15,9 @@
     "@anthropic-ai/sdk": "^0.137.0",
     "@mozilla/readability": "^0.6.0",
     "jsdom": "^26.1.0",
-    "next": "15.5.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "next": "^15.5.28",
+    "react": "^19.1.10",
+    "react-dom": "^19.1.10",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -28,7 +28,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.4",
+    "eslint-config-next": "^15.5.28",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
