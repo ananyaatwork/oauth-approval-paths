@@ -64,5 +64,5 @@ Deploying to Vercel: import the repo, set the root directory to `web`, and add `
 - **Live guides are unreviewed.** They depend on what's public. Providers with gated partner portals (e.g. Gusto) will mostly come back "unconfirmed", which is intended.
 - **Some figures are estimates.** Setup durations are marked "estimated". Provider review times are only shown where a provider states them.
 - **Provider policies change.** Every guide shows its research date, and rate-limit and consent policies changed several times in 2025–26.
-- **Local storage only, for now.** Saved guides and visitor counts are kept in `web/.data/` (ignored by git). Vercel doesn't keep files between requests, so deployment needs a durable store behind `web/src/lib/store.ts`.
+- **Storage needs Redis in production.** Locally, saved guides and visitor counts go in `web/.data/`, which git ignores. On Vercel, add the Upstash Redis integration (Vercel's "KV"). The app picks up `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically. Without it, saved guides only last as long as one server instance.
 - **The run limit can be got around.** A cookie plus IP hash stops casual reuse, but someone on a different network with cookies cleared gets another run. A spend cap in the Anthropic console is the real backstop.

@@ -9,7 +9,7 @@ export default function Method() {
       <h1 className="text-3xl font-semibold tracking-tight">How guides are made and checked</h1>
 
       <h2 className="mt-10 text-lg font-semibold">Evidence tags</h2>
-      <p className="mt-2">Every claim in a guide carries one of three marks and links to its sources.</p>
+      <p className="mt-2">Every fact in a guide carries one of three marks and links to its sources.</p>
       <div className="mt-3"><EvidenceKey /></div>
       <ul className="mt-4 list-disc space-y-2 pl-5">
         <li><strong>Confirmed</strong> means an agent opened the provider&rsquo;s own page and it says this.</li>
@@ -18,26 +18,26 @@ export default function Method() {
       </ul>
       <p className="mt-3">
         Review times are only shown as numbers when the provider states them. Where it doesn&rsquo;t, the timeline is
-        hatched and labelled &ldquo;no stated SLA&rdquo;. When a provider&rsquo;s own pages disagree, the guide shows
+        hatched and labelled &ldquo;review time not published&rdquo;. When a provider&rsquo;s own pages disagree, the guide shows
         both figures.
       </p>
 
       <h2 className="mt-10 text-lg font-semibold">Library guides</h2>
       <ol className="mt-2 list-decimal space-y-2 pl-5">
-        <li>A research agent (Claude Opus 5.5) read each provider&rsquo;s developer docs and wrote notes with a tag and URL for every claim.</li>
+        <li>A research agent (Claude Opus 5.5) read each provider&rsquo;s developer docs and wrote notes with a tag and URL for every fact.</li>
         <li>A second agent mapped those notes into the guide format without adding facts. A validator checks the format and that every cited source exists.</li>
-        <li>A person spot-checked a sample of claims against the live pages. Corrections are listed at the bottom of each guide.</li>
+        <li>A separate agent re-opened the live pages for the highest-impact facts in five guides (Google, Slack, Microsoft, Salesforce, Notion): 29 facts, 21 matched, 6 corrected, 2 couldn&rsquo;t be verified. Corrections are listed at the bottom of each guide, and the full logs are in the repo.</li>
       </ol>
 
       <h2 className="mt-10 text-lg font-semibold">Live guides</h2>
       <ol className="mt-2 list-decimal space-y-2 pl-5">
-        <li>An agent (Claude Sonnet 5.5) searches the web and opens the provider&rsquo;s pages. You see each search and page as it happens.</li>
+        <li>An agent (Claude Sonnet 5.5) searches the web and opens the provider&rsquo;s pages. You see each search and page as it happens, and the log is saved with the guide.</li>
         <li>A second call turns the notes into the guide format.</li>
         <li>
-          A provenance check then runs in code, not in the model. A claim stays &ldquo;confirmed&rdquo; only if it cites a page
+          A provenance check then runs in code, not in the model. A fact stays &ldquo;confirmed&rdquo; only if it cites a page
           the agent actually opened in that run. If its cited page only appeared in search results it drops to
           &ldquo;secondary&rdquo;, and if the page was never seen it becomes &ldquo;not confirmed&rdquo;. The guide says how many
-          claims were downgraded.
+          facts were downgraded.
         </li>
       </ol>
       <p className="mt-3">Live guides are not reviewed by a person and say so at the top.</p>

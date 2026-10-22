@@ -1,12 +1,12 @@
 import type { Confidence } from "@/lib/schema";
 
-const LABEL: Record<Confidence, string> = {
-  confirmed: "Confirmed on the provider's docs",
+export const CONFIDENCE_LABEL: Record<Confidence, string> = {
+  confirmed: "Confirmed on the provider's own docs",
   secondary: "From a secondary source",
   unconfirmed: "Not confirmed",
 };
 
-export function ConfidenceGlyph({ level, size = 10 }: { level: Confidence; size?: number }) {
+export function ConfidenceGlyph({ level, size = 12 }: { level: Confidence; size?: number }) {
   const r = size / 2 - 1;
   const c = size / 2;
   return (
@@ -14,34 +14,43 @@ export function ConfidenceGlyph({ level, size = 10 }: { level: Confidence; size?
       {level === "confirmed" && <circle cx={c} cy={c} r={r} fill="currentColor" />}
       {level === "secondary" && (
         <>
-          <circle cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeWidth="1.2" />
+          <circle cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeWidth="1.4" />
           <path d={`M${c} ${c - r} A${r} ${r} 0 0 0 ${c} ${c + r} Z`} fill="currentColor" />
         </>
       )}
       {level === "unconfirmed" && (
-        <circle cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="1.6 1.4" />
+        <circle cx={c} cy={c} r={r} fill="none" stroke="currentColor" strokeWidth="1.4" strokeDasharray="2 1.6" />
       )}
     </svg>
   );
 }
 
+// sourceInfo maps a source id to "Title · accessed 21 Oct 2026".
 export function Evidence({
   level,
   sources,
-  titles,
+  sourceInfo,
 }: {
   level: Confidence;
   sources: string[];
-  titles: Record<string, string>;
+  sourceInfo: Record<string, string>;
 }) {
+  const detail = sources.length ? sources.map((id) => `${id}: ${sourceInfo[id] ?? "unknown source"}`).join("\n") : "No source cited";
   return (
     <span className="inline-flex items-center gap-1.5 align-middle text-xs text-muted">
-      <span className="inline-flex items-center" title={LABEL[level]}>
+      <span tabIndex={0} className="group relative inline-flex items-center rounded-full outline-offset-2" aria-label={`${CONFIDENCE_LABEL[level]}. ${detail}`}>
         <ConfidenceGlyph level={level} />
-        <span className="sr-only">{LABEL[level]}</span>
+        <span
+          role="tooltip"
+          className="pointer-events-none absolute bottom-full left-0 z-20 mb-2 hidden w-64 max-w-[calc(100vw-3rem)] animate-[fadein_120ms_ease-out] whitespace-pre-line rounded-md border border-line bg-surface px-3 py-2 text-xs text-ink shadow-sm group-hover:block group-focus:block sm:left-1/2 sm:-translate-x-1/2"
+        >
+          <span className="font-medium">{CONFIDENCE_LABEL[level]}</span>
+          {"\n"}
+          <span className="text-muted">{detail}</span>
+        </span>
       </span>
       {sources.map((id) => (
-        <a key={id} href={`#src-${id}`} title={titles[id]} className="underline decoration-line underline-offset-2 hover:text-ink">
+        <a key={id} href={`#src-${id}`} className="text-[var(--focus)] underline decoration-[var(--focus)]/40 underline-offset-2 hover:decoration-[var(--focus)]">
           {id}
         </a>
       ))}
@@ -51,11 +60,11 @@ export function Evidence({
 
 export function EvidenceKey() {
   return (
-    <ul className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted">
-      {(Object.keys(LABEL) as Confidence[]).map((k) => (
+    <ul className="flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-muted">
+      {(Object.keys(CONFIDENCE_LABEL) as Confidence[]).map((k) => (
         <li key={k} className="inline-flex items-center gap-1.5">
           <ConfidenceGlyph level={k} />
-          {LABEL[k]}
+          {CONFIDENCE_LABEL[k]}
         </li>
       ))}
     </ul>

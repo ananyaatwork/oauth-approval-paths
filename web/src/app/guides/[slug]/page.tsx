@@ -17,8 +17,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   if (!guide) notFound();
   return (
     <>
-      <GuideActions guide={guide} />
-      <GuideView guide={guide} />
+      <GuideView guide={guide} actions={<GuideActions guide={guide} />} />
     </>
   );
 }

@@ -3,28 +3,11 @@ import path from "path";
 import crypto from "crypto";
 import { Guide } from "./schema";
 
-// File-backed store for live guides and per-visitor run counts. On Vercel the
-// filesystem only persists in /tmp per instance, so deployment swaps this for
-// a durable store behind the same functions.
-const ROOT = process.env.GUIDE_STORE_DIR ?? (process.env.VERCEL ? "/tmp/oauth-guides" : path.join(process.cwd(), ".data"));
-const LOCK_TTL_MS = 6 * 60 * 1000;
+// Saved live guides, per-app research locks and per-visitor run counts.
+// Uses Upstash Redis (Vercel's "KV" integration) when its REST env vars are
+// set, otherwise files under .data/ for local development.
 
-const file = (...p: string[]) => path.join(ROOT, ...p);
-
-async function readJson(rel: string): Promise<unknown | null> {
-  try {
-    return JSON.parse(await fs.readFile(file(rel), "utf8"));
-  } catch {
-    return null;
-  }
-}
-
-async function writeJson(rel: string, data: unknown) {
-  await fs.mkdir(path.dirname(file(rel)), { recursive: true });
-  const tmp = file(`${rel}.${process.pid}.tmp`);
-  await fs.writeFile(tmp, JSON.stringify(data, null, 2));
-  await fs.rename(tmp, file(rel));
-}
+const LOCK_TTL_S = 6 * 60;
 
 // "Linear", "linear.app", "https://developers.linear.app/docs" -> "linear"
 export function appKey(input: string): string {
@@ -42,48 +25,136 @@ export function appKey(input: string): string {
     .slice(0, 40);
 }
 
+export type SavedSummary = { slug: string; name: string; researchedOn: string; difficulty: number };
+
+interface Backend {
+  getGuide(key: string): Promise<unknown | null>;
+  putGuide(key: string, guide: Guide): Promise<void>;
+  listGuides(): Promise<unknown[]>;
+  lock(key: string): Promise<boolean>;
+  unlock(key: string): Promise<void>;
+  runs(id: string): Promise<number>;
+  addRuns(id: string, delta: number): Promise<void>;
+}
+
+const REDIS_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
+const REDIS_TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
+
+async function redis<T>(...cmd: (string | number)[]): Promise<T> {
+  const res = await fetch(REDIS_URL!, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(cmd),
+    cache: "no-store",
+  });
+  const body = (await res.json()) as { result?: T; error?: string };
+  if (body.error) throw new Error(`Store error: ${body.error}`);
+  return body.result as T;
+}
+
+const parse = (s: string | null) => {
+  try {
+    return s ? JSON.parse(s) : null;
+  } catch {
+    return null;
+  }
+};
+
+const redisBackend: Backend = {
+  getGuide: async (key) => parse(await redis<string | null>("GET", `guide:${key}`)),
+  putGuide: async (key, guide) => {
+    await redis("SET", `guide:${key}`, JSON.stringify(guide));
+    await redis("SADD", "guides", key);
+  },
+  listGuides: async () => {
+    const keys = await redis<string[]>("SMEMBERS", "guides");
+    if (!keys.length) return [];
+    const values = await redis<(string | null)[]>("MGET", ...keys.map((k) => `guide:${k}`));
+    return values.map(parse).filter(Boolean);
+  },
+  lock: async (key) => (await redis<string | null>("SET", `lock:${key}`, Date.now(), "NX", "EX", LOCK_TTL_S)) === "OK",
+  unlock: async (key) => {
+    await redis("DEL", `lock:${key}`);
+  },
+  runs: async (id) => Number((await redis<string | null>("GET", `runs:${id}`)) ?? 0),
+  addRuns: async (id, delta) => {
+    const n = await redis<number>("INCRBY", `runs:${id}`, delta);
+    if (n < 0) await redis("SET", `runs:${id}`, 0);
+  },
+};
+
+const ROOT = process.env.GUIDE_STORE_DIR ?? (process.env.VERCEL ? "/tmp/oauth-guides" : path.join(process.cwd(), ".data"));
+const file = (...p: string[]) => path.join(ROOT, ...p);
+
+async function readJson(rel: string): Promise<unknown | null> {
+  try {
+    return JSON.parse(await fs.readFile(file(rel), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+async function writeJson(rel: string, data: unknown) {
+  await fs.mkdir(path.dirname(file(rel)), { recursive: true });
+  const tmp = file(`${rel}.${process.pid}.tmp`);
+  await fs.writeFile(tmp, JSON.stringify(data, null, 2));
+  await fs.rename(tmp, file(rel));
+}
+
+const fileBackend: Backend = {
+  getGuide: (key) => readJson(`guides/${key}.json`),
+  putGuide: (key, guide) => writeJson(`guides/${key}.json`, guide),
+  listGuides: async () => {
+    try {
+      const names = (await fs.readdir(file("guides"))).filter((f) => f.endsWith(".json"));
+      return Promise.all(names.map((n) => readJson(`guides/${n}`)));
+    } catch {
+      return [];
+    }
+  },
+  lock: async (key) => {
+    await fs.mkdir(file("locks"), { recursive: true });
+    try {
+      await fs.writeFile(file(`locks/${key}.json`), JSON.stringify({ at: Date.now() }), { flag: "wx" });
+      return true;
+    } catch {
+      const held = (await readJson(`locks/${key}.json`)) as { at?: number } | null;
+      if (held?.at && Date.now() - held.at < LOCK_TTL_S * 1000) return false;
+      await writeJson(`locks/${key}.json`, { at: Date.now() });
+      return true;
+    }
+  },
+  unlock: (key) => fs.rm(file(`locks/${key}.json`), { force: true }),
+  runs: async (id) => ((await readJson(`visitors/${id}.json`)) as { runs?: number } | null)?.runs ?? 0,
+  addRuns: async (id, delta) => {
+    const now = await fileBackend.runs(id);
+    await writeJson(`visitors/${id}.json`, { runs: Math.max(0, now + delta) });
+  },
+};
+
+const db: Backend = REDIS_URL && REDIS_TOKEN ? redisBackend : fileBackend;
+export const STORE_KIND = db === redisBackend ? "redis" : "file";
+
+const validKey = (k: string) => /^[a-z0-9-]{1,40}$/.test(k);
+
 export async function getSaved(key: string): Promise<Guide | null> {
-  if (!/^[a-z0-9-]{1,40}$/.test(key)) return null;
-  const parsed = Guide.safeParse(await readJson(`guides/${key}.json`));
+  if (!validKey(key)) return null;
+  const parsed = Guide.safeParse(await db.getGuide(key));
   return parsed.success ? parsed.data : null;
 }
 
-export async function saveGuide(guide: Guide) {
-  await writeJson(`guides/${guide.slug}.json`, guide);
+export const saveGuide = (guide: Guide) => db.putGuide(guide.slug, guide);
+
+export async function listSaved(): Promise<SavedSummary[]> {
+  return (await db.listGuides())
+    .map((raw) => Guide.safeParse(raw))
+    .filter((p) => p.success)
+    .map(({ data: g }) => ({ slug: g!.slug, name: g!.name, researchedOn: g!.researchedOn, difficulty: g!.verdict.difficulty }))
+    .sort((a, b) => b.researchedOn.localeCompare(a.researchedOn) || a.name.localeCompare(b.name));
 }
 
-export async function listSaved(): Promise<{ slug: string; name: string; researchedOn: string; difficulty: number }[]> {
-  let names: string[] = [];
-  try {
-    names = (await fs.readdir(file("guides"))).filter((f) => f.endsWith(".json"));
-  } catch {
-    return [];
-  }
-  const out = [];
-  for (const n of names) {
-    const g = await getSaved(n.replace(/\.json$/, ""));
-    if (g) out.push({ slug: g.slug, name: g.name, researchedOn: g.researchedOn, difficulty: g.verdict.difficulty });
-  }
-  return out.sort((a, b) => b.researchedOn.localeCompare(a.researchedOn) || a.name.localeCompare(b.name));
-}
-
-export async function acquireLock(key: string): Promise<boolean> {
-  const rel = `locks/${key}.json`;
-  await fs.mkdir(file("locks"), { recursive: true });
-  try {
-    await fs.writeFile(file(rel), JSON.stringify({ at: Date.now() }), { flag: "wx" });
-    return true;
-  } catch {
-    const lock = (await readJson(rel)) as { at?: number } | null;
-    if (lock?.at && Date.now() - lock.at < LOCK_TTL_MS) return false;
-    await writeJson(rel, { at: Date.now() });
-    return true;
-  }
-}
-
-export async function releaseLock(key: string) {
-  await fs.rm(file(`locks/${key}.json`), { force: true });
-}
+export const acquireLock = (key: string) => db.lock(key);
+export const releaseLock = (key: string) => db.unlock(key);
 
 // Visitors are counted by cookie and by a salted hash of their IP, so clearing
 // cookies alone doesn't reset the limit. Raw IPs are never stored.
@@ -97,23 +168,12 @@ export function visitorFrom(cookieId: string, ip: string): Visitor {
   return { ids: [`c-${hash(cookieId)}`, `ip-${hash(ip)}`] };
 }
 
-type VisitorRecord = { runs: number; apps: string[] };
-
-async function readVisitor(id: string): Promise<VisitorRecord> {
-  return ((await readJson(`visitors/${id}.json`)) as VisitorRecord | null) ?? { runs: 0, apps: [] };
-}
-
 export async function runsLeft(v: Visitor): Promise<number> {
   if (RUN_LIMIT <= 0) return Infinity;
-  const used = Math.max(...(await Promise.all(v.ids.map(readVisitor))).map((r) => r.runs));
+  const used = Math.max(...(await Promise.all(v.ids.map((id) => db.runs(id)))));
   return Math.max(0, RUN_LIMIT - used);
 }
 
-export async function recordRun(v: Visitor, key: string, delta: 1 | -1) {
-  for (const id of v.ids) {
-    const r = await readVisitor(id);
-    r.runs = Math.max(0, r.runs + delta);
-    r.apps = delta > 0 ? [...r.apps, key] : r.apps.filter((a, i) => !(a === key && i === r.apps.lastIndexOf(key)));
-    await writeJson(`visitors/${id}.json`, r);
-  }
+export async function recordRun(v: Visitor, delta: 1 | -1) {
+  await Promise.all(v.ids.map((id) => db.addRuns(id, delta)));
 }

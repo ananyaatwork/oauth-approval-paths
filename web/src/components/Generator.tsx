@@ -4,47 +4,86 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Guide } from "@/lib/schema";
-import type { TraceEvent } from "@/app/api/generate/route";
+import { reduceTrace, traceCounts, type Stage, type TraceEvent, type TraceLine } from "@/lib/trace";
+import { formatDate } from "@/lib/dates";
 import { ResearchForm, type KnownApp } from "./ResearchForm";
 import { GuideView } from "./GuideView";
 import { GuideActions } from "./GuideActions";
+import { ResearchLog, ResearchLogSummary } from "./ResearchLog";
+import { DifficultyDots } from "./DifficultyDots";
 
-type Line = { kind: "search" | "read" | "miss" | "note" | "warn"; text: string; detail?: string; href?: string };
 type SavedItem = { slug: string; name: string; researchedOn: string; difficulty: number };
 type Notice = { tone: "info" | "stop"; title: string; body: string; href?: string };
+export type Sample = { name: string; slug: string; researchedOn: string; log: TraceLine[] };
 
-const host = (u: string) => {
-  try {
-    return new URL(u).hostname.replace(/^www\./, "");
-  } catch {
-    return u;
-  }
-};
+const STAGES: { id: Exclude<Stage, "done">; label: string }[] = [
+  { id: "searching", label: "Searching" },
+  { id: "reading", label: "Reading pages" },
+  { id: "writing", label: "Writing the guide" },
+  { id: "checking", label: "Checking evidence" },
+];
 
 function runsText(left: number | null, limit: number) {
   if (left === null) return "Live research runs are unlimited on this deployment.";
-  if (left === 0)
-    return "You've used your live research run. Apps that are already researched still open instantly.";
+  if (left === 0) return "You've used your live research run. Apps that are already researched still open instantly.";
   const n = left === 1 ? "one live research run" : `${left} live research runs`;
   return `You have ${n}${limit > left ? " left" : ""}. Apps that are already researched open instantly and don't use it.`;
+}
+
+function StageTracker({ stage }: { stage: Stage | null }) {
+  const at = stage === "done" ? STAGES.length : STAGES.findIndex((s) => s.id === stage);
+  return (
+    <ol className="flex flex-wrap gap-x-6 gap-y-2 text-sm" aria-label="Research progress">
+      {STAGES.map((s, i) => {
+        const state = i < at ? "done" : i === at ? "now" : "next";
+        return (
+          <li
+            key={s.id}
+            aria-current={state === "now" ? "step" : undefined}
+            className={`flex items-center gap-1.5 border-b-2 pb-1 ${state === "now" ? "border-[var(--focus)] text-ink" : state === "done" ? "border-transparent text-ink" : "border-transparent text-muted"}`}
+          >
+            <span aria-hidden className={state === "done" ? "text-you" : ""}>{state === "done" ? "✓" : `${i + 1}`}</span>
+            {s.label}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function StripSkeleton() {
+  return (
+    <div aria-hidden className="mt-6 grid max-w-3xl grid-cols-2 gap-px border border-line bg-line md:grid-cols-4">
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="bg-surface px-4 py-4">
+          <div className="h-3 w-16 animate-pulse rounded bg-line" />
+          <div className="mt-3 h-6 w-20 animate-pulse rounded bg-line" />
+          <div className="mt-2 h-3 w-24 animate-pulse rounded bg-line" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function Generator({
   known,
   saved,
+  sample,
   initial,
   runsLeft: initialRuns,
   runLimit,
 }: {
   known: KnownApp[];
   saved: SavedItem[];
+  sample: Sample | null;
   initial: string;
   runsLeft: number | null;
   runLimit: number;
 }) {
   const router = useRouter();
   const [app, setApp] = useState(initial);
-  const [lines, setLines] = useState<Line[]>([]);
+  const [lines, setLines] = useState<TraceLine[]>([]);
+  const [stage, setStage] = useState<Stage | null>(null);
   const [guide, setGuide] = useState<Guide | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,57 +101,17 @@ export function Generator({
     return () => clearInterval(id);
   }, [running]);
 
-  const replaceLast = (pred: (l: Line) => boolean, next: (l: Line) => Line) =>
-    setLines((prev) => {
-      const copy = [...prev];
-      for (let i = copy.length - 1; i >= 0; i--)
-        if (pred(copy[i])) {
-          copy[i] = next(copy[i]);
-          break;
-        }
-      return copy;
-    });
-
   function handle(e: TraceEvent) {
-    const push = (l: Line) => setLines((prev) => [...prev, l]);
+    setLines((prev) => reduceTrace(prev, e));
     switch (e.type) {
-      case "status":
-        return push({ kind: "note", text: e.message });
-      case "search":
-        return push({ kind: "search", text: `Searched “${e.query}”` });
-      case "results":
-        return replaceLast(
-          (l) => l.kind === "search" && l.text.includes(e.query) && !l.detail,
-          (l) => ({
-            ...l,
-            detail: e.results.length ? [...new Set(e.results.map((r) => host(r.url)))].slice(0, 4).join(", ") : "no results",
-          }),
-        );
-      case "fetch":
-        return push({ kind: "read", text: `Opening ${host(e.url)}`, href: e.url });
-      case "fetched":
-        return replaceLast(
-          (l) => l.kind === "read" && l.text.startsWith("Opening"),
-          () => ({ kind: "read", text: `Read ${e.title ?? host(e.url)}`, detail: host(e.url), href: e.url }),
-        );
-      case "fetch_error":
-        return replaceLast(
-          (l) => l.kind === "read" && l.text.startsWith("Opening") && l.href === e.url,
-          () => ({ kind: "miss", text: `Couldn't open ${host(e.url)}`, detail: e.code.replace(/_/g, " "), href: e.url }),
-        );
-      case "provenance":
-        return push({
-          kind: e.downgraded ? "warn" : "note",
-          text: e.downgraded
-            ? `Provenance check: ${e.downgraded} claim(s) downgraded because their page wasn't opened`
-            : `Provenance check passed: every “confirmed” claim cites a page the agent opened (${e.opened} pages)`,
-        });
+      case "stage":
+        return setStage(e.stage);
       case "saved":
         if (e.origin === "library") return router.push(e.href);
         setGuide(e.guide);
         return setNotice({
           tone: "info",
-          title: `${e.guide.name} was already researched on ${e.guide.researchedOn}`,
+          title: `${e.guide.name} was already researched on ${formatDate(e.guide.researchedOn)}`,
           body: "You're seeing the saved guide, so this didn't use a research run. Everyone who asks for this app gets the same version.",
           href: e.href,
         });
@@ -145,6 +144,7 @@ export function Generator({
     abort.current = ctrl;
     setApp(target);
     setLines([]);
+    setStage(null);
     setGuide(null);
     setNotice(null);
     setError(null);
@@ -190,51 +190,47 @@ export function Generator({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const icon: Record<Line["kind"], string> = { search: "⌕", read: "↗", miss: "×", note: "·", warn: "!" };
-  const showTrace = running || lines.length > 0;
+  const researched = stage !== null;
+  const counts = traceCounts(lines);
 
   return (
     <div className="pt-10">
       <h1 className="text-3xl font-semibold tracking-tight">Research an app</h1>
       <p className="mt-2 max-w-[62ch] text-muted">
-        An agent searches the provider&rsquo;s developer docs, opens the pages that matter, and writes a guide in the
-        same format as the library. Claims are only marked confirmed if the agent opened the page they cite.
+        An agent searches the provider&rsquo;s developer docs, opens the pages that matter, and writes a guide in the same
+        format as the library. A fact is only marked confirmed if the agent opened the page it cites.
       </p>
       <div className="mt-6 max-w-xl">
         <ResearchForm key={app} known={known} initial={app} onSubmit={start} />
         <p className={`mt-2 text-sm ${runs === 0 ? "text-customer" : "text-muted"}`}>{runsText(runs, runLimit)}</p>
       </div>
 
-      {showTrace && (
-        <section aria-live="polite" className="mt-8 max-w-3xl rounded-md border border-line bg-surface p-4">
-          <div className="flex items-baseline justify-between gap-4">
-            <h2 className="font-semibold">{running ? `Researching ${app}` : `Research log for ${app}`}</h2>
+      {running && !researched && (
+        <p className="mt-8 text-sm text-muted" aria-live="polite">Checking saved guides…</p>
+      )}
+
+      {researched && !guide && (
+        <section aria-live="polite" className="mt-8 max-w-3xl rounded-md border border-line bg-surface p-4 sm:p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <StageTracker stage={stage} />
             <span className="text-sm text-muted tabular-nums">{elapsed}s</span>
           </div>
-          <ol className="mt-3 space-y-1.5 text-sm">
-            {lines.map((l, i) => (
-              <li key={i} className={`grid grid-cols-[1.25rem_minmax(0,1fr)] ${l.kind === "miss" || l.kind === "warn" ? "text-customer" : ""}`}>
-                <span aria-hidden className="text-muted">{icon[l.kind]}</span>
-                <span className="[overflow-wrap:anywhere]">
-                  {l.href ? <a href={l.href} target="_blank" rel="noreferrer" className="hover:underline">{l.text}</a> : l.text}
-                  {l.detail && <span className="text-muted"> · {l.detail}</span>}
-                </span>
-              </li>
-            ))}
-            {running && (
-              <li className="grid grid-cols-[1.25rem_minmax(0,1fr)] text-muted">
-                <span aria-hidden className="animate-pulse">●</span>
-                <span>{lines.length ? "Working…" : "Checking saved guides…"}</span>
-              </li>
-            )}
-          </ol>
+          <p className="mt-3 text-[13px] text-muted tabular-nums">
+            {counts.searches} {counts.searches === 1 ? "search" : "searches"} · {counts.read} {counts.read === 1 ? "page" : "pages"} read
+            {counts.missed > 0 && ` · ${counts.missed} couldn't be opened`}
+          </p>
+          <div className="mt-4 border-t border-line pt-4">
+            <ResearchLog lines={lines} running={running} />
+          </div>
         </section>
       )}
+
+      {running && (stage === "writing" || stage === "checking") && <StripSkeleton />}
 
       {notice && (
         <div
           role={notice.tone === "stop" ? "alert" : "status"}
-          className={`mt-6 max-w-3xl border-l-4 bg-surface px-4 py-3 text-sm ${notice.tone === "stop" ? "border-provider" : "border-agent"}`}
+          className={`mt-6 max-w-3xl border-l-[3px] bg-surface px-4 py-3 text-sm ${notice.tone === "stop" ? "border-provider" : "border-agent"}`}
         >
           <p className="font-medium">{notice.title}</p>
           <p className="mt-1">{notice.body}</p>
@@ -247,7 +243,7 @@ export function Generator({
       )}
 
       {error && (
-        <div role="alert" className="mt-6 max-w-3xl border-l-4 border-customer bg-surface px-4 py-3 text-sm">
+        <div role="alert" className="mt-6 max-w-3xl border-l-[3px] border-customer bg-surface px-4 py-3 text-sm">
           <p className="font-medium">The guide couldn&rsquo;t be generated.</p>
           <p className="mt-1">{error}</p>
           <p className="mt-2 text-muted">
@@ -257,36 +253,65 @@ export function Generator({
       )}
 
       {guide && (
-        <div className="mt-2">
-          <GuideActions guide={guide} />
-          <GuideView guide={guide} />
+        <div className="mt-4">
+          {researched && lines.length > 0 && (
+            <details className="max-w-3xl rounded-md border border-line bg-surface px-4 py-3 text-sm">
+              <summary className="cursor-pointer">
+                <span className="font-medium">How the agent got here</span>{" "}
+                <span className="text-muted">
+                  (<ResearchLogSummary lines={lines} />, {elapsed}s)
+                </span>
+              </summary>
+              <div className="mt-3 border-t border-line pt-3">
+                <ResearchLog lines={lines} />
+              </div>
+            </details>
+          )}
+          <GuideView guide={guide} actions={<GuideActions guide={guide} />} />
         </div>
       )}
 
-      {!guide && (
-        <section className="mt-14 max-w-3xl" aria-labelledby="saved-h">
-          <h2 id="saved-h" className="border-b border-line pb-2 text-lg font-semibold tracking-tight">
-            Already researched
-          </h2>
-          {savedList.length ? (
-            <ul className="mt-2">
-              {savedList.map((s) => (
-                <li key={s.slug} className="border-b border-line">
-                  <Link href={`/g/${s.slug}`} className="flex flex-wrap items-baseline justify-between gap-x-4 py-2.5 hover:bg-surface">
-                    <span className="font-medium">{s.name}</span>
-                    <span className="text-sm text-muted tabular-nums">
-                      Difficulty {s.difficulty}/5 · researched {s.researchedOn}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm text-muted">
-              Nothing yet. The first app someone researches is saved here, and opens instantly for everyone after that.
-            </p>
+      {!guide && !researched && (
+        <div className="mt-14 grid max-w-5xl gap-12 lg:grid-cols-2">
+          <section aria-labelledby="saved-h">
+            <h2 id="saved-h" className="border-b border-line pb-2 text-lg font-semibold tracking-tight">
+              Already researched
+            </h2>
+            {savedList.length ? (
+              <ul>
+                {savedList.map((s) => (
+                  <li key={s.slug} className="border-b border-line">
+                    <Link href={`/g/${s.slug}`} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1 py-2.5 hover:bg-surface">
+                      <span className="font-medium">{s.name}</span>
+                      <span className="flex items-center gap-2 text-[13px] text-muted">
+                        <DifficultyDots value={s.difficulty} /> {formatDate(s.researchedOn)}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm text-muted">
+                Nothing yet. The first app someone researches is saved here, and opens instantly for everyone after that.
+              </p>
+            )}
+          </section>
+          {sample && (
+            <section aria-labelledby="sample-h">
+              <h2 id="sample-h" className="border-b border-line pb-2 text-lg font-semibold tracking-tight">
+                What a run looks like
+              </h2>
+              <p className="mt-3 text-[13px] text-muted">
+                The real log from researching{" "}
+                <Link href={`/g/${sample.slug}`} className="underline underline-offset-2">{sample.name}</Link> on{" "}
+                {formatDate(sample.researchedOn)}: <ResearchLogSummary lines={sample.log} />.
+              </p>
+              <div className="mt-3 max-h-80 overflow-y-auto rounded-md border border-line bg-surface p-4">
+                <ResearchLog lines={sample.log} />
+              </div>
+            </section>
           )}
-        </section>
+        </div>
       )}
     </div>
   );

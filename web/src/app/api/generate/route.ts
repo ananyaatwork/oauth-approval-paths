@@ -6,6 +6,7 @@ import { VISITOR_COOKIE, clientIp } from "@/lib/visitor";
 import { GuideContent, type Guide } from "@/lib/schema";
 import { RESEARCH_SYSTEM, STRUCTURE_SYSTEM } from "@/lib/research-prompt";
 import { enforceProvenance } from "@/lib/provenance";
+import { reduceTrace, type TraceEvent, type TraceLine } from "@/lib/trace";
 import { getGuide } from "@/guides";
 import {
   acquireLock,
@@ -24,20 +25,6 @@ export const maxDuration = 300;
 
 const MODEL = process.env.LIVE_MODEL ?? "claude-sonnet-5-5";
 const MAX_PAUSES = 6;
-
-export type TraceEvent =
-  | { type: "status"; message: string }
-  | { type: "search"; query: string }
-  | { type: "results"; query: string; results: { title: string; url: string }[] }
-  | { type: "fetch"; url: string }
-  | { type: "fetched"; url: string; title: string | null }
-  | { type: "fetch_error"; url: string; code: string }
-  | { type: "provenance"; downgraded: number; opened: number }
-  | { type: "saved"; guide: Guide; href: string; origin: "library" | "live" }
-  | { type: "guide"; guide: Guide; href: string; runsLeft: number | null }
-  | { type: "limit"; message: string }
-  | { type: "busy"; message: string }
-  | { type: "error"; message: string };
 
 export async function POST(req: Request) {
   const { app } = (await req.json().catch(() => ({}))) as { app?: string };
@@ -79,14 +66,20 @@ export async function POST(req: Request) {
           return send({ type: "busy", message: `Someone is researching ${target} right now. Its guide will be saved here in a minute or two.` });
         }
 
-        await recordRun(visitor, key, 1);
+        await recordRun(visitor, 1);
         charged = true;
-        const guide = await research(target, key, send);
+        let log: TraceLine[] = [];
+        const guide = await research(target, key, (e) => {
+          log = reduceTrace(log, e);
+          send(e);
+        });
+        guide.researchLog = log;
         await saveGuide(guide);
+        send({ type: "stage", stage: "done" });
         const left = await runsLeft(visitor);
         send({ type: "guide", guide, href: `/g/${key}`, runsLeft: Number.isFinite(left) ? left : null });
       } catch (err) {
-        if (charged) await recordRun(visitor, key, -1);
+        if (charged) await recordRun(visitor, -1);
         console.error(`[generate] ${key}:`, err);
         const reason =
           err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError
@@ -131,6 +124,8 @@ async function research(target: string, key: string, send: (e: TraceEvent) => vo
   ];
 
   send({ type: "status", message: `Researching ${target} with ${MODEL}` });
+  send({ type: "stage", stage: "searching" });
+  let reading = false;
 
   let notes = "";
   for (let pauses = 0; ; pauses++) {
@@ -156,6 +151,10 @@ async function research(target: string, key: string, send: (e: TraceEvent) => vo
           send({ type: "search", query: input.query });
         } else if (block.name === "web_fetch" && input.url) {
           pendingFetch.set(block.id, input.url);
+          if (!reading) {
+            reading = true;
+            send({ type: "stage", stage: "reading" });
+          }
           send({ type: "fetch", url: input.url });
         }
       } else if (block.type === "web_search_tool_result") {
@@ -195,7 +194,8 @@ async function research(target: string, key: string, send: (e: TraceEvent) => vo
 
   if (!notes.trim()) throw new Error("Research finished without notes; try the app's website instead.");
 
-  send({ type: "status", message: `Read ${fetched.size} pages. Structuring the guide` });
+  send({ type: "status", message: `Read ${fetched.size} pages. Writing the guide` });
+  send({ type: "stage", stage: "writing" });
 
   const parsed = await client.messages.parse({
     model: MODEL,
@@ -215,6 +215,7 @@ async function research(target: string, key: string, send: (e: TraceEvent) => vo
 
   const content = parsed.parsed_output;
   const downgraded = enforceProvenance(content, fetched, searched);
+  send({ type: "stage", stage: "checking" });
   send({ type: "provenance", downgraded, opened: fetched.size });
   if (downgraded > 0) {
     content.unknowns.push(

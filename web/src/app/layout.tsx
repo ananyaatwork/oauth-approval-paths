@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Schibsted_Grotesk } from "next/font/google";
 import "./globals.css";
@@ -11,10 +11,18 @@ export const metadata: Metadata = {
     "How long it takes to get an OAuth app approved with a provider, what blocks it, and what an agent can do for you.",
 };
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f2f4f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#10161c" },
+  ],
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <body className={`${schibsted.variable} min-h-screen`}>
+        <a href="#main" className="skip-link">Skip to content</a>
         <header className="border-b border-line">
           <nav className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 sm:px-6">
             <Link href="/" className="font-semibold tracking-tight">
@@ -27,7 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </div>
           </nav>
         </header>
-        <main className="mx-auto max-w-[1100px] px-4 pb-24 sm:px-6">{children}</main>
+        <main id="main" className="mx-auto max-w-[1100px] px-4 pb-24 sm:px-6">{children}</main>
       </body>
     </html>
   );

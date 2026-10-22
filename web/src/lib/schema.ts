@@ -89,7 +89,16 @@ export const GuideContent = z.object({
   sources: z.array(Source),
 });
 
+export const TraceLine = z.object({
+  kind: z.enum(["search", "opening", "read", "miss", "note", "warn"]),
+  text: z.string(),
+  detail: z.string().optional(),
+  href: z.string().optional(),
+});
+export type TraceLine = z.infer<typeof TraceLine>;
+
 export const Guide = GuideContent.extend({
+  researchLog: z.array(TraceLine).optional(),
   slug: z.string(),
   origin: z.enum(["library", "live"]),
   researchedOn: z.string(),

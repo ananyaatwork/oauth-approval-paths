@@ -54,29 +54,37 @@ const UNIT_LABEL: Record<Phase["unit"], [string, string]> = {
 };
 
 export function formatPhase(p: Phase): string {
-  if (p.min == null && p.max == null) return p.basis === "no_stated_sla" ? "no stated SLA" : "no figure given";
+  if (p.min == null && p.max == null) return p.basis === "no_stated_sla" ? "review time not published" : "no figure given";
   const [one, many] = UNIT_LABEL[p.unit];
   const lo = p.min;
   const hi = p.max;
   const range = lo != null && hi != null && lo !== hi ? `${lo}–${hi}` : `${hi ?? lo}`;
   const n = hi ?? lo ?? 0;
   const text = `${range} ${n === 1 && lo === hi ? one : many}`;
-  if (p.basis === "no_stated_sla") return `${hi == null ? "at least " : ""}${text}, no stated SLA`;
+  if (p.basis === "no_stated_sla") return `${hi == null ? "at least " : ""}${text}, review time not published`;
   return p.basis === "estimated" ? `~${text}` : text;
 }
 
-// Log scale from 3 minutes to 6 months, for the library chart.
-const LO = Math.log10(0.05);
+// Log scale from 1 minute to 6 months, for the library chart.
+const MIN_H = 1 / 60;
+const LO = Math.log10(MIN_H);
 const HI = Math.log10(24 * 180);
-export const axisPos = (h: number) => Math.min(1, Math.max(0, (Math.log10(Math.max(h, 0.05)) - LO) / (HI - LO)));
+export const axisPos = (h: number) => Math.min(1, Math.max(0, (Math.log10(Math.max(h, MIN_H)) - LO) / (HI - LO)));
 export const AXIS_TICKS: { label: string; h: number }[] = [
-  { label: "5 min", h: 1 / 12 },
+  { label: "1 min", h: MIN_H },
   { label: "1 hour", h: 1 },
   { label: "1 day", h: 24 },
   { label: "1 week", h: 168 },
   { label: "1 month", h: 720 },
   { label: "6 months", h: 4320 },
 ];
+
+export const phaseHours = (p: Phase) => (p.max ?? p.min) == null ? null : toHours((p.max ?? p.min) as number, p.unit);
+
+export function fastestAndLongest(paths: Path[]) {
+  const ranked = paths.map((p) => ({ path: p, span: pathSpan(p) })).sort((a, b) => a.span.max - b.span.max);
+  return { fastest: ranked[0], longest: ranked[ranked.length - 1] };
+}
 
 export const PHASE_OWNER: Record<Phase["kind"], "you" | "provider" | "customer_admin"> = {
   setup: "you",

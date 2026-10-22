@@ -34,9 +34,12 @@ export function ResearchForm({
         id="app"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="App name or website, e.g. Linear or dropbox.com"
+        name="app"
+        placeholder="Linear, dropbox.com…"
         className="min-w-0 flex-1 rounded-md border border-line bg-surface px-3 py-2.5 placeholder:text-muted"
         autoComplete="off"
+        spellCheck={false}
+        enterKeyHint="go"
       />
       <button type="submit" className="rounded-md bg-ink px-4 py-2.5 font-medium text-paper hover:opacity-90">
         Get the guide

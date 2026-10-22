@@ -1,21 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Guide } from "@/lib/schema";
 import { guideMarkdown } from "@/lib/share";
 
 export function GuideActions({ guide }: { guide: Guide }) {
-  const [copied, setCopied] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
 
   async function copy(kind: "link" | "markdown") {
     const link = `${location.origin}/${guide.origin === "library" ? "guides" : "g"}/${guide.slug}`;
     try {
       await navigator.clipboard.writeText(kind === "link" ? link : guideMarkdown(guide));
-      setCopied(kind === "link" ? "Link copied" : "Markdown copied");
+      setStatus(kind === "link" ? "Link copied" : "Markdown copied");
     } catch {
-      setCopied("Couldn't copy. Copy the address bar instead");
+      setStatus("Couldn't copy. Copy the address bar instead");
     }
-    setTimeout(() => setCopied(null), 2500);
+    setOpen(false);
+    setTimeout(() => setStatus(null), 2500);
   }
 
   function download() {
@@ -25,15 +41,29 @@ export function GuideActions({ guide }: { guide: Guide }) {
     a.download = `${guide.slug}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
+    setOpen(false);
   }
 
-  const btn = "rounded-md border border-line bg-surface px-3 py-1.5 text-sm hover:border-ink";
+  const item = "block w-full px-3 py-2 text-left text-sm hover:bg-paper focus-visible:bg-paper";
   return (
-    <div className="flex flex-wrap items-center gap-2 pt-6 print:hidden">
-      <button className={btn} onClick={() => copy("link")}>Copy link</button>
-      <button className={btn} onClick={() => copy("markdown")}>Copy as Markdown</button>
-      <button className={btn} onClick={download}>Download JSON</button>
-      <span role="status" className="text-sm text-muted">{copied}</span>
+    <div ref={root} className="relative flex items-center gap-3 print:hidden">
+      <span role="status" className="text-sm text-muted">{status}</span>
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="rounded-md border border-line bg-surface px-3.5 py-1.5 text-sm font-medium hover:border-ink"
+      >
+        Share
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-full z-20 mt-1.5 w-52 overflow-hidden rounded-md border border-line bg-surface py-1 shadow-sm">
+          <button role="menuitem" className={item} onClick={() => copy("link")}>Copy link</button>
+          <button role="menuitem" className={item} onClick={() => copy("markdown")}>Copy as Markdown</button>
+          <button role="menuitem" className={item} onClick={download}>Download JSON</button>
+        </div>
+      )}
     </div>
   );
 }
