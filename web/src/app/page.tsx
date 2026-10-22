@@ -38,9 +38,6 @@ export default async function Home() {
             then saves the guide for everyone.
           </p>
         </div>
-        <a href="#glance" className="mt-14 w-fit text-[15px] font-medium underline decoration-current/30 underline-offset-4 hover:decoration-current">
-          Compare all {library.length} providers
-        </a>
       </section>
 
       <AtAGlance guides={library} />
