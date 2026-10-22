@@ -90,7 +90,7 @@ export function AtAGlance({ guides }: { guides: Guide[] }) {
 
   return (
     <section aria-labelledby="glance" className="mt-2">
-      <h2 id="glance" className="text-lg font-semibold tracking-tight">Before you pick a provider</h2>
+      <h2 id="glance" className="scroll-mt-20 text-lg font-semibold tracking-tight">Before you pick a provider</h2>
       <p className="mt-1 max-w-[70ch] text-sm text-muted">
         The same {guides.length} providers, grouped by what you&rsquo;ll face. Times are for that provider&rsquo;s quickest route unless
         noted.

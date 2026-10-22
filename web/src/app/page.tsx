@@ -11,32 +11,36 @@ export default async function Home() {
   const saved = (await listSaved()).slice(0, 4);
   return (
     <>
-      <section className="pt-12 pb-8">
-        <h1 className="max-w-[22ch] text-[34px] font-semibold leading-[1.08] tracking-tight sm:text-[44px]">
+      {/* Fills the first screen (minus the header) so the search is the one thing to do on arrival. */}
+      <section className="flex min-h-[calc(100svh-3.25rem)] flex-col justify-center py-12">
+        <h1 className="max-w-[17ch] text-[40px] font-semibold leading-[1.03] tracking-tight sm:text-[60px] lg:text-[72px]">
           How long until your users can connect their accounts?
         </h1>
-        <p className="mt-4 max-w-[64ch] text-lg text-muted">
+        <p className="mt-6 max-w-[58ch] text-lg text-muted sm:text-xl">
           Before your agent can use a provider&rsquo;s API, you register an OAuth app and often get it approved. Each guide shows the
           wait, who you wait on, and what&rsquo;s confirmed.
         </p>
-        <div className="mt-6 max-w-xl">
-          <ResearchForm known={library.map(({ slug, name }) => ({ slug, name }))} />
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+        <div className="mt-10 max-w-2xl">
+          <ResearchForm size="lg" known={library.map(({ slug, name }) => ({ slug, name }))} />
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-[15px]">
             <span className="text-muted">Try:</span>
             {[
               ...["slack", "google", "salesforce"].map((slug) => ({ href: `/guides/${slug}`, name: library.find((g) => g.slug === slug)?.name.split(" (")[0] ?? slug })),
               ...saved.map((s) => ({ href: `/g/${s.slug}`, name: s.name })),
             ].map((t) => (
-              <Link key={t.href} href={t.href} className="btn-ghost rounded-full px-3 py-1">
+              <Link key={t.href} href={t.href} className="btn-ghost rounded-full px-3.5 py-1.5">
                 {t.name}
               </Link>
             ))}
           </div>
-          <p className="mt-3 text-sm text-muted">
+          <p className="mt-4 max-w-[60ch] text-[15px] text-muted">
             Not in the library? Type its name or website and an agent reads the provider&rsquo;s docs live, in about a minute,
             then saves the guide for everyone.
           </p>
         </div>
+        <a href="#glance" className="mt-14 w-fit text-[15px] font-medium underline decoration-current/30 underline-offset-4 hover:decoration-current">
+          Compare all {library.length} providers
+        </a>
       </section>
 
       <AtAGlance guides={library} />
