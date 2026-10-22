@@ -15,8 +15,8 @@ async function latestSample(slugs: string[]): Promise<Sample | null> {
   return null;
 }
 
-export default async function GeneratePage({ searchParams }: { searchParams: Promise<{ app?: string }> }) {
-  const { app } = await searchParams;
+export default async function GeneratePage({ searchParams }: { searchParams: Promise<{ app?: string; refresh?: string }> }) {
+  const { app, refresh } = await searchParams;
   const [mine, today, saved, running] = await Promise.all([currentVisitor().then(runsLeft), dailyLeft(), listSaved(), listProgress()]);
   const left = Math.min(mine, today);
   return (
@@ -26,6 +26,7 @@ export default async function GeneratePage({ searchParams }: { searchParams: Pro
       inProgress={running.map(({ key, app, stage, startedAt }) => ({ key, app, stage, startedAt }))}
       sample={await latestSample(saved.map((s) => s.slug))}
       initial={app ?? ""}
+      refresh={refresh === "1"}
       runsLeft={Number.isFinite(left) ? left : null}
       runLimit={RUN_LIMIT}
     />

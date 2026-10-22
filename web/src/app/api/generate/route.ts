@@ -10,6 +10,7 @@ import { writerConfigured } from "@/lib/research/write";
 import {
   acquireLock,
   appKey,
+  canRefresh,
   dailyLeft,
   endProgress,
   getProgress,
@@ -35,13 +36,15 @@ export async function GET(req: Request) {
   if (!key) return Response.json({ state: "none" }, { headers });
   const lib = getGuide(key);
   if (lib) return Response.json({ state: "saved", href: `/guides/${lib.slug}` }, { headers });
-  if (await getSaved(key)) return Response.json({ state: "saved", href: `/g/${key}` }, { headers });
+  // A run in progress wins over a saved guide, since a refresh runs while the old version is still saved.
   const p = await getProgress(key);
-  return Response.json(p ? { state: "running", ...p } : { state: "none" }, { headers });
+  if (p) return Response.json({ state: "running", ...p }, { headers });
+  if (await getSaved(key)) return Response.json({ state: "saved", href: `/g/${key}` }, { headers });
+  return Response.json({ state: "none" }, { headers });
 }
 
 export async function POST(req: Request) {
-  const { app, fp } = (await req.json().catch(() => ({}))) as { app?: string; fp?: string | null };
+  const { app, fp, refresh } = (await req.json().catch(() => ({}))) as { app?: string; fp?: string | null; refresh?: boolean };
   const target = (app ?? "").trim().slice(0, 200);
 
   const jar = await cookies();
@@ -76,7 +79,8 @@ export async function POST(req: Request) {
       const lib = getGuide(key);
       if (lib) return send({ type: "saved", guide: lib, href: `/guides/${lib.slug}`, origin: "library" });
       const saved = await getSaved(key);
-      if (saved) return send({ type: "saved", guide: saved, href: `/g/${key}`, origin: "live" });
+      // A saved guide is served as is, unless the visitor asked to redo one that's old enough.
+      if (saved && !(refresh && canRefresh(saved))) return send({ type: "saved", guide: saved, href: `/g/${key}`, origin: "live" });
 
       if (!searchConfigured() || !writerConfigured()) {
         return send({

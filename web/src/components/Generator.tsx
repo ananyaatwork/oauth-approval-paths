@@ -82,6 +82,7 @@ export function Generator({
   sample,
   inProgress,
   initial,
+  refresh = false,
   runsLeft: initialRuns,
   runLimit,
 }: {
@@ -90,6 +91,7 @@ export function Generator({
   sample: Sample | null;
   inProgress: RunningItem[];
   initial: string;
+  refresh?: boolean;
   runsLeft: number | null;
   runLimit: number;
 }) {
@@ -106,6 +108,8 @@ export function Generator({
   const [runs, setRuns] = useState(initialRuns);
   const [savedList, setSavedList] = useState(saved);
   const started = useRef(false);
+  // "Research again" applies only to the run the page was opened for.
+  const refreshPending = useRef(refresh);
   const abort = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -210,11 +214,13 @@ export function Generator({
 
   async function start(target: string, ctrl = reset(target)) {
     let busy = false;
+    const refresh = refreshPending.current && target === initial;
+    refreshPending.current = false;
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ app: target, fp: await browserFingerprint() }),
+        body: JSON.stringify({ app: target, fp: await browserFingerprint(), refresh }),
         signal: ctrl.signal,
       });
       if (!res.body) throw new Error(`Request failed (${res.status})`);

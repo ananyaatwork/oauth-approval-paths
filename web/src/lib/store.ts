@@ -190,6 +190,12 @@ export async function getSaved(key: string): Promise<Guide | null> {
 
 export const saveGuide = (guide: Guide) => db.putGuide(guide.slug, guide);
 
+// Provider rules change, so a saved guide can be researched again once it's
+// this old. Younger guides can't, so nobody spends quota redoing fresh work.
+export const REFRESH_AFTER_DAYS = Number(process.env.REFRESH_AFTER_DAYS ?? 30);
+export const ageInDays = (g: Guide) => Math.floor((Date.now() - Date.parse(g.researchedOn)) / 86_400_000);
+export const canRefresh = (g: Guide) => g.origin === "live" && ageInDays(g) >= REFRESH_AFTER_DAYS;
+
 export async function listSaved(): Promise<SavedSummary[]> {
   return (await db.listGuides())
     .map((raw) => Guide.safeParse(raw))
