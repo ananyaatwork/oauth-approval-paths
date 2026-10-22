@@ -91,7 +91,7 @@ export function LibraryChart({ guides }: { guides: Guide[] }) {
           ))}
         </div>
       </div>
-      <ul className="border-t border-line">
+      <ul className="space-y-1">
         {rows.map(({ g, fastest, longest }, i) => {
           const unknowns = longest.path.timeline.filter((p) => p.basis === "no_stated_sla" || phaseHours(p) == null).length;
           const b = band(longest.span.max);
@@ -99,13 +99,13 @@ export function LibraryChart({ guides }: { guides: Guide[] }) {
           return (
             <li key={g.slug}>
               {showBand && (
-                <p className="border-b border-line px-1 pb-1.5 pt-5 text-[13px] font-medium text-muted first:pt-3">
+                <p className="px-3 pb-1 pt-5 text-[13px] font-medium text-muted first:pt-2">
                   Longest path: {b}
                 </p>
               )}
               <Link
                 href={`/guides/${g.slug}`}
-                className="group grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] items-center gap-x-5 gap-y-2 border-b border-line px-1 py-3.5 hover:bg-surface max-sm:grid-cols-1"
+                className="lift group grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] items-center gap-x-5 gap-y-2 rounded-xl px-3 py-3.5 max-sm:grid-cols-1"
               >
                 <span>
                   <span className="font-semibold group-hover:underline underline-offset-2">{g.name}</span>
@@ -135,10 +135,6 @@ export function LibraryChart({ guides }: { guides: Guide[] }) {
           );
         })}
       </ul>
-      <p className="mt-2 text-xs text-muted">
-        Log scale: each gridline is a step up in waiting. The coloured bar is the longest path; the black tick is where
-        the fastest path finishes.
-      </p>
     </div>
   );
 }

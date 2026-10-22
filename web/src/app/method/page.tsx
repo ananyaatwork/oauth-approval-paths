@@ -26,7 +26,7 @@ export default function Method() {
       <ol className="mt-2 list-decimal space-y-2 pl-5">
         <li>A research agent (Claude Opus 5.5) read each provider&rsquo;s developer docs and wrote notes with a tag and URL for every fact.</li>
         <li>A second agent mapped those notes into the guide format without adding facts. A validator checks the format and that every cited source exists.</li>
-        <li>A separate agent re-opened the live pages for the highest-impact facts in five guides (Google, Slack, Microsoft, Salesforce, Notion): 29 facts, 21 matched, 6 corrected, 2 couldn&rsquo;t be verified. Corrections are listed at the bottom of each guide, and the full logs are in the repo.</li>
+        <li>A separate agent re-opened the live pages for the highest-impact facts in 5 guides (Google, Slack, Microsoft, Salesforce, Notion): 29 facts, 21 matched, 6 corrected, 2 couldn&rsquo;t be verified. Corrections are listed at the bottom of each guide, and the full logs are in the repo.</li>
       </ol>
 
       <h2 className="mt-10 text-lg font-semibold">Live guides</h2>

@@ -26,7 +26,7 @@ export function GuideNav({ items }: { items: NavItem[] }) {
 
   return (
     <>
-      <nav aria-label="On this page" className="sticky top-6 hidden self-start lg:block">
+      <nav aria-label="On this page" className="sticky top-20 hidden self-start lg:block">
         <p className="mb-2 text-[13px] font-medium text-ink">On this page</p>
         <ul className="space-y-0.5 border-l border-line text-sm">
           {items.map((i) => (
@@ -44,14 +44,14 @@ export function GuideNav({ items }: { items: NavItem[] }) {
       </nav>
       <nav
         aria-label="On this page"
-        className="sticky top-0 z-10 -mx-4 mt-8 flex gap-1.5 overflow-x-auto border-b border-line bg-paper/95 px-4 py-2 backdrop-blur lg:hidden"
+        className="-mx-4 mt-8 flex gap-1.5 overflow-x-auto px-4 py-2 lg:hidden"
       >
         {items.map((i) => (
           <a
             key={i.id}
             href={`#${i.id}`}
             aria-current={active === i.id ? "location" : undefined}
-            className={`shrink-0 rounded-full border px-3 py-1 text-[13px] ${active === i.id ? "border-ink text-ink" : "border-line text-muted"}`}
+            className={`shrink-0 rounded-full border px-3 py-1 text-[13px] ${active === i.id ? "border-accent bg-accent/15 text-ink" : "border-line bg-surface text-muted"}`}
           >
             {i.label}
           </a>

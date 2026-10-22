@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "validate": "tsx scripts/validate-guides.ts"
+    "validate": "tsx scripts/validate-guides.ts",
+    "slop-gate": "tsx scripts/slop-gate.ts",
+    "prebuild": "npm run -s validate && npm run -s slop-gate"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.137.0",

@@ -21,8 +21,8 @@ const OWNER_DOT: Record<Step["owner"], string> = {
 
 function Section({ id, title, children, aside }: { id: string; title: string; children: React.ReactNode; aside?: React.ReactNode }) {
   return (
-    <section id={id} className="mt-14 scroll-mt-16 first:mt-0 lg:scroll-mt-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-2">
+    <section id={id} className="mt-12 scroll-mt-20 first:mt-0">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
         {aside}
       </div>
@@ -33,9 +33,9 @@ function Section({ id, title, children, aside }: { id: string; title: string; ch
 
 function Collapsible({ id, title, meta, children }: { id: string; title: string; meta: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="mt-14 scroll-mt-16 lg:scroll-mt-6">
+    <section id={id} className="mt-12 scroll-mt-20">
       <details className="group">
-        <summary className="flex cursor-pointer list-none flex-wrap items-baseline justify-between gap-2 border-b border-line pb-2 [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer list-none flex-wrap items-baseline justify-between gap-2 [&::-webkit-details-marker]:hidden">
           <h2 className="text-lg font-semibold tracking-tight">
             <span aria-hidden className="mr-2 inline-block text-muted transition-transform duration-150 group-open:rotate-90">›</span>
             {title}
@@ -89,9 +89,12 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
         <p className="mt-3 max-w-[70ch] text-lg leading-snug">{guide.verdict.headline}</p>
         <VerdictPanel guide={guide} sourceInfo={sourceInfo} />
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-[68ch] flex-1 border-l-[3px] border-you pl-4">
-            <p className="text-[13px] text-muted">Do this next</p>
-            <p className="mt-0.5 font-medium">{guide.verdict.nextAction}</p>
+          <div className="flex max-w-[72ch] flex-1 gap-3">
+            <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-you/15 text-you">→</span>
+            <div>
+              <p className="text-[13px] text-muted">Do this next</p>
+              <p className="mt-0.5 font-medium">{guide.verdict.nextAction}</p>
+            </div>
           </div>
           {actions}
         </div>
@@ -163,8 +166,8 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
               . The rest need your login, money, legal identity or a decision, or are waits on someone else.
             </p>
             <div className="grid gap-x-8 gap-y-6 md:grid-cols-3">
-              <div className="border-t-[3px] border-agent pt-3">
-                <h3 className="font-medium text-agent">An agent can do</h3>
+              <div className="tile p-4">
+                <h3 className="flex items-center gap-2 font-medium"><span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-agent" />An agent can do</h3>
                 <ul className="mt-2 space-y-2 text-sm">
                   {agentSteps.map((s) => (
                     <li key={s.title}><StepRef s={s} /> {s.title}</li>
@@ -177,16 +180,16 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
                   {!agentSteps.length && !helped.length && <li className="text-muted">Research and checklists only.</li>}
                 </ul>
               </div>
-              <div className="border-t-[3px] border-you pt-3">
-                <h3 className="font-medium text-you">You need to do</h3>
+              <div className="tile p-4">
+                <h3 className="flex items-center gap-2 font-medium"><span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-you" />You need to do</h3>
                 <ul className="mt-2 space-y-2 text-sm">
                   {youSteps.map((s) => (
                     <li key={s.title}><StepRef s={s} /> {s.title}</li>
                   ))}
                 </ul>
               </div>
-              <div className="border-t-[3px] border-provider pt-3">
-                <h3 className="font-medium text-provider">You wait on</h3>
+              <div className="tile p-4">
+                <h3 className="flex items-center gap-2 font-medium"><span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-provider" />You wait on</h3>
                 <ul className="mt-2 space-y-2 text-sm">
                   {waitSteps.map((s) => (
                     <li key={s.title}>
@@ -202,8 +205,8 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
           <Section id="steps" title="Steps">
             <ol className="space-y-6">
               {guide.steps.map((s, i) => (
-                <li key={s.title} id={`step-${i + 1}`} className="grid scroll-mt-20 grid-cols-[2rem_minmax(0,1fr)] gap-x-3 lg:scroll-mt-6">
-                  <span className="text-lg font-semibold text-muted tabular-nums">{i + 1}</span>
+                <li key={s.title} id={`step-${i + 1}`} className="grid scroll-mt-24 grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
+                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-sm font-semibold text-muted tabular-nums">{i + 1}</span>
                   <div className="max-w-[72ch]">
                     <p className="font-medium">
                       {s.url ? (

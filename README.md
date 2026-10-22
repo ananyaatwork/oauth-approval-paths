@@ -55,6 +55,25 @@ These ran through the real app with free-tier keys. Gemini's bigger models were 
 
 **Spot-check (Dropbox):** the facts match Dropbox's developer guide. Once an app links 50 users, you have two weeks to get production approval. But the headline oversimplifies: it says "works for up to 50 users", while the cap is 500 and 50 is only where the two-week deadline starts. The lighter fallback model loses nuance like this, which is why live guides say they haven't been checked by a person.
 
+## UI quality gate
+
+The build runs `npm run slop-gate` before `next build` (via `prebuild`). The gate checks the code against "21 signs a website was vibecoded". It fails the build on any of these:
+- purple gradients
+- glows, or decorative backgrounds on dark
+- glass blur
+- coloured stripes on cards
+- all-caps or monospace labels
+- decorative pulsing dots
+- numbers written as words
+- placeholder images
+- unapproved animations
+- too many identical cards
+- secondary text below 4.5:1 contrast in either theme
+
+A line can opt out only with a `slop-ok: <reason>` comment. The signs that can't be detected in code (long noun titles, overstuffed screens, metaphors explained by labels, demos made of text, proof nobody can check) are printed as a checklist on every run.
+
+Element shapes are adapted from [Uiverse.io](https://uiverse.io) (MIT): the search bar, the segmented route picker, the stat tiles, the checkbox and the progress line.
+
 ## Running it
 
 ```bash

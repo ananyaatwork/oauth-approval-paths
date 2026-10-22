@@ -56,7 +56,7 @@ export async function POST(req: Request) {
         if ((await runsLeft(visitor)) <= 0) {
           return send({
             type: "limit",
-            message: `Each browser gets ${RUN_LIMIT === 1 ? "one live research run" : `${RUN_LIMIT} live research runs`}, and this one has used ${RUN_LIMIT === 1 ? "it" : "them"}. Saved guides and the library stay open.`,
+            message: `Each browser gets ${RUN_LIMIT} live research ${RUN_LIMIT === 1 ? "run" : "runs"}, and this one has used ${RUN_LIMIT === 1 ? "it" : "them"}. Saved guides and the library stay open.`,
           });
         }
         if ((await dailyLeft()) <= 0) {

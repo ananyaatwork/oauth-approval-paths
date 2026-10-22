@@ -27,7 +27,7 @@ const STAGES: { id: Exclude<Stage, "done">; label: string }[] = [
 function runsText(left: number | null, limit: number) {
   if (left === null) return "Live research runs are unlimited on this deployment.";
   if (left === 0) return "You've used your live research run. Apps that are already researched still open instantly.";
-  const n = left === 1 ? "one live research run" : `${left} live research runs`;
+  const n = `${left} live research ${left === 1 ? "run" : "runs"}`;
   return `You have ${n}${limit > left ? " left" : ""}. Apps that are already researched open instantly and don't use it.`;
 }
 
@@ -57,8 +57,11 @@ function StripSkeleton() {
     <div aria-hidden className="mt-6 grid max-w-3xl grid-cols-2 gap-px border border-line bg-line md:grid-cols-4">
       {[0, 1, 2, 3].map((i) => (
         <div key={i} className="bg-surface px-4 py-4">
+          {/* slop-ok: loading placeholders show the guide is being written */}
           <div className="h-3 w-16 animate-pulse rounded bg-line" />
+          {/* slop-ok: loading placeholder */}
           <div className="mt-3 h-6 w-20 animate-pulse rounded bg-line" />
+          {/* slop-ok: loading placeholder */}
           <div className="mt-2 h-3 w-24 animate-pulse rounded bg-line" />
         </div>
       ))}
@@ -211,7 +214,8 @@ export function Generator({
       )}
 
       {researched && !guide && (
-        <section aria-live="polite" className="mt-8 max-w-3xl rounded-md border border-line bg-surface p-4 sm:p-5">
+        <section aria-live="polite" className="card mt-8 max-w-3xl p-4 sm:p-5">
+          {running && <div className="progress-line -mt-1 mb-4" aria-hidden />}
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <StageTracker stage={stage} />
             <span className="text-sm text-muted tabular-nums">{elapsed}s</span>
@@ -231,9 +235,9 @@ export function Generator({
       {notice && (
         <div
           role={notice.tone === "stop" ? "alert" : "status"}
-          className={`mt-6 max-w-3xl border-l-[3px] bg-surface px-4 py-3 text-sm ${notice.tone === "stop" ? "border-provider" : "border-agent"}`}
+          className="mt-6 max-w-3xl text-sm"
         >
-          <p className="font-medium">{notice.title}</p>
+          <p className={`font-semibold ${notice.tone === "stop" ? "text-provider" : "text-ink"}`}>{notice.title}</p>
           <p className="mt-1">{notice.body}</p>
           {notice.href && (
             <p className="mt-2">
@@ -244,8 +248,8 @@ export function Generator({
       )}
 
       {error && (
-        <div role="alert" className="mt-6 max-w-3xl border-l-[3px] border-customer bg-surface px-4 py-3 text-sm">
-          <p className="font-medium">The guide couldn&rsquo;t be generated.</p>
+        <div role="alert" className="mt-6 max-w-3xl text-sm">
+          <p className="font-semibold text-customer">The guide couldn&rsquo;t be generated.</p>
           <p className="mt-1">{error}</p>
           <p className={`mt-2 text-muted ${error.includes("isn't set up") ? "hidden" : ""}`}>
             Try the provider&rsquo;s website instead of its name, or browse the <Link href="/" className="underline">library</Link>.
@@ -256,7 +260,7 @@ export function Generator({
       {guide && (
         <div className="mt-4">
           {researched && lines.length > 0 && (
-            <details className="max-w-3xl rounded-md border border-line bg-surface px-4 py-3 text-sm">
+            <details className="max-w-3xl text-sm">
               <summary className="cursor-pointer">
                 <span className="font-medium">How the agent got here</span>{" "}
                 <span className="text-muted">
@@ -275,14 +279,14 @@ export function Generator({
       {!guide && !researched && (
         <div className="mt-14 grid max-w-5xl gap-12 lg:grid-cols-2">
           <section aria-labelledby="saved-h">
-            <h2 id="saved-h" className="border-b border-line pb-2 text-lg font-semibold tracking-tight">
+            <h2 id="saved-h" className="text-lg font-semibold tracking-tight">
               Already researched
             </h2>
             {savedList.length ? (
-              <ul>
+              <ul className="card mt-3 p-2">
                 {savedList.map((s) => (
-                  <li key={s.slug} className="border-b border-line">
-                    <Link href={`/g/${s.slug}`} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1 py-2.5 hover:bg-surface">
+                  <li key={s.slug}>
+                    <Link href={`/g/${s.slug}`} className="lift flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg px-3 py-2.5">
                       <span className="font-medium">{s.name}</span>
                       <span className="flex items-center gap-2 text-[13px] text-muted">
                         <DifficultyDots value={s.difficulty} /> {formatDate(s.researchedOn)}
@@ -299,7 +303,7 @@ export function Generator({
           </section>
           {sample && (
             <section aria-labelledby="sample-h">
-              <h2 id="sample-h" className="border-b border-line pb-2 text-lg font-semibold tracking-tight">
+              <h2 id="sample-h" className="text-lg font-semibold tracking-tight">
                 What a run looks like
               </h2>
               <p className="mt-3 text-[13px] text-muted">
@@ -307,7 +311,7 @@ export function Generator({
                 <Link href={`/g/${sample.slug}`} className="underline underline-offset-2">{sample.name}</Link> on{" "}
                 {formatDate(sample.researchedOn)}: <ResearchLogSummary lines={sample.log} />.
               </p>
-              <div className="mt-3 max-h-80 overflow-y-auto rounded-md border border-line bg-surface p-4">
+              <div className="card mt-3 max-h-80 overflow-y-auto p-4">
                 <ResearchLog lines={sample.log} />
               </div>
             </section>

@@ -39,7 +39,7 @@ export function Checklist({ storageKey, items }: { storageKey: string; items: Ch
                 type="checkbox"
                 checked={!!done[i.id]}
                 onChange={() => toggle(i.id)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--you)]"
+                className="check"
               />
               <span className={done[i.id] ? "text-muted line-through decoration-muted/60" : ""}>
                 {i.label}

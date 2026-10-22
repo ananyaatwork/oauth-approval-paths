@@ -26,8 +26,8 @@ export function ResearchLog({ lines, running = false }: { lines: TraceLine[]; ru
       ))}
       {running && (
         <li className="grid grid-cols-[1.25rem_minmax(0,1fr)] text-muted">
-          <span aria-hidden className="animate-pulse">●</span>
-          <span>Working…</span>
+          <span aria-hidden>…</span>
+          <span>Working</span>
         </li>
       )}
     </ol>

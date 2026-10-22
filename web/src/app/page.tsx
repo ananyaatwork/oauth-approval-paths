@@ -38,7 +38,7 @@ export default async function Home() {
               ...["slack", "google", "salesforce"].map((slug) => ({ href: `/guides/${slug}`, name: library.find((g) => g.slug === slug)?.name.split(" (")[0] ?? slug })),
               ...saved.map((s) => ({ href: `/g/${s.slug}`, name: s.name })),
             ].map((t) => (
-              <Link key={t.href} href={t.href} className="rounded-full border border-line bg-surface px-3 py-1 hover:border-ink">
+              <Link key={t.href} href={t.href} className="btn-ghost rounded-full px-3 py-1">
                 {t.name}
               </Link>
             ))}
@@ -51,19 +51,19 @@ export default async function Home() {
       </section>
 
       <section aria-labelledby="lib">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line pb-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <h2 id="lib" className="text-lg font-semibold tracking-tight">Library, sorted by time to production</h2>
           <p className="text-sm">
             {t.sameDay} of {t.total} can work the same day. {t.overMonth} of {t.total} have a path that takes over a month, and{" "}
             {t.unpublished === t.total ? `all ${t.total}` : `${t.unpublished} of ${t.total}`} include a wait with no published time.
           </p>
         </div>
-        <div className="mt-5">
+        <div className="card mt-5 p-4 sm:p-6">
           <LibraryChart guides={library} />
         </div>
       </section>
 
-      <section className="mt-16 grid gap-8 text-sm md:grid-cols-3" aria-label="What these guides cover">
+      <section className="mt-14 grid gap-8 text-sm md:grid-cols-3" aria-label="What these guides cover">
         <div>
           <h2 className="font-semibold">Your OAuth app</h2>
           <p className="mt-1 text-muted">

@@ -28,21 +28,26 @@ export function ResearchForm({
   }
 
   return (
-    <form onSubmit={submit} className="flex gap-2 max-sm:flex-col">
+    <form onSubmit={submit} className="search-pill">
       <label htmlFor="app" className="sr-only">App name or website</label>
+      <svg aria-hidden viewBox="0 0 24 24" className="ml-2.5 h-5 w-5 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-3.5-3.5" />
+      </svg>
       <input
         id="app"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         name="app"
-        placeholder="Linear, dropbox.com…"
-        className="min-w-0 flex-1 rounded-md border border-line bg-surface px-3 py-2.5 placeholder:text-muted"
+        placeholder="Search any app: Linear, dropbox.com…"
+        className="min-w-0 flex-1 px-1 py-2.5 text-[15px] placeholder:text-muted"
         autoComplete="off"
         spellCheck={false}
         enterKeyHint="go"
       />
-      <button type="submit" className="rounded-md bg-ink px-4 py-2.5 font-medium text-paper hover:opacity-90">
+      <button type="submit" className="btn-primary shrink-0 px-4 py-2.5 text-sm">
         Get the guide
+        <span aria-hidden>→</span>
       </button>
     </form>
   );
