@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { Guide } from "./schema";
+import { Guide, type TraceLine } from "./schema";
 
 // Saved live guides, per-app research locks and per-visitor run counts.
 // Uses Upstash Redis (Vercel's "KV" integration) when its REST env vars are
@@ -27,6 +27,10 @@ export function appKey(input: string): string {
 
 export type SavedSummary = { slug: string; name: string; researchedOn: string; difficulty: number };
 
+// A run in progress, saved as it goes so anyone (including the person who
+// started it and then left) can follow it until the guide is saved.
+export type Progress = { key: string; app: string; stage: string | null; startedAt: number; lines: TraceLine[] };
+
 interface Backend {
   getGuide(key: string): Promise<unknown | null>;
   putGuide(key: string, guide: Guide): Promise<void>;
@@ -35,10 +39,18 @@ interface Backend {
   unlock(key: string): Promise<void>;
   runs(id: string): Promise<number>;
   addRuns(id: string, delta: number): Promise<void>;
+  getProgress(key: string): Promise<Progress | null>;
+  putProgress(p: Progress): Promise<void>;
+  endProgress(key: string): Promise<void>;
+  listProgress(): Promise<Progress[]>;
 }
 
-const REDIS_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
-const REDIS_TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
+// Vercel's Upstash integration names these KV_REST_API_* by default, or
+// <PREFIX>_KV_REST_API_* when a custom prefix is chosen.
+const envEnding = (suffix: string) =>
+  Object.entries(process.env).find(([k, v]) => k.endsWith(suffix) && v)?.[1];
+const REDIS_URL = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL ?? envEnding("KV_REST_API_URL");
+const REDIS_TOKEN = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN ?? envEnding("KV_REST_API_TOKEN");
 
 async function redis<T>(...cmd: (string | number)[]): Promise<T> {
   const res = await fetch(REDIS_URL!, {
@@ -81,6 +93,23 @@ const redisBackend: Backend = {
     const n = await redis<number>("INCRBY", `runs:${id}`, delta);
     if (n < 0) await redis("SET", `runs:${id}`, 0);
     if (id.startsWith("day-")) await redis("EXPIRE", `runs:${id}`, 2 * 24 * 3600);
+  },
+  getProgress: async (key) => parse(await redis<string | null>("GET", `progress:${key}`)),
+  putProgress: async (p) => {
+    await redis("SET", `progress:${p.key}`, JSON.stringify(p), "EX", LOCK_TTL_S);
+    await redis("SADD", "running", p.key);
+  },
+  endProgress: async (key) => {
+    await redis("DEL", `progress:${key}`);
+    await redis("SREM", "running", key);
+  },
+  listProgress: async () => {
+    const keys = await redis<string[]>("SMEMBERS", "running");
+    if (!keys.length) return [];
+    const values = await redis<(string | null)[]>("MGET", ...keys.map((k) => `progress:${k}`));
+    const stale = keys.filter((_, i) => !values[i]);
+    if (stale.length) await redis("SREM", "running", ...stale);
+    return values.map(parse).filter(Boolean);
   },
 };
 
@@ -131,6 +160,21 @@ const fileBackend: Backend = {
     const now = await fileBackend.runs(id);
     await writeJson(`visitors/${id}.json`, { runs: Math.max(0, now + delta) });
   },
+  getProgress: async (key) => {
+    const p = (await readJson(`progress/${key}.json`)) as Progress | null;
+    return p && Date.now() - p.startedAt < LOCK_TTL_S * 1000 ? p : null;
+  },
+  putProgress: (p) => writeJson(`progress/${p.key}.json`, p),
+  endProgress: (key) => fs.rm(file(`progress/${key}.json`), { force: true }),
+  listProgress: async () => {
+    try {
+      const names = (await fs.readdir(file("progress"))).filter((f) => f.endsWith(".json"));
+      const all = await Promise.all(names.map((n) => fileBackend.getProgress(n.slice(0, -5))));
+      return all.filter((p): p is Progress => !!p);
+    } catch {
+      return [];
+    }
+  },
 };
 
 const db: Backend = REDIS_URL && REDIS_TOKEN ? redisBackend : fileBackend;
@@ -156,6 +200,13 @@ export async function listSaved(): Promise<SavedSummary[]> {
 
 export const acquireLock = (key: string) => db.lock(key);
 export const releaseLock = (key: string) => db.unlock(key);
+
+export const getProgress = (key: string) => (validKey(key) ? db.getProgress(key) : Promise.resolve(null));
+export const putProgress = (p: Progress) => db.putProgress(p);
+export const endProgress = (key: string) => db.endProgress(key);
+export async function listProgress(): Promise<Progress[]> {
+  return (await db.listProgress()).sort((a, b) => b.startedAt - a.startedAt);
+}
 
 // A browser is counted by its cookie and by a fingerprint of the browser
 // itself, so clearing cookies or cache doesn't reset its run. Both are stored

@@ -16,6 +16,13 @@ import { DifficultyDots } from "./DifficultyDots";
 type SavedItem = { slug: string; name: string; researchedOn: string; difficulty: number };
 type Notice = { tone: "info" | "stop"; title: string; body: string; href?: string };
 export type Sample = { name: string; slug: string; researchedOn: string; log: TraceLine[] };
+export type RunningItem = { key: string; app: string; stage: string | null; startedAt: number };
+type Status =
+  | { state: "none" }
+  | { state: "saved"; href: string }
+  | ({ state: "running"; lines: TraceLine[] } & RunningItem);
+
+const POLL_MS = 2500;
 
 const STAGES: { id: Exclude<Stage, "done">; label: string }[] = [
   { id: "searching", label: "Searching" },
@@ -73,6 +80,7 @@ export function Generator({
   known,
   saved,
   sample,
+  inProgress,
   initial,
   runsLeft: initialRuns,
   runLimit,
@@ -80,6 +88,7 @@ export function Generator({
   known: KnownApp[];
   saved: SavedItem[];
   sample: Sample | null;
+  inProgress: RunningItem[];
   initial: string;
   runsLeft: number | null;
   runLimit: number;
@@ -93,17 +102,76 @@ export function Generator({
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [startedAt, setStartedAt] = useState(0);
   const [runs, setRuns] = useState(initialRuns);
   const [savedList, setSavedList] = useState(saved);
   const started = useRef(false);
   const abort = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    if (!running) return;
-    const t0 = Date.now();
-    const id = setInterval(() => setElapsed(Math.round((Date.now() - t0) / 1000)), 1000);
+    if (!running || !startedAt) return;
+    const tick = () => setElapsed(Math.max(0, Math.round((Date.now() - startedAt) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [running]);
+  }, [running, startedAt]);
+
+  function reset(target: string) {
+    abort.current?.abort();
+    const ctrl = new AbortController();
+    abort.current = ctrl;
+    setApp(target);
+    setLines([]);
+    setStage(null);
+    setGuide(null);
+    setNotice(null);
+    setError(null);
+    setElapsed(0);
+    setStartedAt(Date.now());
+    setRunning(true);
+    history.replaceState(null, "", `/generate?app=${encodeURIComponent(target)}`);
+    return ctrl;
+  }
+
+  async function status(target: string, signal: AbortSignal): Promise<Status> {
+    const res = await fetch(`/api/generate?app=${encodeURIComponent(target)}`, { cache: "no-store", signal });
+    return (await res.json()) as Status;
+  }
+
+  // Watches a run that's already going (started earlier from this or another
+  // browser) by polling its saved progress, then opens the guide once saved.
+  async function follow(target: string, ctrl = reset(target)) {
+    try {
+      for (;;) {
+        const s = await status(target, ctrl.signal);
+        if (s.state === "saved") return router.push(s.href);
+        if (s.state === "none") {
+          return setError("The research stopped before a guide was saved. Search for the app again to start a new run.");
+        }
+        setLines(s.lines);
+        setStage((s.stage as Stage | null) ?? "searching");
+        setStartedAt(s.startedAt);
+        await new Promise((r) => setTimeout(r, POLL_MS));
+        if (ctrl.signal.aborted) return;
+      }
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") setError("Lost the connection while following the research. Reload to check on it.");
+    } finally {
+      if (!ctrl.signal.aborted) setRunning(false);
+    }
+  }
+
+  // Opens a run already in progress if there is one, otherwise starts one.
+  async function open(target: string) {
+    const ctrl = reset(target);
+    try {
+      const s = await status(target, ctrl.signal);
+      if (s.state === "running") return follow(target, ctrl);
+    } catch {
+      // The status check is a shortcut; fall through to a normal start.
+    }
+    return start(target, ctrl);
+  }
 
   function handle(e: TraceEvent) {
     setLines((prev) => reduceTrace(prev, e));
@@ -135,27 +203,13 @@ export function Generator({
       case "limit":
         setRuns(0);
         return setNotice({ tone: "stop", title: "You've used your live research run", body: e.message });
-      case "busy":
-        return setNotice({ tone: "stop", title: "Already being researched", body: e.message });
       case "error":
         return setError(e.message);
     }
   }
 
-  async function start(target: string) {
-    abort.current?.abort();
-    const ctrl = new AbortController();
-    abort.current = ctrl;
-    setApp(target);
-    setLines([]);
-    setStage(null);
-    setGuide(null);
-    setNotice(null);
-    setError(null);
-    setElapsed(0);
-    setRunning(true);
-    history.replaceState(null, "", `/generate?app=${encodeURIComponent(target)}`);
-
+  async function start(target: string, ctrl = reset(target)) {
+    let busy = false;
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -175,20 +229,27 @@ export function Generator({
         while ((nl = buf.indexOf("\n")) >= 0) {
           const raw = buf.slice(0, nl).trim();
           buf = buf.slice(nl + 1);
-          if (raw) handle(JSON.parse(raw) as TraceEvent);
+          if (!raw) continue;
+          const e = JSON.parse(raw) as TraceEvent;
+          if (e.type === "busy") busy = true;
+          else handle(e);
         }
       }
     } catch (err) {
-      if ((err as Error).name !== "AbortError") setError((err as Error).message || "The connection dropped. Try again.");
+      if ((err as Error).name !== "AbortError") {
+        // The run carries on server-side, so pick it up from its saved progress.
+        return follow(target);
+      }
     } finally {
-      setRunning(false);
+      if (!busy && !ctrl.signal.aborted) setRunning(false);
     }
+    if (busy) return follow(target);
   }
 
   useEffect(() => {
     if (initial && !started.current) {
       started.current = true;
-      start(initial);
+      open(initial);
     }
     return () => abort.current?.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -205,7 +266,7 @@ export function Generator({
         format as the library. A fact is only marked confirmed if the agent opened the page it cites.
       </p>
       <div className="mt-6 max-w-xl">
-        <ResearchForm key={app} known={known} initial={app} onSubmit={start} />
+        <ResearchForm key={app} known={known} initial={app} onSubmit={open} />
         <p className={`mt-2 text-sm ${runs === 0 ? "text-customer" : "text-muted"}`}>{runsText(runs, runLimit)}</p>
       </div>
 
@@ -227,6 +288,12 @@ export function Generator({
           <div className="mt-4 border-t border-line pt-4">
             <ResearchLog lines={lines} running={running} />
           </div>
+          {running && (
+            <p className="mt-4 border-t border-line pt-3 text-[13px] text-muted">
+              You can leave this page. The research carries on, and coming back to{" "}
+              <span className="text-ink">Research an app</span> shows it here until the guide is saved.
+            </p>
+          )}
         </section>
       )}
 
@@ -274,6 +341,29 @@ export function Generator({
           )}
           <GuideView guide={guide} actions={<GuideActions guide={guide} />} />
         </div>
+      )}
+
+      {!guide && !researched && !running && inProgress.length > 0 && (
+        <section aria-labelledby="now-h" className="mt-10 max-w-xl">
+          <h2 id="now-h" className="text-lg font-semibold tracking-tight">Researching now</h2>
+          <ul className="card mt-3 p-2">
+            {inProgress.map((r) => (
+              <li key={r.key}>
+                <button
+                  type="button"
+                  onClick={() => follow(r.app)}
+                  className="lift flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg px-3 py-2.5 text-left"
+                >
+                  <span className="font-medium">{r.app}</span>
+                  <span className="flex items-center gap-3 text-[13px]">
+                    <span className="text-muted">{STAGES.find((s) => s.id === r.stage)?.label ?? "Starting"}</span>
+                    <span className="font-medium underline underline-offset-2">Watch</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {!guide && !researched && (
