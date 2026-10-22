@@ -1,8 +1,8 @@
-# OAuth Approval Paths
+﻿# OAuth Approval Paths
 
 **What it is:** a guide library that tells a developer how long it takes to get an OAuth app approved by a provider, what blocks it, who they wait on, and which parts an agent can do for them. It covers 10 providers, picked because each has a different kind of wait. You can also type in any other app, and an agent researches it live and writes a guide in the same format.
 
-- **Live demo:** _add Vercel URL_
+- **Live demo:** https://greenlight-lime-iota.vercel.app
 - **Repo:** https://github.com/ananyaatwork/oauth-approval-paths
 - **The guides:** `web/src/guides/*.json`, made from the research notes in `research/`, with verification logs in `research/verification/`.
 
@@ -96,6 +96,6 @@ Deploying to Vercel: import the repo, set the root directory to `web`, and add `
 - **Spot-checks were done by an agent, not a person.** They covered five guides, about five claims each. The other five guides haven't been re-checked and say so.
 - **Live guides are unreviewed.** They depend on what's public. Providers with gated partner portals (e.g. Gusto) will mostly come back "unconfirmed", which is intended.
 - **Some figures are estimates.** Setup durations are marked "estimated". Provider review times are only shown where a provider states them.
-- **Provider policies change.** Every guide shows its research date, and rate-limit and consent policies changed several times in 2025–26.
+- **Provider policies change.** Every guide shows its research date, and rate-limit and consent policies changed several times in 2025â€“26.
 - **Storage needs Redis in production.** Locally, saved guides and visitor counts go in `web/.data/`, which git ignores. On Vercel, add the Upstash Redis integration (Vercel's "KV"). The app picks up `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically. Without it, saved guides only last as long as one server instance.
 - **The run limit can be got around.** A cookie plus IP hash stops casual reuse, but someone on a different network with cookies cleared gets another run. A spend cap in the Anthropic console is the real backstop.
