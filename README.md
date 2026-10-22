@@ -3,6 +3,7 @@
 **What it is:** a guide library that tells a developer how long it takes to get an OAuth app approved by a provider, what blocks it, who they wait on, and which parts an agent can do for them. It covers 10 providers, picked because each has a different kind of wait. You can also type in any other app, and an agent researches it live and writes a guide in the same format.
 
 - **Live demo:** _add Vercel URL_
+- **Repo:** https://github.com/ananyaatwork/oauth-approval-paths
 - **The guides:** `web/src/guides/*.json`, made from the research notes in `research/`, with verification logs in `research/verification/`.
 
 ## The problem, as I understood it
