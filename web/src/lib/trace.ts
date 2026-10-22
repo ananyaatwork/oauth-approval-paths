@@ -72,8 +72,8 @@ export function reduceTrace(lines: TraceLine[], e: TraceEvent): TraceLine[] {
       return [
         ...lines,
         e.downgraded
-          ? { kind: "warn", text: `Provenance check: ${e.downgraded} fact(s) downgraded because their page wasn't opened` }
-          : { kind: "note", text: `Provenance check passed: every “confirmed” fact cites a page the agent opened` },
+          ? { kind: "warn", text: `Evidence check: ${e.downgraded} fact(s) marked less certain because their page wasn't opened` }
+          : { kind: "note", text: `Evidence check passed: every “confirmed” fact cites a provider page the agent opened` },
       ];
     default:
       return lines;

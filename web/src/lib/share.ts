@@ -33,7 +33,7 @@ export function guideMarkdown(g: Guide): string {
     "## Have ready for review",
     ...g.submissionChecklist.map((i) => `- [ ] ${i.item} [${t(i.confidence)}]`),
     "",
-    "## Gotchas",
+    "## Watch out for",
     ...g.gotchas.map((x) => `- **${x.title}** ${x.detail} [${t(x.confidence)}]`),
     "",
     "## If you're blocked",

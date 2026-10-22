@@ -35,22 +35,20 @@ export function Evidence({
   sources: string[];
   sourceInfo: Record<string, string>;
 }) {
-  const detail = sources.length ? sources.map((id) => `${id}: ${sourceInfo[id] ?? "unknown source"}`).join("\n") : "No source cited";
+  // Native tooltips only: they appear after a pause and never cover the text
+  // a reader is scanning. The source ids stay as links to the full list.
   return (
     <span className="inline-flex items-center gap-1.5 align-middle text-xs text-muted">
-      <span tabIndex={0} className="group relative inline-flex items-center rounded-full outline-offset-2" aria-label={`${CONFIDENCE_LABEL[level]}. ${detail}`}>
+      <span className="inline-flex items-center" title={CONFIDENCE_LABEL[level]} role="img" aria-label={CONFIDENCE_LABEL[level]}>
         <ConfidenceGlyph level={level} />
-        <span
-          role="tooltip"
-          className="pointer-events-none absolute bottom-full left-0 z-20 mb-2 hidden w-64 max-w-[calc(100vw-3rem)] animate-[fadein_120ms_ease-out] whitespace-pre-line rounded-md border border-line bg-surface px-3 py-2 text-xs text-ink shadow-sm group-hover:block group-focus:block sm:left-1/2 sm:-translate-x-1/2"
-        >
-          <span className="font-medium">{CONFIDENCE_LABEL[level]}</span>
-          {"\n"}
-          <span className="text-muted">{detail}</span>
-        </span>
       </span>
       {sources.map((id) => (
-        <a key={id} href={`#src-${id}`} className="text-[var(--focus)] underline decoration-[var(--focus)]/40 underline-offset-2 hover:decoration-[var(--focus)]">
+        <a
+          key={id}
+          href={`#src-${id}`}
+          title={sourceInfo[id] ?? "Source"}
+          className="text-[var(--focus)] underline decoration-[var(--focus)]/40 underline-offset-2 hover:decoration-[var(--focus)]"
+        >
           {id}
         </a>
       ))}

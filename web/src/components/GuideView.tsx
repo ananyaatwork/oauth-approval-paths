@@ -5,6 +5,7 @@ import { Checklist } from "./Checklist";
 import { GuideNav, type NavItem } from "./GuideNav";
 import { formatDate } from "@/lib/dates";
 import { VerdictPanel } from "./VerdictPanel";
+import { RouteSpread } from "./RouteSpread";
 
 const OWNER_LABEL: Record<Step["owner"], string> = {
   agent: "Agent",
@@ -69,7 +70,7 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
     { id: "split", label: "Who does what" },
     { id: "steps", label: "Steps" },
     ...(guide.submissionChecklist.length ? [{ id: "checklist", label: "Checklist" }] : []),
-    { id: "gotchas", label: "Gotchas" },
+    { id: "gotchas", label: "Watch out for" },
     { id: "blocked", label: "If you're blocked" },
     { id: "unknowns", label: "Not confirmed" },
     { id: "sources", label: "Sources" },
@@ -120,6 +121,7 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
         <GuideNav items={nav} />
         <div className="mt-10 lg:mt-0">
           <Section id="time" title="How long until production" aside={<span className="text-[13px] text-muted">Hatched: review time not published</span>}>
+            <RouteSpread paths={guide.paths} />
             <div className="grid gap-10">
               {guide.paths.map((p) => (
                 <PathTimeline key={p.name} path={p} />
@@ -240,18 +242,15 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
                 storageKey={`checklist:${guide.origin}:${guide.slug}`}
                 items={guide.submissionChecklist.map((i, n) => ({
                   id: String(n),
-                  label: (
-                    <>
-                      {i.item} <Evidence level={i.confidence} sources={i.sources} sourceInfo={sourceInfo} />
-                    </>
-                  ),
+                  label: i.item,
+                  evidence: <Evidence level={i.confidence} sources={i.sources} sourceInfo={sourceInfo} />,
                   detail: i.detail,
                 }))}
               />
             </Collapsible>
           )}
 
-          <Collapsible id="gotchas" title="Things that catch people out" meta={`${guide.gotchas.length} gotchas`}>
+          <Collapsible id="gotchas" title="Watch out for" meta={`${guide.gotchas.length} things that often catch people out`}>
             <ul className="grid gap-x-10 gap-y-4 text-sm md:grid-cols-2">
               {guide.gotchas.map((g) => (
                 <li key={g.title}>

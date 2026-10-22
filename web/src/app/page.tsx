@@ -3,23 +3,12 @@ import { library } from "@/guides";
 import { LibraryChart } from "@/components/LibraryChart";
 import { ResearchForm } from "@/components/ResearchForm";
 import { listSaved } from "@/lib/store";
-import { fastestAndLongest, pathSpan } from "@/lib/time";
+import { AtAGlance } from "@/components/AtAGlance";
 
 export const revalidate = 60;
 
-const MONTH_H = 24 * 30;
-
-function takeaway() {
-  const spans = library.map((g) => fastestAndLongest(g.paths));
-  const overMonth = spans.filter((s) => s.longest.span.max >= MONTH_H).length;
-  const unpublished = library.filter((g) => g.paths.some((p) => pathSpan(p).openEnded)).length;
-  const sameDay = spans.filter((s) => s.fastest.span.max < 24).length;
-  return { overMonth, unpublished, sameDay, total: library.length };
-}
-
 export default async function Home() {
   const saved = (await listSaved()).slice(0, 4);
-  const t = takeaway();
   return (
     <>
       <section className="pt-12 pb-8">
@@ -50,14 +39,10 @@ export default async function Home() {
         </div>
       </section>
 
-      <section aria-labelledby="lib">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <h2 id="lib" className="text-lg font-semibold tracking-tight">Library, sorted by time to production</h2>
-          <p className="text-sm">
-            {t.sameDay} of {t.total} can work the same day. {t.overMonth} of {t.total} have a path that takes over a month, and{" "}
-            {t.unpublished === t.total ? `all ${t.total}` : `${t.unpublished} of ${t.total}`} include a wait with no published time.
-          </p>
-        </div>
+      <AtAGlance guides={library} />
+
+      <section aria-labelledby="lib" className="mt-14">
+        <h2 id="lib" className="text-lg font-semibold tracking-tight">Library, sorted by time to production</h2>
         <div className="card mt-5 p-4 sm:p-6">
           <LibraryChart guides={library} />
         </div>

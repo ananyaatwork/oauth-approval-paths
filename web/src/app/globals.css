@@ -16,6 +16,12 @@
   --focus: #818cf8;
   --hatch: #5b6585;
   --accent: #818cf8;
+  /* Pale fills for bento tiles; always paired with --on-soft text. */
+  --you-soft: #99f6e4;
+  --provider-soft: #fde68a;
+  --customer-soft: #fbcfe8;
+  --agent-soft: #ddd6fe;
+  --on-soft: #0c1020;
   --btn-bg: #e9ecf6;
   --btn-fg: #0c1020;
   --shadow: 0 16px 36px -28px rgb(0 0 0 / 0.8);
@@ -36,6 +42,11 @@
   --focus: #4f46e5;
   --hatch: #8a91aa;
   --accent: #4f46e5;
+  --you-soft: #ccfbf1;
+  --provider-soft: #fef3c7;
+  --customer-soft: #fce7f3;
+  --agent-soft: #ede9fe;
+  --on-soft: #151a2d;
   --btn-bg: #151a2d;
   --btn-fg: #ffffff;
   --shadow: 0 12px 30px -24px rgb(21 26 45 / 0.35);
@@ -54,6 +65,11 @@
   --color-customer: var(--customer);
   --color-agent: var(--agent);
   --color-accent: var(--accent);
+  --color-you-soft: var(--you-soft);
+  --color-provider-soft: var(--provider-soft);
+  --color-customer-soft: var(--customer-soft);
+  --color-agent-soft: var(--agent-soft);
+  --color-on-soft: var(--on-soft);
   --font-sans: var(--font-schibsted);
 }
 
@@ -256,6 +272,73 @@ input[type="checkbox"] {
 }
 .check:active {
   transform: scale(0.92);
+}
+
+/* Route cards that sit stacked like a deck and spread into a row to compare.
+   Adapted from Animata's card-spread (CSS-only: a hidden checkbox + :has()). */
+.spread {
+  --gap: 0.75rem;
+  --w: 15rem;
+  --ease-throw: cubic-bezier(0.22, 1.18, 0.36, 1);
+  --ease-gather: cubic-bezier(0.33, 1, 0.68, 1);
+}
+.spread-toggle {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.spread-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+}
+.spread-label:has(.spread-toggle:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.spread-label .when-open,
+.spread:has(.spread-toggle:checked) .spread-label .when-closed {
+  display: none;
+}
+.spread:has(.spread-toggle:checked) .spread-label .when-open {
+  display: inline;
+}
+.spread-stage {
+  padding: 0.5rem 0 1.75rem;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+}
+.spread:has(.spread-toggle:checked) .spread-stage {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  justify-content: flex-start;
+}
+@media (min-width: 64rem) {
+  .spread:has(.spread-toggle:checked) .spread-stage {
+    justify-content: center;
+  }
+}
+.spread-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--w);
+  gap: var(--gap);
+  width: max-content;
+}
+.spread-item {
+  z-index: calc(10 - var(--i));
+  transform-origin: bottom center;
+  transition: transform 520ms var(--ease-gather);
+  /* Deck: pull every card to the row's centre, each one peeking lower and smaller. */
+  transform: translate3d(calc((var(--c) - var(--i)) * (100% + var(--gap))), calc(var(--i) * 10px), 0)
+    scale(calc(1 - var(--i) * 0.04));
+}
+.spread:has(.spread-toggle:checked) .spread-item {
+  transition: transform 480ms var(--ease-throw);
+  transform: none;
 }
 
 /* Library rows lift slightly on hover. */
