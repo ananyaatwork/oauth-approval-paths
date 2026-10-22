@@ -43,6 +43,18 @@ Things the research changed versus my starting assumptions:
 - **HubSpot:** OAuth only works straight away in developer test accounts.
 - **LinkedIn:** a rejection can cost you the whole app, and Community Management access lapses if you don't reach Standard within 12 months.
 
+## Live research runs (22 Oct 2026)
+
+These ran through the real app with free-tier keys. Gemini's bigger models were overloaded throughout, so the fallback chain was used on two of the three.
+
+| App | Time | Pages read (provider's own) | Written by | Result |
+|---|---|---|---|---|
+| Linear | 91 s | 6 (6) | gemini-3.5-flash-lite, after 3.6 Flash was overloaded and 3.8 Flash timed out | 2 paths, 11 facts (10 confirmed). It found workspace-admin approval of third-party apps. |
+| Dropbox | 47 s | 6 (6) | gemini-3.5-flash-lite, after both bigger models were overloaded | 2 paths, 14 facts (all confirmed). |
+| Gusto | 52 s | 6 (6) | gemini-3.6-flash | 2 paths, 25 facts (24 confirmed): sandbox right away, production needs pre-approval plus a security review. |
+
+**Spot-check (Dropbox):** the facts match Dropbox's developer guide. Once an app links 50 users, you have two weeks to get production approval. But the headline oversimplifies: it says "works for up to 50 users", while the cap is 500 and 50 is only where the two-week deadline starts. The lighter fallback model loses nuance like this, which is why live guides say they haven't been checked by a person.
+
 ## Running it
 
 ```bash

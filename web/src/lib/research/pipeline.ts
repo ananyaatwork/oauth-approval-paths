@@ -8,6 +8,7 @@ import { WRITER_SYSTEM } from "./prompt";
 
 const MAX_PAGES = 6;
 const READ_PARALLEL = 3;
+const MAX_THIRD_PARTY = 2;
 const THIRD_PARTY = [
   "medium.com", "reddit.com", "stackoverflow.com", "youtube.com", "github.com", "dev.to", "quora.com", "linkedin.com",
   "nango.dev", "composio.dev", "pipedream.com", "zapier.com", "make.com", "merge.dev", "paragon.com", "wikipedia.org",
@@ -52,29 +53,36 @@ export async function researchApp(target: string, key: string, send: (e: TraceEv
   send({ type: "status", message: `Researching ${target}: searching the web, then reading the provider's own pages` });
   send({ type: "stage", stage: "searching" });
 
-  const queries = [
-    `${target} OAuth app developer documentation`,
-    `${target} app review approval process publish marketplace requirements`,
-    `${target} OAuth scopes verification rate limits token expiry`,
-  ];
   const all: SearchResult[] = [];
-  for (const q of queries) {
-    send({ type: "search", query: q });
-    const { results } = await search(q);
-    send({ type: "results", query: q, results: results.slice(0, 5).map(({ title, url }) => ({ title, url })) });
+  const runSearch = async (q: string, onSite?: string) => {
+    send({ type: "search", query: onSite ? `${q} (on ${onSite})` : q });
+    let { results } = await search(q, onSite);
+    if (onSite && !results.length) ({ results } = await search(q));
+    send({ type: "results", query: onSite ? `${q} (on ${onSite})` : q, results: results.slice(0, 5).map(({ title, url }) => ({ title, url })) });
     all.push(...results);
-  }
+  };
 
+  // First search finds the provider's own site; the rest stay on it, so most
+  // pages read are the provider's docs rather than look-alike vendors.
+  await runSearch(`${target} OAuth app developer documentation`);
   const site = officialSite(target, key, all);
+  await runSearch(`${target} app review approval publish marketplace listing requirements`, site || undefined);
+  await runSearch(`${target} OAuth scopes permissions rate limits token expiry`, site || undefined);
+
+  const norm = (u: string) =>
+    u.replace(/^https?:\/\/(www\.)?/, "").replace(/[#?].*$/, "").replace(/\.md$/, "").replace(/\/$/, "").toLowerCase();
   const seen = new Set<string>();
   const unique = all.filter((r) => {
-    const k = r.url.replace(/[#?].*$/, "").replace(/\/$/, "");
+    const k = norm(r.url);
     if (seen.has(k)) return false;
     seen.add(k);
     return true;
   });
+  const mentionsApp = (r: SearchResult) => `${r.url} ${r.title}`.toLowerCase().includes(key.replace(/-/g, " ").split(" ")[0]);
   const rank = (r: SearchResult) => (siteOf(r.url) === site ? 10 : 0) + (DOCS_HINT.test(r.url) ? 3 : 0) + (DOCS_HINT.test(r.title) ? 1 : 0);
-  const candidates = unique.sort((a, b) => rank(b) - rank(a)).slice(0, MAX_PAGES + 3);
+  const official = unique.filter((r) => siteOf(r.url) === site).sort((a, b) => rank(b) - rank(a));
+  const others = unique.filter((r) => siteOf(r.url) !== site && mentionsApp(r)).sort((a, b) => rank(b) - rank(a));
+  const candidates = [...official.slice(0, MAX_PAGES + 2), ...others.slice(0, MAX_THIRD_PARTY + 1)];
 
   send({ type: "stage", stage: "reading" });
   const pages: Page[] = [];
@@ -89,7 +97,12 @@ export async function researchApp(target: string, key: string, send: (e: TraceEv
         return page;
       }),
     );
-    for (const p of read) if (!("error" in p)) pages.push(p);
+    for (const p of read) {
+      if ("error" in p || pages.some((q) => norm(q.url) === norm(p.url))) continue;
+      const thirdParty = pages.filter((q) => siteOf(q.url) !== site).length;
+      if (siteOf(p.url) !== site && thirdParty >= MAX_THIRD_PARTY) continue;
+      pages.push(p);
+    }
   }
 
   const sources: Guide["sources"] = [];
@@ -102,7 +115,7 @@ export async function researchApp(target: string, key: string, send: (e: TraceEv
   });
   const readUrls = new Set(pages.map((p) => p.url));
   unique
-    .filter((r) => !readUrls.has(r.url) && r.snippet)
+    .filter((r) => !readUrls.has(r.url) && r.snippet && (siteOf(r.url) === site || mentionsApp(r)))
     .slice(0, 6)
     .forEach((r, i) => {
       const id = `s${pages.length + i + 1}`;

@@ -8,7 +8,7 @@ import { GuideContent } from "../schema";
 export const WriterContent = GuideContent.omit({ sources: true });
 export type WriterContent = z.infer<typeof WriterContent>;
 
-const GEMINI_MODELS = (process.env.GEMINI_MODELS ?? "gemini-3.8-flash,gemini-3.5-flash-lite")
+const GEMINI_MODELS = (process.env.GEMINI_MODELS ?? "gemini-3.6-flash,gemini-3.8-flash,gemini-3.5-flash-lite")
   .split(",")
   .map((m) => m.trim())
   .filter(Boolean);
@@ -37,6 +37,7 @@ function geminiSchema(node: unknown): unknown {
 const SCHEMA = geminiSchema(z.toJSONSchema(WriterContent));
 
 class SchemaRejected extends Error {}
+class Overloaded extends Error {}
 
 async function callGemini(model: string, system: string, prompt: string, withSchema: boolean): Promise<string> {
   const generationConfig: Record<string, unknown> = { responseMimeType: "application/json", temperature: 0.2, maxOutputTokens: 16384 };
@@ -49,7 +50,7 @@ async function callGemini(model: string, system: string, prompt: string, withSch
       contents: [{ role: "user", parts: [{ text: withSchema ? prompt : `${prompt}\n\nReturn JSON matching this JSON Schema exactly:\n${JSON.stringify(SCHEMA)}` }] }],
       generationConfig,
     }),
-    signal: AbortSignal.timeout(120_000),
+    signal: AbortSignal.timeout(45_000),
   });
   const body = (await res.json().catch(() => ({}))) as {
     error?: { code?: number; status?: string; message?: string };
@@ -58,6 +59,7 @@ async function callGemini(model: string, system: string, prompt: string, withSch
   if (!res.ok) {
     const msg = body.error?.message ?? `HTTP ${res.status}`;
     if (res.status === 400 && withSchema && /schema/i.test(msg)) throw new SchemaRejected(msg);
+    if (res.status === 503) throw new Overloaded(`${model}: overloaded (${msg.slice(0, 80)})`);
     throw new Error(`${model}: ${body.error?.status ?? res.status} ${msg.slice(0, 160)}`);
   }
   const cand = body.candidates?.[0];
@@ -66,13 +68,26 @@ async function callGemini(model: string, system: string, prompt: string, withSch
   return text;
 }
 
+// A 503 means the model is briefly overloaded, so it's worth one retry;
+// a 429 means the free quota is used up, so move straight to the next model.
+async function callWithRetry(model: string, system: string, prompt: string, withSchema: boolean) {
+  try {
+    return await callGemini(model, system, prompt, withSchema);
+  } catch (err) {
+    if (!(err instanceof Overloaded)) throw err;
+    await new Promise((r) => setTimeout(r, 4000));
+    return callGemini(model, system, prompt, withSchema);
+  }
+}
+
 async function viaGemini(model: string, system: string, prompt: string): Promise<WriterContent> {
   let raw: string;
   try {
-    raw = await callGemini(model, system, prompt, true);
+    raw = await callWithRetry(model, system, prompt, true);
   } catch (err) {
+    if ((err as Error).name === "TimeoutError") throw new Error(`${model}: no answer within 45 seconds`);
     if (!(err instanceof SchemaRejected)) throw err;
-    raw = await callGemini(model, system, prompt, false);
+    raw = await callWithRetry(model, system, prompt, false);
   }
   const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "");
   const parsed = WriterContent.safeParse(JSON.parse(cleaned));
