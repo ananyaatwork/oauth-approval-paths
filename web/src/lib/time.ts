@@ -81,9 +81,22 @@ export const AXIS_TICKS: { label: string; h: number }[] = [
 
 export const phaseHours = (p: Phase) => (p.max ?? p.min) == null ? null : toHours((p.max ?? p.min) as number, p.unit);
 
+// "Fastest" prefers a path with no unpublished waits: a short path that hides
+// an open-ended review isn't really fast.
 export function fastestAndLongest(paths: Path[]) {
-  const ranked = paths.map((p) => ({ path: p, span: pathSpan(p) })).sort((a, b) => a.span.max - b.span.max);
-  return { fastest: ranked[0], longest: ranked[ranked.length - 1] };
+  const spans = paths.map((p) => ({ path: p, span: pathSpan(p) }));
+  const fastest = [...spans].sort((a, b) => Number(a.span.openEnded) - Number(b.span.openEnded) || a.span.max - b.span.max)[0];
+  const longest = [...spans].sort((a, b) => a.span.max - b.span.max || Number(a.span.openEnded) - Number(b.span.openEnded)).at(-1)!;
+  return { fastest, longest };
+}
+
+const WAIT_LABEL: Partial<Record<Phase["kind"], string>> = {
+  provider_review: "the provider's review",
+  customer_admin_approval: "each customer's admin",
+};
+
+export function waitsOn(path: Path): string[] {
+  return [...new Set(path.timeline.map((p) => WAIT_LABEL[p.kind]).filter((x): x is string => !!x))];
 }
 
 export const PHASE_OWNER: Record<Phase["kind"], "you" | "provider" | "customer_admin"> = {

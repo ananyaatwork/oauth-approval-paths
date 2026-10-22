@@ -16,29 +16,25 @@ export async function generateMetadata({ params }: { params: Promise<{ key: stri
 export default async function SavedGuidePage({ params }: { params: Promise<{ key: string }> }) {
   const guide = await getSaved((await params).key);
   if (!guide) notFound();
-  return (
-    <>
-      <div className="mt-6 max-w-3xl border-l-[3px] border-agent bg-surface px-4 py-3 text-sm">
-        <p>
-          An agent researched this guide on {formatDate(guide.researchedOn)}, and a person hasn&rsquo;t checked it yet. It&rsquo;s
-          saved, so everyone who asks for {guide.name} sees this same version. Treat anything marked &ldquo;not confirmed&rdquo;
-          as a lead.
-        </p>
-        {guide.researchLog?.length ? (
-          <details className="mt-2">
-            <summary className="cursor-pointer">
-              <span className="font-medium">How the agent got here</span>{" "}
-              <span className="text-muted">
-                (<ResearchLogSummary lines={guide.researchLog} />)
-              </span>
-            </summary>
-            <div className="mt-3 border-t border-line pt-3">
-              <ResearchLog lines={guide.researchLog} />
-            </div>
-          </details>
-        ) : null}
-      </div>
-      <GuideView guide={guide} actions={<GuideActions guide={guide} />} />
-    </>
+  const notice = (
+    <div className="mt-2 text-[13px] text-muted">
+      <p className="flex flex-wrap items-center gap-x-2">
+        <span className="rounded-full bg-agent/10 px-2 py-0.5 font-medium text-agent">Researched live by an agent</span>
+        <span>
+          {formatDate(guide.researchedOn)}. Not yet checked by a person, so treat &ldquo;not confirmed&rdquo; items as leads.
+        </span>
+      </p>
+      {guide.researchLog?.length ? (
+        <details className="mt-1.5">
+          <summary className="cursor-pointer hover:text-ink">
+            How the agent got here (<ResearchLogSummary lines={guide.researchLog} />)
+          </summary>
+          <div className="mt-2 max-w-3xl rounded-md border border-line bg-surface p-4 text-ink">
+            <ResearchLog lines={guide.researchLog} />
+          </div>
+        </details>
+      ) : null}
+    </div>
   );
+  return <GuideView guide={guide} notice={notice} actions={<GuideActions guide={guide} />} />;
 }

@@ -32,22 +32,20 @@ export default async function Home() {
         </p>
         <div className="mt-6 max-w-xl">
           <ResearchForm known={library.map(({ slug, name }) => ({ slug, name }))} />
-          <p className="mt-2 text-sm text-muted">
-            Not in the library? An agent researches the provider&rsquo;s docs live and saves the guide for everyone.
-            {saved.length > 0 && (
-              <>
-                {" "}Already researched:{" "}
-                {saved.map((s, i) => (
-                  <span key={s.slug}>
-                    {i > 0 && ", "}
-                    <Link href={`/g/${s.slug}`} className="text-ink underline decoration-line underline-offset-2 hover:decoration-ink">
-                      {s.name}
-                    </Link>
-                  </span>
-                ))}
-                .
-              </>
-            )}
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-muted">Try:</span>
+            {[
+              ...["slack", "google", "salesforce"].map((slug) => ({ href: `/guides/${slug}`, name: library.find((g) => g.slug === slug)?.name.split(" (")[0] ?? slug })),
+              ...saved.map((s) => ({ href: `/g/${s.slug}`, name: s.name })),
+            ].map((t) => (
+              <Link key={t.href} href={t.href} className="rounded-full border border-line bg-surface px-3 py-1 hover:border-ink">
+                {t.name}
+              </Link>
+            ))}
+          </div>
+          <p className="mt-3 text-sm text-muted">
+            Not in the library? Type its name or website and an agent reads the provider&rsquo;s docs live, in about a minute,
+            then saves the guide for everyone.
           </p>
         </div>
       </section>

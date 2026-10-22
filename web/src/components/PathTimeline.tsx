@@ -49,7 +49,7 @@ export function PathTimeline({ path }: { path: Path }) {
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="font-semibold">{path.name}</h3>
-        <p className="flex items-center gap-2 text-sm text-muted tabular-nums">
+        <p className="flex items-center gap-2 text-sm text-muted">
           <DifficultyDots value={path.difficulty} />
           {totalLabel(path)}
         </p>

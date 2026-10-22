@@ -1,11 +1,10 @@
 import type { Guide, Step } from "@/lib/schema";
 import { Evidence, EvidenceKey } from "./Evidence";
-import { OwnerBar, PathTimeline } from "./PathTimeline";
+import { PathTimeline } from "./PathTimeline";
 import { Checklist } from "./Checklist";
-import { DifficultyDots } from "./DifficultyDots";
 import { GuideNav, type NavItem } from "./GuideNav";
 import { formatDate } from "@/lib/dates";
-import { fastestAndLongest, formatHours } from "@/lib/time";
+import { VerdictPanel } from "./VerdictPanel";
 
 const OWNER_LABEL: Record<Step["owner"], string> = {
   agent: "Agent",
@@ -49,57 +48,7 @@ function Collapsible({ id, title, meta, children }: { id: string; title: string;
   );
 }
 
-function VerdictStrip({ guide, sourceInfo }: { guide: Guide; sourceInfo: Record<string, string> }) {
-  const { fastest, longest } = fastestAndLongest(guide.paths);
-  const blocker = guide.prerequisites[0];
-  const cell = "px-4 py-3.5 sm:px-5";
-  const label = "text-[13px] text-muted";
-  return (
-    <div className="mt-6 border border-line bg-surface">
-      <div className="grid grid-cols-2 divide-line max-md:[&>*:nth-child(-n+2)]:border-b max-md:[&>*:nth-child(odd)]:border-r md:grid-cols-[1fr_1.2fr_0.8fr_1.6fr] md:divide-x">
-        <div className={cell}>
-          <p className={label}>Fastest path</p>
-          <p className="mt-1 text-[28px] font-semibold leading-none tracking-tight tabular-nums">{formatHours(fastest.span.max)}</p>
-          <p className="mt-1.5 text-[13px] text-muted">{fastest.path.name}</p>
-        </div>
-        <div className={`${cell} border-line`}>
-          <p className={label}>Longest path</p>
-          <p className="mt-1 text-[28px] font-semibold leading-none tracking-tight tabular-nums">
-            {formatHours(longest.span.max)}
-            {longest.span.openEnded && <span className="text-base font-normal text-muted">+</span>}
-          </p>
-          <p className="mt-1.5 text-[13px] text-muted">
-            {longest.path.name}
-            {longest.span.openEnded && ", plus review time not published"}
-          </p>
-        </div>
-        <div className={`${cell} border-line`}>
-          <p className={label}>Difficulty</p>
-          <p className="mt-2.5 flex items-center gap-2">
-            <DifficultyDots value={guide.verdict.difficulty} className="[&>span]:h-2 [&>span]:w-2" />
-            <span className="text-sm tabular-nums">{guide.verdict.difficulty} of 5</span>
-          </p>
-        </div>
-        <div className={`${cell} border-line`}>
-          <p className={label}>Blocks you first</p>
-          {blocker ? (
-            <p className="mt-1 text-sm leading-snug">
-              <span className="line-clamp-3">{blocker.item}</span>{" "}
-              <Evidence level={blocker.confidence} sources={blocker.sources} sourceInfo={sourceInfo} />
-            </p>
-          ) : (
-            <p className="mt-1 text-sm">Nothing found that blocks submitting.</p>
-          )}
-        </div>
-      </div>
-      <div className="border-t border-line px-4 py-2.5 sm:px-5">
-        <OwnerBar path={longest.path} className="h-1.5" />
-      </div>
-    </div>
-  );
-}
-
-export function GuideView({ guide, actions }: { guide: Guide; actions?: React.ReactNode }) {
+export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: React.ReactNode; notice?: React.ReactNode }) {
   const sourceInfo = Object.fromEntries(
     guide.sources.map((s) => [s.id, `${s.title} · ${s.kind === "primary" ? "provider's docs" : "secondary"} · accessed ${formatDate(s.accessed)}`]),
   );
@@ -136,8 +85,9 @@ export function GuideView({ guide, actions }: { guide: Guide; actions?: React.Re
     <article className="pt-8 [overflow-wrap:anywhere]">
       <header>
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{guide.name}</h1>
+        {notice}
         <p className="mt-3 max-w-[70ch] text-lg leading-snug">{guide.verdict.headline}</p>
-        <VerdictStrip guide={guide} sourceInfo={sourceInfo} />
+        <VerdictPanel guide={guide} sourceInfo={sourceInfo} />
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-[68ch] flex-1 border-l-[3px] border-you pl-4">
             <p className="text-[13px] text-muted">Do this next</p>

@@ -116,14 +116,19 @@ export function LibraryChart({ guides }: { guides: Guide[] }) {
                 </span>
                 <span className="block">
                   <Bar guide={g} />
-                  <span className="mt-2 block text-[13px] tabular-nums">
-                    {formatHours(fastest.span.max)} to {formatHours(longest.span.max)}
+                  <span className="mt-2 block text-[13px]">
+                    <span className="tabular-nums">
+                      {formatHours(fastest.span.max)}
+                      {fastest.span.openEnded ? "+" : ""} to {formatHours(longest.span.max)}
+                      {longest.span.openEnded ? "+" : ""}
+                    </span>
                     {unknowns > 0 && (
                       <span className="text-muted">
-                        {" "}plus {unknowns} {unknowns === 1 ? "wait" : "waits"} with no published time
+                        {" "}· {unknowns} {unknowns === 1 ? "wait" : "waits"} with no published time
                       </span>
                     )}
                   </span>
+                  <span className="mt-1 line-clamp-2 block max-w-[80ch] text-[13px] text-muted">{g.verdict.headline}</span>
                 </span>
               </Link>
             </li>
