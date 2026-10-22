@@ -31,12 +31,12 @@ export default function Method() {
 
       <h2 className="mt-10 text-lg font-semibold">Live guides</h2>
       <ol className="mt-2 list-decimal space-y-2 pl-5">
-        <li>An agent (Claude Sonnet 5.5) searches the web and opens the provider&rsquo;s pages. You see each search and page as it happens, and the log is saved with the guide.</li>
-        <li>A second call turns the notes into the guide format.</li>
+        <li>Plain code, with no AI, searches the web and reads the provider&rsquo;s own pages, keeping only the paragraphs about registration, review, limits and timelines. You see each search and page as it happens, and the log is saved with the guide.</li>
+        <li>One model call (Gemini, with backups) turns those excerpts into the guide format. It can only cite the numbered sources it was given.</li>
         <li>
-          A provenance check then runs in code, not in the model. A fact stays &ldquo;confirmed&rdquo; only if it cites a page
-          the agent actually opened in that run. If its cited page only appeared in search results it drops to
-          &ldquo;secondary&rdquo;, and if the page was never seen it becomes &ldquo;not confirmed&rdquo;. The guide says how many
+          A provenance check then runs in code, not in the model. A fact stays &ldquo;confirmed&rdquo; only if it cites a provider
+          page we actually opened in that run. If it rests on a third-party page or a search snippet it drops to
+          &ldquo;secondary&rdquo;, and if it cites nothing it becomes &ldquo;not confirmed&rdquo;. The guide says how many
           facts were downgraded.
         </li>
       </ol>

@@ -54,12 +54,14 @@ export function reduceTrace(lines: TraceLine[], e: TraceEvent): TraceLine[] {
       );
     case "fetch":
       return [...lines, { kind: "opening", text: host(e.url), href: e.url }];
-    case "fetched":
-      return replaceLast(
-        lines,
-        (l) => l.kind === "opening",
-        () => ({ kind: "read", text: host(e.url), detail: e.title ?? undefined, href: e.url }),
-      );
+    case "fetched": {
+      const next = () => ({ kind: "read" as const, text: host(e.url), detail: e.title ?? undefined, href: e.url });
+      const exact = replaceLast(lines, (l) => l.kind === "opening" && l.href === e.url, next);
+      // A redirect can change the URL, so fall back to the same host, then any open line.
+      if (exact !== lines) return exact;
+      const sameHost = replaceLast(lines, (l) => l.kind === "opening" && l.text === host(e.url), next);
+      return sameHost !== lines ? sameHost : replaceLast(lines, (l) => l.kind === "opening", next);
+    }
     case "fetch_error":
       return replaceLast(
         lines,

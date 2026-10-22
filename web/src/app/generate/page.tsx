@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { library } from "@/guides";
 import { Generator, type Sample } from "@/components/Generator";
-import { getSaved, listSaved, runsLeft, RUN_LIMIT } from "@/lib/store";
+import { dailyLeft, getSaved, listSaved, runsLeft, RUN_LIMIT } from "@/lib/store";
 import { currentVisitor } from "@/lib/visitor";
 
 export const metadata: Metadata = { title: "Research an app · OAuth Approval Paths" };
@@ -17,7 +17,8 @@ async function latestSample(slugs: string[]): Promise<Sample | null> {
 
 export default async function GeneratePage({ searchParams }: { searchParams: Promise<{ app?: string }> }) {
   const { app } = await searchParams;
-  const [left, saved] = await Promise.all([currentVisitor().then(runsLeft), listSaved()]);
+  const [mine, today, saved] = await Promise.all([currentVisitor().then(runsLeft), dailyLeft(), listSaved()]);
+  const left = Math.min(mine, today);
   return (
     <Generator
       known={library.map(({ slug, name }) => ({ slug, name }))}

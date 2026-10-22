@@ -22,9 +22,10 @@ What hurts isn't the OAuth flow. It's that you can't plan around layer 1. Docs r
 - **Blockers before submission are separate from the review checklist.** Some providers stop you before you can submit at all: Slack needs 10 active workspaces, HubSpot 3 unaffiliated installs, and LinkedIn a legal entity and a Company Page. These get their own section because they're what make "an hour or weeks" so hard to call.
 - **Every claim carries evidence.** Each claim is tagged confirmed (the provider's own page), secondary (a blog, forum, vendor or search excerpt) or unconfirmed, and links to its source. Each guide ends with "What we couldn't confirm".
 - **Who does what.** Each step is owned by the agent, you, the provider or the customer's admin. The guide renders this as "An agent can do", "You need to do" and "You wait on". Agents can draft scope justifications, privacy policy text, demo scripts and checklists. They can't log into your developer console, verify your domain, pay assessors or answer a reviewer as you.
-- **A provenance check runs in code, not in the model.** During live generation, a claim stays "confirmed" only if it cites a page the agent actually opened in that run. Otherwise it's downgraded, and the guide says how many claims were downgraded.
+- **Live research uses one AI call.** Plain code searches the web (Tavily, with Serper as the backup), reads the provider's pages (a direct fetch with Mozilla Readability, with Jina Reader as the backup for JavaScript-only sites), and keeps only the paragraphs about registration, review, limits and timelines. Only then does one model call (Gemini, with a second Gemini model and optionally Claude as backups) turn those excerpts into a guide. That keeps it on free tiers, and if any one provider goes down, the next one takes over.
+- **A provenance check runs in code, not in the model.** The model can only cite the numbered sources we hand it. A fact stays "confirmed" only if it cites a provider page we actually opened. Third-party pages and search snippets cap it at "secondary", and the guide says how many facts were downgraded.
 - **Each new app is researched once, then saved.** The first request for an app runs the agent. Everyone after that gets the saved guide instantly at `/g/<app>`, so there's no repeat cost and everyone sees the same version. Different spellings ("Linear", "linear.app", "https://linear.app/docs") count as the same app, and a lock stops two people researching the same new app at once.
-- **One live run per visitor.** Visitors are counted by a cookie and a salted hash of their IP, and raw IPs are never stored. Saved guides and the library never count, and a run that fails because of a server or model error is refunded. The limit is set with `LIVE_RUNS_PER_VISITOR` (`0` means unlimited).
+- **Quota protection.** Each browser gets one live run, counted by a cookie and a browser fingerprint, so clearing cookies or cache doesn't reset it. Both are stored only as salted hashes. A global daily cap (`LIVE_RUNS_PER_DAY`, default 15) is the hard guard on free API quota. Saved guides and the library never count, and a run that fails because of a provider error is refunded.
 - **Every guide is shareable.** Each has a stable link and can be copied as Markdown or downloaded as JSON.
 
 ## How the guides were made, and what was checked
@@ -52,7 +53,7 @@ npm run dev                  # http://localhost:3000
 npm run validate             # check every library guide
 ```
 
-Live generation needs `ANTHROPIC_API_KEY` on the server. It uses `claude-sonnet-5-5` with server-side web search and web fetch, and you can override the model with `LIVE_MODEL`. Without a key, the library works and the research page explains that live generation isn't configured.
+Live research needs a search key (`TAVILY_API_KEY` and/or `SERPER_API_KEY`) and a writer key (`GEMINI_API_KEY`). All of these have free tiers, and `web/.env.example` lists every setting. Without them, the library and saved guides still work, and the research page says live research isn't set up.
 
 Deploying to Vercel: import the repo, set the root directory to `web`, and add `ANTHROPIC_API_KEY` as an environment variable. The generation route allows up to 300 seconds.
 

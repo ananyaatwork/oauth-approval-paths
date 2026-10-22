@@ -80,6 +80,7 @@ const redisBackend: Backend = {
   addRuns: async (id, delta) => {
     const n = await redis<number>("INCRBY", `runs:${id}`, delta);
     if (n < 0) await redis("SET", `runs:${id}`, 0);
+    if (id.startsWith("day-")) await redis("EXPIRE", `runs:${id}`, 2 * 24 * 3600);
   },
 };
 
@@ -156,16 +157,22 @@ export async function listSaved(): Promise<SavedSummary[]> {
 export const acquireLock = (key: string) => db.lock(key);
 export const releaseLock = (key: string) => db.unlock(key);
 
-// Visitors are counted by cookie and by a salted hash of their IP, so clearing
-// cookies alone doesn't reset the limit. Raw IPs are never stored.
+// A browser is counted by its cookie and by a fingerprint of the browser
+// itself, so clearing cookies or cache doesn't reset its run. Both are stored
+// only as salted hashes, and a run counts against both.
 export const RUN_LIMIT = Number(process.env.LIVE_RUNS_PER_VISITOR ?? 1);
+// The hard guard on API quota: new research runs per UTC day, across everyone.
+export const DAILY_LIMIT = Number(process.env.LIVE_RUNS_PER_DAY ?? 15);
 const SALT = process.env.VISITOR_SALT ?? "oauth-approval-paths";
 const hash = (s: string) => crypto.createHash("sha256").update(SALT + s).digest("hex").slice(0, 32);
+const dayId = () => `day-${new Date().toISOString().slice(0, 10)}`;
 
 export type Visitor = { ids: string[] };
 
-export function visitorFrom(cookieId: string, ip: string): Visitor {
-  return { ids: [`c-${hash(cookieId)}`, `ip-${hash(ip)}`] };
+export function visitorFrom(cookieId: string, fingerprint?: string | null): Visitor {
+  const ids = [`c-${hash(cookieId)}`];
+  if (fingerprint && /^[a-f0-9]{64}$/.test(fingerprint)) ids.push(`f-${hash(fingerprint)}`);
+  return { ids };
 }
 
 export async function runsLeft(v: Visitor): Promise<number> {
@@ -174,6 +181,11 @@ export async function runsLeft(v: Visitor): Promise<number> {
   return Math.max(0, RUN_LIMIT - used);
 }
 
+export async function dailyLeft(): Promise<number> {
+  if (DAILY_LIMIT <= 0) return Infinity;
+  return Math.max(0, DAILY_LIMIT - (await db.runs(dayId())));
+}
+
 export async function recordRun(v: Visitor, delta: 1 | -1) {
-  await Promise.all(v.ids.map((id) => db.addRuns(id, delta)));
+  await Promise.all([...v.ids, dayId()].map((id) => db.addRuns(id, delta)));
 }

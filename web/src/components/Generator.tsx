@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Guide } from "@/lib/schema";
 import { reduceTrace, traceCounts, type Stage, type TraceEvent, type TraceLine } from "@/lib/trace";
 import { formatDate } from "@/lib/dates";
+import { browserFingerprint } from "@/lib/fingerprint";
 import { ResearchForm, type KnownApp } from "./ResearchForm";
 import { GuideView } from "./GuideView";
 import { GuideActions } from "./GuideActions";
@@ -156,7 +157,7 @@ export function Generator({
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ app: target }),
+        body: JSON.stringify({ app: target, fp: await browserFingerprint() }),
         signal: ctrl.signal,
       });
       if (!res.body) throw new Error(`Request failed (${res.status})`);
@@ -246,7 +247,7 @@ export function Generator({
         <div role="alert" className="mt-6 max-w-3xl border-l-[3px] border-customer bg-surface px-4 py-3 text-sm">
           <p className="font-medium">The guide couldn&rsquo;t be generated.</p>
           <p className="mt-1">{error}</p>
-          <p className="mt-2 text-muted">
+          <p className={`mt-2 text-muted ${error.includes("isn't set up") ? "hidden" : ""}`}>
             Try the provider&rsquo;s website instead of its name, or browse the <Link href="/" className="underline">library</Link>.
           </p>
         </div>
