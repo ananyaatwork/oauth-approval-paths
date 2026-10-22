@@ -1,104 +1,130 @@
 import Link from "next/link";
-import type { Guide } from "@/lib/schema";
-import { PHASE_OWNER, fastestAndLongest, formatHours, pathSpan, phaseHours } from "@/lib/time";
+import type { Guide, Path } from "@/lib/schema";
+import { fastestAndLongest, formatHours, pathSpan } from "@/lib/time";
 
-type Owner = "you" | "provider" | "customer_admin";
-const OWNER_LABEL: Record<Owner, string> = { you: "Your own work", provider: "Provider review", customer_admin: "Customer's admin" };
-const OWNER_BAR: Record<Owner, string> = { you: "bg-you", provider: "bg-provider", customer_admin: "bg-customer" };
+type Entry = { slug: string; name: string; time: string; note?: string };
 
-// Bento summary of the library. Every number is computed from the guides, and
-// each tile's colour is the colour of the party it is about.
+const short = (g: Guide) => g.name.split(" (")[0];
+const hasPhase = (p: Path, kind: Path["timeline"][number]["kind"]) => p.timeline.some((ph) => ph.kind === kind);
+function timeOf(p: Path) {
+  const s = pathSpan(p);
+  return s.openEnded ? `${formatHours(s.max)} or more` : `about ${formatHours(s.max)}`;
+}
+
+function Tile({
+  question,
+  answer,
+  entries,
+  className,
+  empty,
+  inline = false,
+}: {
+  question: string;
+  answer: string;
+  entries: Entry[];
+  className: string;
+  empty: string;
+  inline?: boolean;
+}) {
+  return (
+    <div className={`p-5 ${className}`}>
+      <h3 className="font-semibold">{question}</h3>
+      <p className="mt-1 text-sm opacity-80">{answer}</p>
+      {entries.length && inline ? (
+        <p className="mt-4 text-sm leading-relaxed">
+          {entries.map((e, i) => (
+            <span key={e.slug}>
+              {i > 0 && ", "}
+              <Link href={`/guides/${e.slug}`} className="font-medium underline decoration-current/30 underline-offset-2 hover:decoration-current">
+                {e.name}
+              </Link>
+            </span>
+          ))}
+        </p>
+      ) : entries.length ? (
+        <ul className="mt-4 space-y-1.5 text-sm">
+          {entries.map((e) => (
+            <li key={e.slug} className="flex flex-wrap items-baseline justify-between gap-x-3">
+              <Link href={`/guides/${e.slug}`} className="font-medium underline decoration-current/30 underline-offset-2 hover:decoration-current">
+                {e.name}
+              </Link>
+              <span className="tabular-nums opacity-80">
+                {e.time}
+                {e.note ? `, ${e.note}` : ""}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-4 text-sm opacity-80">{empty}</p>
+      )}
+    </div>
+  );
+}
+
+// Four plain questions a developer asks before choosing a provider, each
+// answered from the guides. Tile colour = the party the question is about.
 export function AtAGlance({ guides }: { guides: Guide[] }) {
-  const spans = guides.map((g) => ({ g, ...fastestAndLongest(g.paths) }));
-  const sameDay = spans.filter((s) => s.fastest.span.max < 24);
-  const overMonth = spans.filter((s) => s.longest.span.max >= 24 * 30);
-  const unpublished = guides.filter((g) => g.paths.some((p) => pathSpan(p).openEnded));
-  const adminGate = guides.filter((g) => g.paths.some((p) => p.timeline.some((ph) => ph.kind === "customer_admin_approval")));
-  const quickest = [...spans].sort((a, b) => a.fastest.span.max - b.fastest.span.max)[0];
-  const slowest = [...spans].sort((a, b) => b.longest.span.max - a.longest.span.max)[0];
+  const rows = guides.map((g) => ({ g, ...fastestAndLongest(g.paths) }));
+  const byTime = (a: { span: { max: number } }, b: { span: { max: number } }) => a.span.max - b.span.max;
 
-  // Whose phase is the single longest known wait on each provider's longest route.
-  const longestOwner: Record<Owner, number> = { you: 0, provider: 0, customer_admin: 0 };
-  for (const s of spans) {
-    const known = s.longest.path.timeline.filter((p) => phaseHours(p) != null);
-    const top = known.sort((a, b) => (phaseHours(b) ?? 0) - (phaseHours(a) ?? 0))[0];
-    if (top) longestOwner[PHASE_OWNER[top.kind]]++;
-  }
-  const maxOwner = Math.max(...Object.values(longestOwner), 1);
-  const n = guides.length;
-  const names = (list: { g: Guide }[] | Guide[]) =>
-    list.map((x) => ("g" in x ? x.g : x).name.split(" (")[0]).join(", ");
+  const noReview = rows
+    .map((r) => ({ r, p: r.g.paths.filter((p) => !hasPhase(p, "provider_review")).map((p) => ({ path: p, span: pathSpan(p) })).sort(byTime)[0] }))
+    .filter((x) => x.p)
+    .sort((a, b) => byTime(a.p, b.p))
+    .map(({ r, p }) => ({ slug: r.g.slug, name: short(r.g), time: timeOf(p.path), note: r.g.paths.length > 1 ? p.path.name : undefined }));
+
+  const reviewed = rows
+    .filter((r) => r.g.paths.every((p) => hasPhase(p, "provider_review")))
+    .sort((a, b) => byTime(a.fastest, b.fastest))
+    .map((r) => ({ slug: r.g.slug, name: short(r.g), time: timeOf(r.fastest.path) }));
+
+  const adminGate = rows
+    .filter((r) => r.g.paths.some((p) => hasPhase(p, "customer_admin_approval")))
+    .map((r) => ({ slug: r.g.slug, name: short(r.g), time: "" }));
+
+  const months = rows
+    .filter((r) => r.longest.span.max >= 24 * 30)
+    .sort((a, b) => b.longest.span.max - a.longest.span.max)
+    .map((r) => ({ slug: r.g.slug, name: short(r.g), time: timeOf(r.longest.path), note: r.longest.path.name }));
 
   return (
     <section aria-labelledby="glance" className="mt-2">
-      <h2 id="glance" className="text-lg font-semibold tracking-tight">At a glance</h2>
-      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
-        <div className="rounded-[22px] bg-you-soft p-5 text-on-soft sm:col-span-2">
-          <p className="text-sm font-medium">Can work the same day</p>
-          <p className="mt-6 text-6xl font-semibold leading-none tracking-tight tabular-nums">
-            {sameDay.length}<span className="text-2xl font-medium"> of {n}</span>
-          </p>
-          <p className="mt-3 text-sm">{names(sameDay)}</p>
-        </div>
-
-        <div className="rounded-2xl bg-provider-soft p-5 text-on-soft">
-          <p className="text-sm font-medium">Have a route over a month</p>
-          <p className="mt-6 text-5xl font-semibold leading-none tracking-tight tabular-nums">
-            {overMonth.length}<span className="text-xl font-medium"> of {n}</span>
-          </p>
-          <p className="mt-3 text-[13px]">Mostly marketplace and security reviews</p>
-        </div>
-
-        <div className="rounded-xl border border-line bg-surface-2 p-5">
-          <p className="text-sm font-medium">Include a wait with no published time</p>
-          <p className="mt-6 text-5xl font-semibold leading-none tracking-tight tabular-nums">
-            {unpublished.length}<span className="text-xl font-medium text-muted"> of {n}</span>
-          </p>
-          <div aria-hidden className="hatch mt-4 h-2 rounded-full" />
-        </div>
-
-        <div className="rounded-2xl border border-line bg-surface p-5 sm:col-span-2">
-          <p className="text-sm font-medium">Whose step is the longest known wait</p>
-          <ul className="mt-4 space-y-3">
-            {(Object.keys(longestOwner) as Owner[]).map((o) => (
-              <li key={o} className="grid grid-cols-[8.5rem_minmax(0,1fr)_1.5rem] items-center gap-3 text-sm">
-                <span>{OWNER_LABEL[o]}</span>
-                <span className="h-3 rounded-full bg-surface-2">
-                  <span className={`block h-3 rounded-full ${OWNER_BAR[o]}`} style={{ width: `${(longestOwner[o] / maxOwner) * 100}%` }} />
-                </span>
-                <span className="text-right tabular-nums">{longestOwner[o]}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-[13px] text-muted">Counted on each provider&rsquo;s longest route, among waits with a known length.</p>
-        </div>
-
-        <div className="rounded-2xl bg-customer-soft p-5 text-on-soft">
-          <p className="text-sm font-medium">Need each customer&rsquo;s admin</p>
-          <p className="mt-6 text-5xl font-semibold leading-none tracking-tight tabular-nums">
-            {adminGate.length}<span className="text-xl font-medium"> of {n}</span>
-          </p>
-          <p className="mt-3 text-[13px]">An org or tenant admin approves your app, per customer</p>
-        </div>
-
-        <div className="grid gap-3">
-        <Link href={`/guides/${quickest.g.slug}`} className="rounded-xl bg-ink p-5 text-paper transition-opacity hover:opacity-90">
-          <p className="text-sm font-medium opacity-80">Quickest</p>
-          <p className="mt-2 text-2xl font-semibold leading-tight">{quickest.g.name.split(" (")[0]}</p>
-          <p className="mt-1 text-sm tabular-nums">
-            {formatHours(quickest.fastest.span.max)}
-            {quickest.fastest.span.openEnded ? "+" : ""} · open the guide →
-          </p>
-        </Link>
-        <Link href={`/guides/${slowest.g.slug}`} className="rounded-xl border border-line bg-surface p-5 transition-colors hover:bg-surface-2">
-          <p className="text-sm font-medium text-muted">Slowest</p>
-          <p className="mt-2 text-2xl font-semibold leading-tight">{slowest.g.name.split(" (")[0]}</p>
-          <p className="mt-1 text-sm tabular-nums">
-            {formatHours(slowest.longest.span.max)}
-            {slowest.longest.span.openEnded ? "+" : ""} · {slowest.longest.path.name}
-          </p>
-        </Link>
-        </div>
+      <h2 id="glance" className="text-lg font-semibold tracking-tight">Before you pick a provider</h2>
+      <p className="mt-1 max-w-[70ch] text-sm text-muted">
+        The same {guides.length} providers, grouped by what you&rsquo;ll face. Times are for that provider&rsquo;s quickest route unless
+        noted.
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <Tile
+          question="Which can I ship without a review?"
+          answer="The provider doesn't review your app on at least one route. You can go live once it's built."
+          entries={noReview}
+          className="rounded-[22px] bg-you-soft text-on-soft"
+          empty="None of the guides found a route without review."
+        />
+        <Tile
+          question="Which review my app first?"
+          answer="Every route goes through the provider's own review before real users can connect."
+          entries={reviewed}
+          className="rounded-2xl bg-provider-soft text-on-soft"
+          empty="None. Every provider has at least one route without a review."
+        />
+        <Tile
+          question="Where must each customer's admin approve it?"
+          answer="Even after you're live, an org or workspace admin at each customer may have to allow your app. Nobody publishes how long that takes."
+          entries={adminGate}
+          inline
+          className="rounded-2xl bg-customer-soft text-on-soft"
+          empty="None found."
+        />
+        <Tile
+          question="Which can take a month or more?"
+          answer="On their slowest route, usually a marketplace listing or a security review."
+          entries={months}
+          className="rounded-xl border border-line bg-surface"
+          empty="None."
+        />
       </div>
     </section>
   );

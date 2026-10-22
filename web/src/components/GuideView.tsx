@@ -32,23 +32,6 @@ function Section({ id, title, children, aside }: { id: string; title: string; ch
   );
 }
 
-function Collapsible({ id, title, meta, children }: { id: string; title: string; meta: string; children: React.ReactNode }) {
-  return (
-    <section id={id} className="mt-12 scroll-mt-20">
-      <details className="group">
-        <summary className="flex cursor-pointer list-none flex-wrap items-baseline justify-between gap-2 [&::-webkit-details-marker]:hidden">
-          <h2 className="text-lg font-semibold tracking-tight">
-            <span aria-hidden className="mr-2 inline-block text-muted transition-transform duration-150 group-open:rotate-90">›</span>
-            {title}
-          </h2>
-          <span className="text-sm text-muted">{meta}</span>
-        </summary>
-        <div className="mt-4">{children}</div>
-      </details>
-    </section>
-  );
-}
-
 export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: React.ReactNode; notice?: React.ReactNode }) {
   const sourceInfo = Object.fromEntries(
     guide.sources.map((s) => [s.id, `${s.title} · ${s.kind === "primary" ? "provider's docs" : "secondary"} · accessed ${formatDate(s.accessed)}`]),
@@ -237,7 +220,7 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
           </Section>
 
           {guide.submissionChecklist.length > 0 && (
-            <Collapsible id="checklist" title="What to have ready for review" meta={`${guide.submissionChecklist.length} items, tick as you go`}>
+            <Section id="checklist" title="What to have ready for review" aside={<span className="text-[13px] text-muted">Tick items as you go</span>}>
               <Checklist
                 storageKey={`checklist:${guide.origin}:${guide.slug}`}
                 items={guide.submissionChecklist.map((i, n) => ({
@@ -247,10 +230,10 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
                   detail: i.detail,
                 }))}
               />
-            </Collapsible>
+            </Section>
           )}
 
-          <Collapsible id="gotchas" title="Watch out for" meta={`${guide.gotchas.length} things that often catch people out`}>
+          <Section id="gotchas" title="Watch out for" aside={<span className="text-[13px] text-muted">Things that often catch people out</span>}>
             <ul className="grid gap-x-10 gap-y-4 text-sm md:grid-cols-2">
               {guide.gotchas.map((g) => (
                 <li key={g.title}>
@@ -261,7 +244,7 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
                 </li>
               ))}
             </ul>
-          </Collapsible>
+          </Section>
 
           <Section id="blocked" title="If you're blocked">
             <div className="grid gap-10 md:grid-cols-[3fr_2fr]">
