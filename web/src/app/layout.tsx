@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Schibsted_Grotesk } from "next/font/google";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { HeaderHeight } from "@/components/HeaderHeight";
 import "./globals.css";
 
 const schibsted = Schibsted_Grotesk({ variable: "--font-schibsted", subsets: ["latin"] });
@@ -25,7 +26,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className={`${schibsted.variable} min-h-screen`}>
         <a href="#main" className="skip-link">Skip to content</a>
-        <header className="sticky top-0 z-30 border-b border-line bg-paper">
+        <HeaderHeight />
+        <header id="site-header" className="sticky top-0 z-30 border-b border-line bg-paper">
           <nav className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
             <Link href="/" className="font-semibold tracking-tight">
               OAuth Approval Paths

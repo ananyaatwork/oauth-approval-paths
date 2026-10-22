@@ -163,6 +163,23 @@ input[type="checkbox"] {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
 }
 
+/* Jump targets land below the sticky header, and on phones below the sticky
+   section links too. */
+.anchor {
+  scroll-margin-top: calc(var(--header-h, 56px) + 64px);
+}
+@media (min-width: 1024px) {
+  .anchor {
+    scroll-margin-top: calc(var(--header-h, 56px) + 24px);
+  }
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Search bar: icon, field and button in one rounded pill. */
 .search-pill {
   display: flex;

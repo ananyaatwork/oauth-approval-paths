@@ -20,14 +20,36 @@ const OWNER_DOT: Record<Step["owner"], string> = {
   customer_admin: "bg-customer",
 };
 
+// One glyph per kind of section, so each part of a long guide is findable at a glance.
+const ICON: Record<string, React.ReactNode> = {
+  time: <><circle cx="12" cy="12" r="8" /><path d="M12 8v4l2.5 2.5" /></>,
+  blockers: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>,
+  split: <><circle cx="9" cy="8" r="3" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0" /><path d="M16 5.5a3 3 0 0 1 0 5.5M17.5 14a5.5 5.5 0 0 1 3 5" /></>,
+  steps: <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" />,
+  checklist: <><rect x="4" y="4" width="16" height="16" rx="3" /><path d="m8.5 12 2.5 2.5 4.5-5" /></>,
+  gotchas: <><path d="M12 4 3 19h18L12 4Z" /><path d="M12 10v4M12 17h.01" /></>,
+  blocked: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" /><path d="m6.3 6.3 3.6 3.6M14.1 14.1l3.6 3.6M17.7 6.3l-3.6 3.6M9.9 14.1l-3.6 3.6" /></>,
+  unknowns: <><circle cx="12" cy="12" r="8" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.2M12 17h.01" /></>,
+  sources: <><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></>,
+};
+
+// Each section opens with a divider and a large heading marked by its glyph,
+// so the page reads as distinct parts rather than one long run of text.
 function Section({ id, title, children, aside }: { id: string; title: string; children: React.ReactNode; aside?: React.ReactNode }) {
   return (
-    <section id={id} className="mt-12 scroll-mt-20 first:mt-0">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+    <section id={id} aria-labelledby={`${id}-h`} className="anchor mt-14 border-t border-line pt-10 first:mt-0 first:border-t-0 first:pt-0">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h2 id={`${id}-h`} className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
+          <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-surface-2 text-ink">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              {ICON[id]}
+            </svg>
+          </span>
+          {title}
+        </h2>
         {aside}
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-6">{children}</div>
     </section>
   );
 }
@@ -103,7 +125,11 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
       <div className="lg:mt-12 lg:grid lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-12">
         <GuideNav items={nav} />
         <div className="mt-10 lg:mt-0">
-          <Section id="time" title="How long until production" aside={<span className="text-[13px] text-muted">Hatched: review time not published</span>}>
+          <Section
+            id="time"
+            title="How long until production"
+            aside={<span className="text-[13px] text-muted">Hatched: review time not published</span>}
+          >
             <RouteSpread paths={guide.paths} />
             <div className="grid gap-10">
               {guide.paths.map((p) => (
@@ -112,14 +138,17 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
             </div>
           </Section>
 
-          <Section id="blockers" title="Blockers and what works today">
+          <Section
+            id="blockers"
+            title="Blockers and what works today"
+          >
             <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
               <div>
-                <h3 className="font-medium">What blocks you from submitting</h3>
-                <ul className="mt-3 space-y-3 text-sm">
+                <h3 className="font-semibold">What blocks you from submitting</h3>
+                <ul className="mt-3 divide-y divide-line text-sm">
                   {guide.prerequisites.map((i) => (
-                    <li key={i.item}>
-                      {i.item} <Evidence level={i.confidence} sources={i.sources} sourceInfo={sourceInfo} />
+                    <li key={i.item} className="py-3 first:pt-0">
+                      <span className="font-medium">{i.item}</span> <Evidence level={i.confidence} sources={i.sources} sourceInfo={sourceInfo} />
                       {i.detail && <span className="block text-muted">{i.detail}</span>}
                     </li>
                   ))}
@@ -127,11 +156,11 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
                 </ul>
               </div>
               <div>
-                <h3 className="font-medium">What works before approval</h3>
-                <ul className="mt-3 space-y-3 text-sm">
+                <h3 className="font-semibold">What works before approval</h3>
+                <ul className="mt-3 divide-y divide-line text-sm">
                   {guide.beforeApproval.map((i) => (
-                    <li key={i.item}>
-                      {i.item} <Evidence level={i.confidence} sources={i.sources} sourceInfo={sourceInfo} />
+                    <li key={i.item} className="py-3 first:pt-0">
+                      <span className="font-medium">{i.item}</span> <Evidence level={i.confidence} sources={i.sources} sourceInfo={sourceInfo} />
                       {i.detail && <span className="block text-muted">{i.detail}</span>}
                     </li>
                   ))}
@@ -190,7 +219,7 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
           <Section id="steps" title="Steps">
             <ol className="space-y-6">
               {guide.steps.map((s, i) => (
-                <li key={s.title} id={`step-${i + 1}`} className="grid scroll-mt-24 grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
+                <li key={s.title} id={`step-${i + 1}`} className="anchor grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3">
                   <span className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-sm font-semibold text-muted tabular-nums">{i + 1}</span>
                   <div className="max-w-[72ch]">
                     <p className="font-medium">
@@ -233,10 +262,10 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
             </Section>
           )}
 
-          <Section id="gotchas" title="Watch out for" aside={<span className="text-[13px] text-muted">Things that often catch people out</span>}>
-            <ul className="grid gap-x-10 gap-y-4 text-sm md:grid-cols-2">
+          <Section id="gotchas" title="Watch out for">
+            <ul className="grid gap-x-10 text-sm md:grid-cols-2">
               {guide.gotchas.map((g) => (
-                <li key={g.title}>
+                <li key={g.title} className="border-t border-line py-4">
                   <p className="font-medium">
                     {g.title} <Evidence level={g.confidence} sources={g.sources} sourceInfo={sourceInfo} />
                   </p>
@@ -248,9 +277,9 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
 
           <Section id="blocked" title="If you're blocked">
             <div className="grid gap-10 md:grid-cols-[3fr_2fr]">
-              <ul className="space-y-4 text-sm">
+              <ul className="divide-y divide-line text-sm">
                 {guide.blockers.map((b) => (
-                  <li key={b.symptom}>
+                  <li key={b.symptom} className="py-4 first:pt-0">
                     <p className="font-medium">{b.symptom}</p>
                     <p className="mt-0.5">{b.whatToDo}</p>
                     {b.contact && <p className="mt-0.5 text-muted">{b.contact}</p>}
@@ -312,7 +341,7 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
           <Section id="sources" title="Sources">
             <ol className="space-y-2 text-sm">
               {guide.sources.map((s) => (
-                <li key={s.id} id={`src-${s.id}`} className="grid scroll-mt-20 grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2 target:bg-surface lg:scroll-mt-6">
+                <li key={s.id} id={`src-${s.id}`} className="anchor grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2 target:bg-surface">
                   <span className="text-muted">{s.id}</span>
                   <span>
                     {/^https?:\/\//.test(s.url) ? (

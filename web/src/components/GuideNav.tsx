@@ -1,11 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type NavItem = { id: string; label: string };
 
 export function GuideNav({ items }: { items: NavItem[] }) {
   const [active, setActive] = useState(items[0]?.id);
+  const strip = useRef<HTMLElement>(null);
+
+  // On phones, keep the current section's pill in view in the sideways strip.
+  useEffect(() => {
+    const bar = strip.current;
+    const pill = bar?.querySelector<HTMLElement>(`[data-id="${active}"]`);
+    if (!bar || !pill || bar.offsetParent === null) return;
+    const left = pill.offsetLeft - (bar.clientWidth - pill.offsetWidth) / 2;
+    bar.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  }, [active]);
 
   useEffect(() => {
     const seen = new Map<string, boolean>();
@@ -42,13 +52,16 @@ export function GuideNav({ items }: { items: NavItem[] }) {
           ))}
         </ul>
       </nav>
+      {/* Phones: sticks directly under the site header while you scroll. */}
       <nav
+        ref={strip}
         aria-label="On this page"
-        className="-mx-4 mt-8 flex gap-1.5 overflow-x-auto px-4 py-2 lg:hidden"
+        className="no-scrollbar sticky top-[var(--header-h,56px)] z-20 -mx-4 mt-8 flex gap-1.5 overflow-x-auto border-b border-line bg-paper px-4 py-2.5 sm:-mx-6 sm:px-6 lg:hidden"
       >
         {items.map((i) => (
           <a
             key={i.id}
+            data-id={i.id}
             href={`#${i.id}`}
             aria-current={active === i.id ? "location" : undefined}
             className={`shrink-0 rounded-full border px-3 py-1 text-[13px] ${active === i.id ? "border-accent bg-accent/15 text-ink" : "border-line bg-surface text-muted"}`}
