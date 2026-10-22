@@ -3,7 +3,15 @@
   "origin": "library",
   "researchedOn": "2026-10-21",
   "model": "claude-opus-5-5",
-  "verification": null,
+  "verification": {
+    "checkedOn": "2026-10-21",
+    "checkedBy": "agent",
+    "claimsChecked": 6,
+    "corrections": [
+      "Existing installs of unlisted apps are not throttled: Slack's current changelog says the Tier 1 limits will not apply to them, so the March 3, 2026 date was removed from the gotchas and unknowns.",
+      "The security review source (s8), which had an empty URL, now points to the live Slack Security Review page, and the unverified FAQ source (s7), which redirects to s6, was removed."
+    ]
+  },
   "name": "Slack",
   "website": "https://api.slack.com/apps",
   "category": "Communication",
@@ -529,11 +537,11 @@
       ]
     },
     {
-      "title": "Existing unlisted installs may also be throttled",
-      "detail": "Secondary copies of the changelog cite March 3, 2026 as the date the Tier 1 limits reach existing installs. The current changelog page does not state that date.",
-      "confidence": "secondary",
+      "title": "Existing unlisted installs are not throttled",
+      "detail": "Slack's current changelog says the Tier 1 limits \"will not be applied to existing installations\" of unlisted apps. An earlier version of the page set dates for existing installs (September 2, 2025, later March 3, 2026), but those dates have been removed. Only new apps and new installs are throttled.",
+      "confidence": "confirmed",
       "sources": [
-        "s7"
+        "s6"
       ]
     },
     {
@@ -581,7 +589,8 @@
       "detail": "Even after listing.",
       "confidence": "confirmed",
       "sources": [
-        "s2"
+        "s2",
+        "s8"
       ]
     },
     {
@@ -663,8 +672,7 @@
     ]
   },
   "unknowns": [
-    "When the Tier 1 history limits apply to existing installs of unlisted apps. Secondary copies of the changelog cite March 3, 2026, but the current changelog page does not state that date.",
-    "Security review questionnaire details: the security review guide link returned 404.",
+    "Security review questionnaire details are not summarised here; see Slack's Security Review page (s8).",
     "Setup and submission-prep durations are estimates; Slack states no figure.",
     "No stated SLA for revisions or for stuck reviews.",
     "How long workspace admin approval or Enterprise org installs take."
@@ -719,19 +727,11 @@
       "kind": "primary"
     },
     {
-      "id": "s7",
-      "url": "https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq",
-      "title": "Terms and rate limit update FAQ (seen only as a search snippet)",
-      "accessed": "2026-10-21",
-      "supports": "March 3, 2026 date for existing installs (unverified, search excerpt only)",
-      "kind": "primary"
-    },
-    {
       "id": "s8",
-      "url": "",
-      "title": "Slack security review guide (link returned 404)",
+      "url": "https://docs.slack.dev/slack-marketplace/marketplace-terms-conditions/slack-security-review",
+      "title": "Slack Security Review",
       "accessed": "2026-10-21",
-      "supports": "Security questionnaire details (not read)",
+      "supports": "Slack's security review program for Marketplace apps: what it may assess and test, and what to provide",
       "kind": "primary"
     }
   ]

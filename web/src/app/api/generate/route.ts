@@ -1,8 +1,23 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { cookies } from "next/headers";
+import crypto from "crypto";
+import { VISITOR_COOKIE, clientIp } from "@/lib/visitor";
 import { GuideContent, type Guide } from "@/lib/schema";
 import { RESEARCH_SYSTEM, STRUCTURE_SYSTEM } from "@/lib/research-prompt";
 import { enforceProvenance } from "@/lib/provenance";
+import { getGuide } from "@/guides";
+import {
+  acquireLock,
+  appKey,
+  getSaved,
+  recordRun,
+  releaseLock,
+  runsLeft,
+  saveGuide,
+  visitorFrom,
+  RUN_LIMIT,
+} from "@/lib/store";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -18,62 +33,101 @@ export type TraceEvent =
   | { type: "fetched"; url: string; title: string | null }
   | { type: "fetch_error"; url: string; code: string }
   | { type: "provenance"; downgraded: number; opened: number }
-  | { type: "guide"; guide: Guide }
+  | { type: "saved"; guide: Guide; href: string; origin: "library" | "live" }
+  | { type: "guide"; guide: Guide; href: string; runsLeft: number | null }
+  | { type: "limit"; message: string }
+  | { type: "busy"; message: string }
   | { type: "error"; message: string };
-
-function slugify(s: string) {
-  return s.toLowerCase().replace(/^https?:\/\//, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
-}
 
 export async function POST(req: Request) {
   const { app } = (await req.json().catch(() => ({}))) as { app?: string };
   const target = (app ?? "").trim().slice(0, 200);
 
+  const jar = await cookies();
+  let cookieId = jar.get(VISITOR_COOKIE)?.value;
+  const newCookie = !cookieId;
+  cookieId ??= crypto.randomUUID();
+  const visitor = visitorFrom(cookieId, await clientIp());
+
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
       const send = (e: TraceEvent) => controller.enqueue(new TextEncoder().encode(JSON.stringify(e) + "\n"));
+      const key = appKey(target);
+      let locked = false;
+      let charged = false;
       try {
-        if (!target) return send({ type: "error", message: "Enter an app name or website." });
+        if (!target || !key) return send({ type: "error", message: "Enter an app name or website." });
+
+        const lib = getGuide(key);
+        if (lib) return send({ type: "saved", guide: lib, href: `/guides/${lib.slug}`, origin: "library" });
+        const saved = await getSaved(key);
+        if (saved) return send({ type: "saved", guide: saved, href: `/g/${key}`, origin: "live" });
+
         if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
           return send({
             type: "error",
             message: "Live generation is not configured on this deployment: set ANTHROPIC_API_KEY on the server.",
           });
         }
-        await run(target, send);
+        if ((await runsLeft(visitor)) <= 0) {
+          return send({
+            type: "limit",
+            message: `Each visitor gets ${RUN_LIMIT === 1 ? "one live research run" : `${RUN_LIMIT} live research runs`}, and you've used ${RUN_LIMIT === 1 ? "it" : "them"}. Saved guides and the library stay open.`,
+          });
+        }
+        if (!(locked = await acquireLock(key))) {
+          return send({ type: "busy", message: `Someone is researching ${target} right now. Its guide will be saved here in a minute or two.` });
+        }
+
+        await recordRun(visitor, key, 1);
+        charged = true;
+        const guide = await research(target, key, send);
+        await saveGuide(guide);
+        const left = await runsLeft(visitor);
+        send({ type: "guide", guide, href: `/g/${key}`, runsLeft: Number.isFinite(left) ? left : null });
       } catch (err) {
-        const message =
-          err instanceof Anthropic.RateLimitError
-            ? "The model is rate-limited right now. Try again in a minute."
-            : err instanceof Anthropic.APIError
-              ? `Model API error ${err.status ?? ""}: ${err.message}`
-              : err instanceof Error
-                ? err.message
-                : "Unknown error";
-        send({ type: "error", message });
+        if (charged) await recordRun(visitor, key, -1);
+        console.error(`[generate] ${key}:`, err);
+        const reason =
+          err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError
+            ? "The server's model API key was rejected, so research couldn't start."
+            : err instanceof Anthropic.RateLimitError
+              ? "The model is rate-limited right now. Try again in a minute."
+              : err instanceof Anthropic.APIConnectionError
+                ? "The server couldn't reach the model API. Try again in a minute."
+                : err instanceof Anthropic.APIError
+                  ? `The model API returned an error (${err.status ?? "unknown"}). Try again in a minute.`
+                  : err instanceof Error
+                    ? err.message
+                    : "Something went wrong.";
+        send({ type: "error", message: charged ? `${reason} This attempt didn't use up your run.` : reason });
       } finally {
+        if (locked) await releaseLock(key);
         controller.close();
       }
     },
   });
 
-  return new Response(body, {
-    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" },
-  });
+  const resHeaders = new Headers({ "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" });
+  if (newCookie) {
+    resHeaders.append(
+      "Set-Cookie",
+      `${VISITOR_COOKIE}=${cookieId}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax${process.env.VERCEL ? "; Secure" : ""}`,
+    );
+  }
+  return new Response(body, { headers: resHeaders });
 }
 
-async function run(target: string, send: (e: TraceEvent) => void) {
+async function research(target: string, key: string, send: (e: TraceEvent) => void): Promise<Guide> {
   const client = new Anthropic();
   const fetched = new Set<string>();
   const searched = new Set<string>();
   const pendingFetch = new Map<string, string>();
   const pendingSearch = new Map<string, string>();
+  const today = new Date().toISOString().slice(0, 10);
 
   const messages: Anthropic.Beta.BetaMessageParam[] = [
-    {
-      role: "user",
-      content: `Research the OAuth app setup and approval path for: ${target}\nToday's date is ${new Date().toISOString().slice(0, 10)}.`,
-    },
+    { role: "user", content: `Research the OAuth app setup and approval path for: ${target}\nToday's date is ${today}.` },
   ];
 
   send({ type: "status", message: `Researching ${target} with ${MODEL}` });
@@ -139,11 +193,10 @@ async function run(target: string, send: (e: TraceEvent) => void) {
     break;
   }
 
-  if (!notes.trim()) throw new Error("Research finished without notes; try again or give the app's website.");
+  if (!notes.trim()) throw new Error("Research finished without notes; try the app's website instead.");
 
   send({ type: "status", message: `Read ${fetched.size} pages. Structuring the guide` });
 
-  const today = new Date().toISOString().slice(0, 10);
   const parsed = await client.messages.parse({
     model: MODEL,
     max_tokens: 32000,
@@ -169,13 +222,5 @@ async function run(target: string, send: (e: TraceEvent) => void) {
     );
   }
 
-  const guide: Guide = {
-    ...content,
-    slug: `${slugify(content.name || target)}-live`,
-    origin: "live",
-    researchedOn: today,
-    model: MODEL,
-    verification: null,
-  };
-  send({ type: "guide", guide });
+  return { ...content, slug: key, origin: "live", researchedOn: today, model: MODEL, verification: null };
 }

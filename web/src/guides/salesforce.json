@@ -3,7 +3,15 @@
   "origin": "library",
   "researchedOn": "2026-10-21",
   "model": "claude-opus-5-5",
-  "verification": null,
+  "verification": {
+    "checkedOn": "2026-10-21",
+    "checkedBy": "agent",
+    "claimsChecked": 6,
+    "corrections": [
+      "Security review time changed from \"up to 4 weeks\" to \"typically 4–5 weeks\", per the live Trailhead security review unit.",
+      "The unlisted-package unknown is now a secondary claim: per a search excerpt of Salesforce's packaging guide, unreviewed packages install after an \"unauthorized\" warning."
+    ]
+  },
   "name": "Salesforce",
   "website": "https://developer.salesforce.com",
   "category": "CRM",
@@ -144,15 +152,15 @@
         },
         {
           "kind": "provider_review",
-          "label": "Security review after verification",
-          "min": null,
-          "max": 4,
+          "label": "Security review",
+          "min": 4,
+          "max": 5,
           "unit": "weeks",
           "basis": "stated",
-          "note": "Salesforce states \"up to 4 weeks\". Seen only in a search excerpt, and no 2026 queue data was found.",
-          "confidence": "secondary",
+          "note": "Salesforce's Trailhead says a solution \"typically takes 4–5 weeks to get through the review process\". No 2026 queue data was found.",
+          "confidence": "confirmed",
           "sources": [
-            "s13"
+            "s18"
           ]
         },
         {
@@ -162,10 +170,10 @@
           "max": null,
           "unit": "weeks",
           "basis": "no_stated_sla",
-          "note": "Each retest costs a fee.",
-          "confidence": "secondary",
+          "note": "Each resubmission counts as another attempt and costs another $999.",
+          "confidence": "confirmed",
           "sources": [
-            "s13"
+            "s18"
           ]
         },
         {
@@ -188,7 +196,8 @@
       "detail": "A local ECA works only in the org where you create it.",
       "confidence": "confirmed",
       "sources": [
-        "s8"
+        "s8",
+        "s17"
       ]
     },
     {
@@ -201,10 +210,12 @@
       ]
     },
     {
-      "item": "It is not confirmed whether an unlisted package needs a security review before customers install it.",
-      "detail": null,
-      "confidence": "unconfirmed",
-      "sources": []
+      "item": "An unreviewed, unlisted package can likely still be installed, but customer admins see an \"unauthorized for distribution\" warning and must acknowledge it first.",
+      "detail": "From a search excerpt of Salesforce's packaging guide. The page itself was blocked, so this is not confirmed.",
+      "confidence": "secondary",
+      "sources": [
+        "s19"
+      ]
     },
     {
       "item": "A legacy Connected App created before Spring '26 still works cross-org and can still be edited.",
@@ -327,37 +338,38 @@
     },
     {
       "title": "Submit for security review and pay the fee (AppExchange listing only)",
-      "detail": "Submit the solution for AppExchange security review. A 2023 blog gives the fee as $999 per attempt, and free solutions are exempt.",
+      "detail": "Submit the solution for AppExchange (now also called AgentExchange) security review. Trailhead gives the fee for paid solutions as $999 per attempt, including each resubmission. A 2023 blog says free solutions are exempt.",
       "owner": "you",
       "agentHelp": "Assemble the submission checklist, and draft the architecture and data-flow docs.",
       "url": "https://developer.salesforce.com/docs/platform/isvforce/guide/security-review-submit-solution.html",
-      "confidence": "secondary",
+      "confidence": "confirmed",
       "sources": [
+        "s18",
         "s12",
         "s13"
       ]
     },
     {
       "title": "Salesforce runs the security review",
-      "detail": "Salesforce emails next steps within 2 business days and states the review takes \"up to 4 weeks\" after verification.",
+      "detail": "Trailhead says a solution typically takes 4–5 weeks to get through review. A next-steps email within 2 business days was seen only in a search excerpt.",
       "owner": "provider",
       "agentHelp": null,
       "url": "https://developer.salesforce.com/docs/atlas.en-us.packagingGuide.meta/packagingGuide/security_review_how_it_works.htm",
       "confidence": "secondary",
       "sources": [
-        "s13",
+        "s18",
         "s14"
       ]
     },
     {
       "title": "Fix the findings and resubmit",
-      "detail": "Each retest costs a fee.",
+      "detail": "Each resubmission is another attempt and costs another $999.",
       "owner": "you",
       "agentHelp": "Draft false-positive documentation for scanner findings and a list of fixes.",
       "url": null,
-      "confidence": "secondary",
+      "confidence": "confirmed",
       "sources": [
-        "s13"
+        "s18"
       ]
     }
   ],
@@ -388,11 +400,11 @@
     },
     {
       "item": "Review fee paid",
-      "detail": "A 2023 blog gives the fee as $999 per attempt. Free solutions are exempt.",
-      "confidence": "secondary",
+      "detail": "$999 per attempt for paid solutions, per Trailhead. A 2023 blog says free solutions are exempt.",
+      "confidence": "confirmed",
       "sources": [
-        "s12",
-        "s13"
+        "s18",
+        "s12"
       ]
     }
   ],
@@ -403,7 +415,8 @@
       "confidence": "confirmed",
       "sources": [
         "s1",
-        "s2"
+        "s2",
+        "s16"
       ]
     },
     {
@@ -446,11 +459,11 @@
     },
     {
       "title": "Each security review attempt costs a fee",
-      "detail": "A 2023 blog gives the fee as $999 per attempt, and each retest also costs a fee. Free solutions pay no fee.",
-      "confidence": "secondary",
+      "detail": "Trailhead gives the fee for paid solutions as $999 for the first submission and for each later attempt. A 2023 blog says free solutions pay no fee.",
+      "confidence": "confirmed",
       "sources": [
-        "s12",
-        "s13"
+        "s18",
+        "s12"
       ]
     }
   ],
@@ -497,9 +510,9 @@
     "haveReady": []
   },
   "unknowns": [
-    "Whether an unlisted managed package needs a security review before customers install it.",
-    "Current security review queue times. Salesforce states \"up to 4 weeks\", and no 2026 data was found.",
-    "The current listing or annual fee alongside the $999 per-attempt fee. The $999 figure is from a 2023 blog and may be stale.",
+    "Whether an unreviewed, unlisted package installs with only a warning. A search excerpt of Salesforce's packaging guide says so, but the page was blocked.",
+    "Current security review queue times. Trailhead says \"typically 4–5 weeks\", and no 2026 data was found.",
+    "The current listing or annual fee on top of the $999 per-attempt review fee. Older packaging-guide versions listed $2,550 plus a $150 annual listing fee, and the current fee page was blocked.",
     "How long settings take to propagate, according to help.salesforce.com. The 10-minute figure is from Okta.",
     "Whether the Use Any API Client change is fully enforced.",
     "Whether access for Professional Edition orgs and some API limits depend on the partner program or the security review."
@@ -624,6 +637,38 @@
       "accessed": "2026-10-21",
       "supports": "OAUTH_APPROVAL_ERROR_GENERIC is the error a blocked app produces.",
       "kind": "secondary"
+    },
+    {
+      "id": "s16",
+      "url": "https://www.salesforce.com/blog/spring-26-release-architect-highlights/",
+      "title": "Salesforce blog: Spring '26 Release Architect Highlights",
+      "accessed": "2026-10-21",
+      "supports": "Opened live: \"restricts Connected App creation by default across both the UI and Metadata API, except through package installation. Re-enabling creation now requires a request to Salesforce Support.\"",
+      "kind": "primary"
+    },
+    {
+      "id": "s17",
+      "url": "https://trailhead.salesforce.com/content/learn/modules/external-client-app-basics/use-external-client-apps-when-connected-apps-wont-do",
+      "title": "Trailhead: Use External Client Apps When Connected Apps Won't Do",
+      "accessed": "2026-10-21",
+      "supports": "Opened live: \"Local: Can be used only in the context of its org.\" \"Packaged: Can be added to a second-generation (2GP) managed package and distributed.\"",
+      "kind": "primary"
+    },
+    {
+      "id": "s18",
+      "url": "https://trailhead.salesforce.com/content/learn/modules/isv_security_review/isv_security_review_submit",
+      "title": "Trailhead: Submit Your Solution for Security Review",
+      "accessed": "2026-10-21",
+      "supports": "Opened live: \"$999 fee payment for the initial submission and for any subsequent attempts\" for paid solutions; \"typically takes 4–5 weeks to get through the review process.\"",
+      "kind": "primary"
+    },
+    {
+      "id": "s19",
+      "url": "https://developer.salesforce.com/docs/platform/pkg1-dev/guide/packaging-install-notification.html",
+      "title": "Packaging Guide: Install Notifications for Unauthorized Managed Packages",
+      "accessed": "2026-10-21",
+      "supports": "Unreviewed managed packages show an install warning that the customer must acknowledge. Read only via a search excerpt (direct fetch returned 403), so the claim is secondary.",
+      "kind": "primary"
     }
   ]
 }

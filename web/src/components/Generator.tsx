@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Guide } from "@/lib/schema";
 import type { TraceEvent } from "@/app/api/generate/route";
@@ -9,6 +10,8 @@ import { GuideView } from "./GuideView";
 import { GuideActions } from "./GuideActions";
 
 type Line = { kind: "search" | "read" | "miss" | "note" | "warn"; text: string; detail?: string; href?: string };
+type SavedItem = { slug: string; name: string; researchedOn: string; difficulty: number };
+type Notice = { tone: "info" | "stop"; title: string; body: string; href?: string };
 
 const host = (u: string) => {
   try {
@@ -18,13 +21,37 @@ const host = (u: string) => {
   }
 };
 
-export function Generator({ known, initial }: { known: KnownApp[]; initial: string }) {
+function runsText(left: number | null, limit: number) {
+  if (left === null) return "Live research runs are unlimited on this deployment.";
+  if (left === 0)
+    return "You've used your live research run. Apps that are already researched still open instantly.";
+  const n = left === 1 ? "one live research run" : `${left} live research runs`;
+  return `You have ${n}${limit > left ? " left" : ""}. Apps that are already researched open instantly and don't use it.`;
+}
+
+export function Generator({
+  known,
+  saved,
+  initial,
+  runsLeft: initialRuns,
+  runLimit,
+}: {
+  known: KnownApp[];
+  saved: SavedItem[];
+  initial: string;
+  runsLeft: number | null;
+  runLimit: number;
+}) {
+  const router = useRouter();
   const [app, setApp] = useState(initial);
   const [lines, setLines] = useState<Line[]>([]);
   const [guide, setGuide] = useState<Guide | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [runs, setRuns] = useState(initialRuns);
+  const [savedList, setSavedList] = useState(saved);
   const started = useRef(false);
   const abort = useRef<AbortController | null>(null);
 
@@ -35,6 +62,83 @@ export function Generator({ known, initial }: { known: KnownApp[]; initial: stri
     return () => clearInterval(id);
   }, [running]);
 
+  const replaceLast = (pred: (l: Line) => boolean, next: (l: Line) => Line) =>
+    setLines((prev) => {
+      const copy = [...prev];
+      for (let i = copy.length - 1; i >= 0; i--)
+        if (pred(copy[i])) {
+          copy[i] = next(copy[i]);
+          break;
+        }
+      return copy;
+    });
+
+  function handle(e: TraceEvent) {
+    const push = (l: Line) => setLines((prev) => [...prev, l]);
+    switch (e.type) {
+      case "status":
+        return push({ kind: "note", text: e.message });
+      case "search":
+        return push({ kind: "search", text: `Searched “${e.query}”` });
+      case "results":
+        return replaceLast(
+          (l) => l.kind === "search" && l.text.includes(e.query) && !l.detail,
+          (l) => ({
+            ...l,
+            detail: e.results.length ? [...new Set(e.results.map((r) => host(r.url)))].slice(0, 4).join(", ") : "no results",
+          }),
+        );
+      case "fetch":
+        return push({ kind: "read", text: `Opening ${host(e.url)}`, href: e.url });
+      case "fetched":
+        return replaceLast(
+          (l) => l.kind === "read" && l.text.startsWith("Opening"),
+          () => ({ kind: "read", text: `Read ${e.title ?? host(e.url)}`, detail: host(e.url), href: e.url }),
+        );
+      case "fetch_error":
+        return replaceLast(
+          (l) => l.kind === "read" && l.text.startsWith("Opening") && l.href === e.url,
+          () => ({ kind: "miss", text: `Couldn't open ${host(e.url)}`, detail: e.code.replace(/_/g, " "), href: e.url }),
+        );
+      case "provenance":
+        return push({
+          kind: e.downgraded ? "warn" : "note",
+          text: e.downgraded
+            ? `Provenance check: ${e.downgraded} claim(s) downgraded because their page wasn't opened`
+            : `Provenance check passed: every “confirmed” claim cites a page the agent opened (${e.opened} pages)`,
+        });
+      case "saved":
+        if (e.origin === "library") return router.push(e.href);
+        setGuide(e.guide);
+        return setNotice({
+          tone: "info",
+          title: `${e.guide.name} was already researched on ${e.guide.researchedOn}`,
+          body: "You're seeing the saved guide, so this didn't use a research run. Everyone who asks for this app gets the same version.",
+          href: e.href,
+        });
+      case "guide":
+        setGuide(e.guide);
+        setRuns(e.runsLeft);
+        setSavedList((prev) => [
+          { slug: e.guide.slug, name: e.guide.name, researchedOn: e.guide.researchedOn, difficulty: e.guide.verdict.difficulty },
+          ...prev.filter((s) => s.slug !== e.guide.slug),
+        ]);
+        return setNotice({
+          tone: "info",
+          title: `Saved: ${e.guide.name}`,
+          body: "This guide now has its own page. Anyone who asks for this app from now on gets it instantly, without a new run.",
+          href: e.href,
+        });
+      case "limit":
+        setRuns(0);
+        return setNotice({ tone: "stop", title: "You've used your live research run", body: e.message });
+      case "busy":
+        return setNotice({ tone: "stop", title: "Already being researched", body: e.message });
+      case "error":
+        return setError(e.message);
+    }
+  }
+
   async function start(target: string) {
     abort.current?.abort();
     const ctrl = new AbortController();
@@ -42,12 +146,12 @@ export function Generator({ known, initial }: { known: KnownApp[]; initial: stri
     setApp(target);
     setLines([]);
     setGuide(null);
+    setNotice(null);
     setError(null);
     setElapsed(0);
     setRunning(true);
     history.replaceState(null, "", `/generate?app=${encodeURIComponent(target)}`);
 
-    const push = (l: Line) => setLines((prev) => [...prev, l]);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -67,50 +171,7 @@ export function Generator({ known, initial }: { known: KnownApp[]; initial: stri
         while ((nl = buf.indexOf("\n")) >= 0) {
           const raw = buf.slice(0, nl).trim();
           buf = buf.slice(nl + 1);
-          if (!raw) continue;
-          const e = JSON.parse(raw) as TraceEvent;
-          if (e.type === "status") push({ kind: "note", text: e.message });
-          else if (e.type === "search") push({ kind: "search", text: `Searched “${e.query}”` });
-          else if (e.type === "results")
-            setLines((prev) => {
-              const copy = [...prev];
-              for (let i = copy.length - 1; i >= 0; i--)
-                if (copy[i].kind === "search" && copy[i].text.includes(e.query) && !copy[i].detail) {
-                  copy[i] = { ...copy[i], detail: `${e.results.length ? e.results.map((r) => host(r.url)).filter((v, j, a) => a.indexOf(v) === j).slice(0, 4).join(", ") : "no results"}` };
-                  break;
-                }
-              return copy;
-            });
-          else if (e.type === "fetch") push({ kind: "read", text: `Opening ${host(e.url)}`, href: e.url });
-          else if (e.type === "fetched")
-            setLines((prev) => {
-              const copy = [...prev];
-              for (let i = copy.length - 1; i >= 0; i--)
-                if (copy[i].kind === "read" && copy[i].text.startsWith("Opening")) {
-                  copy[i] = { kind: "read", text: `Read ${e.title ?? host(e.url)}`, detail: host(e.url), href: e.url };
-                  break;
-                }
-              return copy;
-            });
-          else if (e.type === "fetch_error")
-            setLines((prev) => {
-              const copy = [...prev];
-              for (let i = copy.length - 1; i >= 0; i--)
-                if (copy[i].kind === "read" && copy[i].text.startsWith("Opening")) {
-                  copy[i] = { kind: "miss", text: `Couldn't open ${host(e.url)}`, detail: e.code.replace(/_/g, " "), href: e.url };
-                  break;
-                }
-              return copy;
-            });
-          else if (e.type === "provenance")
-            push({
-              kind: e.downgraded ? "warn" : "note",
-              text: e.downgraded
-                ? `Provenance check: ${e.downgraded} claim(s) downgraded because their page wasn't opened`
-                : `Provenance check passed: every "confirmed" claim cites a page the agent opened (${e.opened} pages)`,
-            });
-          else if (e.type === "guide") setGuide(e.guide);
-          else if (e.type === "error") setError(e.message);
+          if (raw) handle(JSON.parse(raw) as TraceEvent);
         }
       }
     } catch (err) {
@@ -130,6 +191,7 @@ export function Generator({ known, initial }: { known: KnownApp[]; initial: stri
   }, []);
 
   const icon: Record<Line["kind"], string> = { search: "⌕", read: "↗", miss: "×", note: "·", warn: "!" };
+  const showTrace = running || lines.length > 0;
 
   return (
     <div className="pt-10">
@@ -140,32 +202,48 @@ export function Generator({ known, initial }: { known: KnownApp[]; initial: stri
       </p>
       <div className="mt-6 max-w-xl">
         <ResearchForm key={app} known={known} initial={app} onSubmit={start} />
+        <p className={`mt-2 text-sm ${runs === 0 ? "text-customer" : "text-muted"}`}>{runsText(runs, runLimit)}</p>
       </div>
 
-      {(running || lines.length > 0) && (
+      {showTrace && (
         <section aria-live="polite" className="mt-8 max-w-3xl rounded-md border border-line bg-surface p-4">
           <div className="flex items-baseline justify-between gap-4">
             <h2 className="font-semibold">{running ? `Researching ${app}` : `Research log for ${app}`}</h2>
-            <span className="text-sm text-muted">{elapsed}s</span>
+            <span className="text-sm text-muted tabular-nums">{elapsed}s</span>
           </div>
           <ol className="mt-3 space-y-1.5 text-sm">
             {lines.map((l, i) => (
-              <li key={i} className={`grid grid-cols-[1.25rem_1fr] ${l.kind === "miss" || l.kind === "warn" ? "text-customer" : ""}`}>
+              <li key={i} className={`grid grid-cols-[1.25rem_minmax(0,1fr)] ${l.kind === "miss" || l.kind === "warn" ? "text-customer" : ""}`}>
                 <span aria-hidden className="text-muted">{icon[l.kind]}</span>
-                <span>
+                <span className="[overflow-wrap:anywhere]">
                   {l.href ? <a href={l.href} target="_blank" rel="noreferrer" className="hover:underline">{l.text}</a> : l.text}
                   {l.detail && <span className="text-muted"> · {l.detail}</span>}
                 </span>
               </li>
             ))}
             {running && (
-              <li className="grid grid-cols-[1.25rem_1fr] text-muted">
+              <li className="grid grid-cols-[1.25rem_minmax(0,1fr)] text-muted">
                 <span aria-hidden className="animate-pulse">●</span>
-                <span>Working…</span>
+                <span>{lines.length ? "Working…" : "Checking saved guides…"}</span>
               </li>
             )}
           </ol>
         </section>
+      )}
+
+      {notice && (
+        <div
+          role={notice.tone === "stop" ? "alert" : "status"}
+          className={`mt-6 max-w-3xl border-l-4 bg-surface px-4 py-3 text-sm ${notice.tone === "stop" ? "border-provider" : "border-agent"}`}
+        >
+          <p className="font-medium">{notice.title}</p>
+          <p className="mt-1">{notice.body}</p>
+          {notice.href && (
+            <p className="mt-2">
+              <Link href={notice.href} className="underline underline-offset-2">Open its page</Link>
+            </p>
+          )}
+        </div>
       )}
 
       {error && (
@@ -179,14 +257,36 @@ export function Generator({ known, initial }: { known: KnownApp[]; initial: stri
       )}
 
       {guide && (
-        <div className="mt-6">
-          <p className="max-w-3xl text-sm text-muted">
-            This guide was written just now by an agent and hasn&rsquo;t been checked by a person. Treat unconfirmed items
-            as leads, not facts. Share it with the link below: the guide is stored in the link itself.
-          </p>
+        <div className="mt-2">
           <GuideActions guide={guide} />
           <GuideView guide={guide} />
         </div>
+      )}
+
+      {!guide && (
+        <section className="mt-14 max-w-3xl" aria-labelledby="saved-h">
+          <h2 id="saved-h" className="border-b border-line pb-2 text-lg font-semibold tracking-tight">
+            Already researched
+          </h2>
+          {savedList.length ? (
+            <ul className="mt-2">
+              {savedList.map((s) => (
+                <li key={s.slug} className="border-b border-line">
+                  <Link href={`/g/${s.slug}`} className="flex flex-wrap items-baseline justify-between gap-x-4 py-2.5 hover:bg-surface">
+                    <span className="font-medium">{s.name}</span>
+                    <span className="text-sm text-muted tabular-nums">
+                      Difficulty {s.difficulty}/5 · researched {s.researchedOn}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-muted">
+              Nothing yet. The first app someone researches is saved here, and opens instantly for everyone after that.
+            </p>
+          )}
+        </section>
       )}
     </div>
   );

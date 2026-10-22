@@ -1,0 +1,14 @@
+# Slack guide: verification log (2026-10-21, agent)
+
+| # | Guide claim | Live page says (quote + URL) | Verdict |
+|---|---|---|---|
+| 1 | Marketplace submission needs 10+ active workspaces (active = used in last 28 days) | "Your app has been installed on 10 or more active workspaces"; active = "used in the past 28 days". https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide | MATCH |
+| 2 | Preliminary review up to 10 business days; functional up to 10 weeks (6 for updates); no expediting | Preliminary feedback "generally takes up to 10 business days"; functional "takes up to 10 weeks for new submissions and 6 weeks for published apps resubmitting changes"; "We are unable to skip or accelerate the review process in order to coordinate with your launch." Same URL. | MATCH |
+| 3a | Since May 29, 2025, unlisted commercial apps get 1 req/min, 15 objects/call on conversations.history/replies (new apps + new installs) | "allow 1 request per minute and will return a maximum of 15 objects per request"; applies to new unlisted apps and new installs. https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps | MATCH |
+| 3b | Existing installs: unknown, possibly March 3, 2026 (secondary) | "The new rate limits will not be applied to existing installations of unlisted, distributed applications published outside the Marketplace." Search snippets show an older version of the page that set Sept 2, 2025 and then March 3, 2026; the current page has removed both dates. Same URL (the old api.slack.com FAQ URL 302-redirects here). | CORRECTED: existing installs are not throttled; gotcha rewritten, confidence secondary -> confirmed, unknown removed, s7 dropped |
+| 4 | Activating public distribution needs no review | The page lists the checklist then "Activate Public Distribution", and contrasts: "Unlike unlisted distributed apps, apps listed in the Slack Marketplace are reviewed". https://docs.slack.dev/distribution | MATCH (it is implied by contrast, not stated outright) |
+| 5 | Support must respond within 2 business days | "We expect support requests to receive a response within 2 business days." https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements | MATCH |
+| 6 | s8 security review guide: empty URL (404) | The guidelines page links to the "Slack Security Review" page: "Slack wants to help you (our developers) create secure applications and integrations." https://docs.slack.dev/slack-marketplace/marketplace-terms-conditions/slack-security-review | CORRECTED: URL filled in, s8 now cited on the "security-review at any time" gotcha, 404 unknown reworded |
+
+**Summary:** 6 claims checked: 4 MATCH, 2 CORRECTED, 0 COULD NOT VERIFY.
+The big fix is that Slack has dropped the plan to throttle existing unlisted installs, so the "March 3, 2026" date is gone. The dead security-review link now points to the live page.

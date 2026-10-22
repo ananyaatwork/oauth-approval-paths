@@ -35,11 +35,13 @@ export function GuideView({ guide }: { guide: Guide }) {
   const primary = guide.sources.filter((s) => s.kind === "primary").length;
 
   return (
-    <article className="pt-10">
+    <article className="pt-10 [overflow-wrap:anywhere]">
       <p className="text-sm text-muted">
         {guide.origin === "library" ? "Library guide" : "Generated live"}, researched {guide.researchedOn}
         {guide.model ? ` with ${guide.model}` : ""} · {guide.sources.length} sources ({primary} from the provider)
-        {guide.verification ? ` · ${guide.verification.claimsChecked} claims spot-checked by a ${guide.verification.checkedBy}` : " · not yet spot-checked"}
+        {guide.verification
+          ? ` · ${guide.verification.claimsChecked} claims re-checked against live pages by ${guide.verification.checkedBy === "human" ? "a person" : "an independent agent"} on ${guide.verification.checkedOn}`
+          : " · not yet re-checked"}
       </p>
       <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">{guide.name}</h1>
       <p className="mt-4 max-w-[68ch] text-xl leading-snug">{guide.verdict.headline}</p>
@@ -116,7 +118,7 @@ export function GuideView({ guide }: { guide: Guide }) {
       <Section id="steps" title="Steps" aside={<EvidenceKey />}>
         <ol className="space-y-5">
           {guide.steps.map((s, i) => (
-            <li key={s.title} className="grid grid-cols-[2rem_1fr] gap-x-3">
+            <li key={s.title} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3">
               <span className="text-lg font-semibold text-muted">{i + 1}</span>
               <div className="max-w-[72ch]">
                 <p className="font-medium">
@@ -215,7 +217,7 @@ export function GuideView({ guide }: { guide: Guide }) {
       <Section id="sources" title="Sources">
         <ol className="space-y-2 text-sm">
           {guide.sources.map((s) => (
-            <li key={s.id} id={`src-${s.id}`} className="grid grid-cols-[2.5rem_1fr] gap-x-2 scroll-mt-6 target:bg-surface">
+            <li key={s.id} id={`src-${s.id}`} className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2 scroll-mt-6 target:bg-surface">
               <span className="text-muted">{s.id}</span>
               <span>
                 {/^https?:\/\//.test(s.url) ? (

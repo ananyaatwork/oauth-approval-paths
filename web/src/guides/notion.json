@@ -3,7 +3,14 @@
   "origin": "library",
   "researchedOn": "2026-10-21",
   "model": "claude-opus-5-5",
-  "verification": null,
+  "verification": {
+    "checkedOn": "2026-10-21",
+    "checkedBy": "agent",
+    "claimsChecked": 5,
+    "corrections": [
+      "Removed the \"Notion directory FAQ\" source because it had no real URL and the live notion.com/integrations page doesn't show the security-review text; the featured-partner review stays listed as an unconfirmed unknown."
+    ]
+  },
   "name": "Notion",
   "website": "https://notion.com",
   "category": "Workspace and docs",
@@ -511,7 +518,7 @@
     "Whether privacy, terms or company fields are still required anywhere in the current listing form. Only a third-party page (Make) describes them, as fields of the older form.",
     "The access-token lifetime for REST public connections.",
     "How many review rounds there are and how long revisions take.",
-    "Whether a security or privacy review applies to \"featured\" partners. A Notion directory FAQ search snippet says one does; unverified. Featured partners are picked by Notion."
+    "Whether a security or privacy review applies to \"featured\" partners. Search-result copies of a Notion directory FAQ say one does, but the live notion.com/integrations page doesn't mention it; unconfirmed. Featured partners are picked by Notion."
   ],
   "sources": [
     {
@@ -585,14 +592,6 @@
       "accessed": "2026-10-21",
       "supports": "Privacy, terms and support fields (older form)",
       "kind": "secondary"
-    },
-    {
-      "id": "s10",
-      "url": "Notion directory FAQ (search snippet; URL not recorded)",
-      "title": "Notion directory FAQ",
-      "accessed": "2026-10-21",
-      "supports": "Security review for featured integrations (unconfirmed)",
-      "kind": "primary"
     }
   ]
 }

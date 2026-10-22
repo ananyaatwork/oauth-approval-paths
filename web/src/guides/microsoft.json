@@ -3,20 +3,50 @@
   "origin": "library",
   "researchedOn": "2026-10-21",
   "model": "claude-opus-5-5",
-  "verification": null,
+  "verification": {
+    "checkedOn": "2026-10-21",
+    "checkedBy": "agent",
+    "claimsChecked": 6,
+    "corrections": [
+      "Publisher verification is no longer shown as a prerequisite for basic sign-in, because under the default consent policy users can consent to an unverified app that asks only for basic sign-in and profile scopes; a separate path covers other user-consentable scopes, where verification is needed to avoid step-up.",
+      "The Aug 2025 date now applies only to the Files and Sites block; Mail, Calendar, Chat and meetings scopes were added in late 2025 and Contacts, Tasks and People.Read later."
+    ]
+  },
   "name": "Microsoft (Entra ID / Graph)",
   "website": "https://learn.microsoft.com/entra/identity-platform/",
   "category": "Identity and productivity (Microsoft 365 / Graph)",
   "verdict": {
     "difficulty": 3,
-    "headline": "App registration takes minutes and publisher verification is free once your Partner Center (CPP) account is verified in 3–5 business days, but since Aug 2025 the default consent policy sends Mail, Calendar, Files and Chat scopes to each customer's admin even for verified apps, so plan for per-tenant admin consent.",
-    "nextAction": "Enroll in the Microsoft AI Cloud Partner Program and start Partner Center verification now, using a business email on the same domain you will set as the publisher domain."
+    "headline": "Basic sign-in works in minutes even without publisher verification. Anything beyond basic profile needs verification (free, after a Partner Center check that usually takes 3–5 business days), and the default consent policy sends Files, Sites, Mail, Calendar, Chat and similar scopes to each customer's admin even for verified apps, so plan for per-tenant admin consent.",
+    "nextAction": "Register the multi-tenant app and ship basic sign-in now. If you need more than sign-in and profile, start Partner Center verification in parallel, using a business email on the same domain you will set as the publisher domain."
   },
   "appType": "Multi-tenant Entra ID app registration (supported account type: Multiple Entra ID tenants), registered in a work or school tenant, not a personal Microsoft account",
   "paths": [
     {
-      "name": "Low-risk delegated scopes (User.Read, openid, profile)",
-      "whenThisApplies": "Your app only asks for basic sign-in and profile scopes. If the app is publisher verified and the customer tenant allows user consent, users can consent themselves and no admin approval is needed.",
+      "name": "Basic sign-in (works unverified)",
+      "whenThisApplies": "Your app only asks for basic sign-in and profile scopes (openid, profile, User.Read). Under the default \"Let Microsoft manage your consent settings\" policy, users in other tenants can consent themselves even if your app is not publisher verified: risk-based step-up only applies to unverified apps asking for more than basic sign-in and profile. They will see an \"unverified\" publisher. Publisher verification is recommended but not blocking here. It does block you in tenants that limit user consent to verified publishers (microsoft-user-default-low) or turn user consent off.",
+      "difficulty": 1,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Register the multi-tenant app",
+          "min": 5,
+          "max": 15,
+          "unit": "minutes",
+          "basis": "estimated",
+          "note": "Minutes. Users can consent right away; no Microsoft review or verification wait.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s1",
+            "s5",
+            "s6"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Other user-consentable delegated scopes (verification needed)",
+      "whenThisApplies": "Your app asks for delegated scopes beyond basic sign-in and profile that the default policy still lets users consent to, such as User.ReadBasic.All. If your app is not publisher verified, was registered after 8 Nov 2020 and is used from another tenant, risk-based step-up sends user consent to admin approval (AADSTS90094). Publisher verification removes that step-up, so users can consent themselves.",
       "difficulty": 2,
       "timeline": [
         {
@@ -39,7 +69,7 @@
           "max": 5,
           "unit": "business_days",
           "basis": "stated",
-          "note": "Longer if Microsoft asks for more information.",
+          "note": "Microsoft says \"in most cases\" three to five business days, longer if it needs more information. Verification Summary may show a per-check ETA.",
           "confidence": "confirmed",
           "sources": [
             "s4"
@@ -99,7 +129,7 @@
           "max": 5,
           "unit": "business_days",
           "basis": "stated",
-          "note": "Longer if Microsoft asks for more information.",
+          "note": "Microsoft says \"in most cases\" three to five business days, longer if it needs more information. Recommended rather than strictly required on this path, since admin consent is needed either way, but admins see an \"unverified\" publisher without it.",
           "confidence": "confirmed",
           "sources": [
             "s4"
@@ -152,12 +182,14 @@
           "max": null,
           "unit": "days",
           "basis": "no_stated_sla",
-          "note": "Needed in every tenant. Since Aug 2025 the Microsoft-managed default consent policy (microsoft-user-default-recommended) for new tenants blocks user consent to Files, Mail, Calendar, Chat and similar scopes even for verified apps, so each customer's admin must grant consent. How fast admins approve is unknown and outside your control.",
+          "note": "Needed in every tenant. The Microsoft-managed default consent policy (microsoft-user-default-recommended, the default for new tenants) blocks user consent to Files and Sites scopes since about Aug 2025, Mail, Calendar, Chat and meetings scopes since late 2025, and now also Contacts, Tasks and People.Read, with no exception for verified apps, so each customer's admin must grant consent. How fast admins approve is unknown and outside your control.",
           "confidence": "confirmed",
           "sources": [
             "s6",
             "s9",
-            "s8"
+            "s8",
+            "s17",
+            "s18"
           ]
         }
       ]
@@ -458,11 +490,13 @@
     },
     {
       "title": "The Aug 2025 rollout broke ISV onboarding",
-      "detail": "ISVs on Microsoft Q&A reported the policy change broke onboarding in Aug 2025 and say it was poorly announced. A secondary writeup tracks the expansion, with rollout by July 2026.",
+      "detail": "ISVs on Microsoft Q&A reported the policy change broke onboarding in Aug 2025 and say it was poorly announced. The Aug 2025 wave (MC1097272, announced 17 June 2025) covered only Files and Sites scopes. Mail, Calendar, Chat, meetings and EWS/IMAP/POP/EAS were added between late Oct and late Nov 2025, and secondary writeups track further expansion, with rollout by July 2026.",
       "confidence": "secondary",
       "sources": [
         "s15",
-        "s16"
+        "s16",
+        "s17",
+        "s18"
       ]
     },
     {
@@ -570,7 +604,9 @@
     "Whether verified apps are exempt from any part of the Microsoft-managed policy; the docs list scope exclusions only.",
     "The future blocked-scope list. Microsoft updates it automatically, so check policies/permissionGrantPolicies/microsoft-user-default-recommended live.",
     "Whether there are user caps or token quotas tied to verification; none were found.",
-    "Exact setup time; \"minutes\" is our estimate."
+    "Exact setup time; \"minutes\" is our estimate.",
+    "Microsoft doesn't list which scopes count as \"basic sign-in and read user profile\" for step-up; openid, profile and User.Read clearly do, while email and offline_access are likely but not stated.",
+    "When Contacts, Tasks and People.Read joined the managed policy's blocked list; Microsoft's page shows the current list without dates."
   ],
   "sources": [
     {
@@ -699,6 +735,22 @@
       "title": "Topedia blog (2025-11 and 2026-05 posts)",
       "accessed": "2026-10-21",
       "supports": "Expansion timeline, rollout by July 2026",
+      "kind": "secondary"
+    },
+    {
+      "id": "s17",
+      "url": "https://office365itpros.com/2025/06/19/app-consent-policy-user-app-consent/",
+      "title": "Microsoft to Block Users Granting Third-Party App Access to User Sites and Files (Office 365 for IT Pros)",
+      "accessed": "2026-10-21",
+      "supports": "MC1097272 (17 June 2025): Files/Sites block rolling out mid-July to August 2025",
+      "kind": "secondary"
+    },
+    {
+      "id": "s18",
+      "url": "https://blog.admindroid.com/microsoft-requires-admin-consent-for-apps-accessing-exchange-teams-apis/",
+      "title": "Microsoft requires admin consent for apps accessing Exchange and Teams APIs (AdminDroid)",
+      "accessed": "2026-10-21",
+      "supports": "Mail, Calendar, Chat and legacy-protocol scopes added to the managed policy, late Oct to late Nov 2025",
       "kind": "secondary"
     }
   ]

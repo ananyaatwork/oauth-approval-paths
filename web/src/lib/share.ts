@@ -1,18 +1,4 @@
-import LZString from "lz-string";
-import { Guide } from "./schema";
-
-export const encodeGuide = (g: Guide) => LZString.compressToEncodedURIComponent(JSON.stringify(g));
-
-export function decodeGuide(hash: string): Guide | null {
-  try {
-    const json = LZString.decompressFromEncodedURIComponent(hash.replace(/^#/, ""));
-    if (!json) return null;
-    const parsed = Guide.safeParse(JSON.parse(json));
-    return parsed.success ? parsed.data : null;
-  } catch {
-    return null;
-  }
-}
+import type { Guide } from "./schema";
 
 export function guideMarkdown(g: Guide): string {
   const t = (c: string) => ({ confirmed: "confirmed", secondary: "secondary source", unconfirmed: "unconfirmed" })[c];

@@ -54,7 +54,7 @@ const UNIT_LABEL: Record<Phase["unit"], [string, string]> = {
 };
 
 export function formatPhase(p: Phase): string {
-  if (p.basis === "no_stated_sla" && p.min == null && p.max == null) return "no stated SLA";
+  if (p.min == null && p.max == null) return p.basis === "no_stated_sla" ? "no stated SLA" : "no figure given";
   const [one, many] = UNIT_LABEL[p.unit];
   const lo = p.min;
   const hi = p.max;
