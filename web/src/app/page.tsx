@@ -2,13 +2,16 @@ import Link from "next/link";
 import { library } from "@/guides";
 import { LibraryChart } from "@/components/LibraryChart";
 import { ResearchForm } from "@/components/ResearchForm";
-import { listSaved } from "@/lib/store";
+import { listSavedGuides } from "@/lib/store";
 import { AtAGlance } from "@/components/AtAGlance";
 
 export const revalidate = 60;
 
 export default async function Home() {
-  const saved = (await listSaved()).slice(0, 4);
+  // Guides researched live sit next to the library ones; a library slug always wins.
+  const live = (await listSavedGuides()).filter((g) => !library.some((l) => l.slug === g.slug));
+  const all = [...library, ...live];
+  const saved = live.slice(0, 4);
   return (
     <>
       {/* Fills the first screen (minus the header) so the search is the one thing to do on arrival. */}
@@ -40,12 +43,20 @@ export default async function Home() {
         </div>
       </section>
 
-      <AtAGlance guides={library} />
+      <AtAGlance guides={all} />
 
       <section aria-labelledby="lib" className="mt-14">
-        <h2 id="lib" className="text-lg font-semibold tracking-tight">Library, sorted by time to production</h2>
-        <div className="card mt-5 p-4 sm:p-6">
-          <LibraryChart guides={library} />
+        <div className="card p-4 sm:p-6">
+          <LibraryChart
+            guides={all}
+            title={<h2 id="lib" className="text-lg font-semibold tracking-tight">Every guide, sorted by time to production</h2>}
+          />
+          {live.length > 0 && (
+            <p className="mt-5 max-w-[70ch] text-[13px] text-muted">
+              {library.length} guides were researched and checked for the library. {live.length} more were researched live by an
+              agent when someone asked, and haven&rsquo;t been checked by a person.
+            </p>
+          )}
         </div>
       </section>
 

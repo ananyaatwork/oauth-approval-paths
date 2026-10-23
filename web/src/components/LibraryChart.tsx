@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Guide } from "@/lib/schema";
+import { guideHref, type Guide } from "@/lib/schema";
 import { AXIS_TICKS, PHASE_OWNER, axisPos, fastestAndLongest, formatHours, phaseHours } from "@/lib/time";
 import { DifficultyDots } from "./DifficultyDots";
 
@@ -67,17 +67,20 @@ function Bar({ guide }: { guide: Guide }) {
   );
 }
 
-export function LibraryChart({ guides }: { guides: Guide[] }) {
+export function LibraryChart({ guides, title }: { guides: Guide[]; title?: React.ReactNode }) {
   const rows = guides
     .map((g) => ({ g, ...fastestAndLongest(g.paths) }))
     .sort((a, b) => a.longest.span.max - b.longest.span.max || a.g.verdict.difficulty - b.g.verdict.difficulty);
 
   return (
     <div className="text-sm">
-      <div className="mb-4">
-        <OwnerLegend />
-      </div>
-      <div className="grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] gap-x-5 max-sm:grid-cols-1">
+      {/* Title, legend and time axis stay under the site header while the rows scroll, so the colours and ticks stay readable. */}
+      <div className="sticky top-[var(--header-h,56px)] z-10 -mx-4 -mt-4 border-b border-line bg-surface px-4 pb-3 pt-4 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6 rounded-t-2xl">
+        {title}
+        <div className={title ? "mt-3" : ""}>
+          <OwnerLegend />
+        </div>
+        <div className="mt-4 grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] gap-x-5 max-sm:grid-cols-1">
         <div />
         <div className="relative h-5 max-sm:hidden" aria-hidden>
           {AXIS_TICKS.map((t, i) => (
@@ -90,8 +93,9 @@ export function LibraryChart({ guides }: { guides: Guide[] }) {
             </span>
           ))}
         </div>
+        </div>
       </div>
-      <ul className="space-y-1">
+      <ul className="mt-2 space-y-1">
         {rows.map(({ g, fastest, longest }, i) => {
           const unknowns = longest.path.timeline.filter((p) => p.basis === "no_stated_sla" || phaseHours(p) == null).length;
           const b = band(longest.span.max);
@@ -104,7 +108,7 @@ export function LibraryChart({ guides }: { guides: Guide[] }) {
                 </p>
               )}
               <Link
-                href={`/guides/${g.slug}`}
+                href={guideHref(g)}
                 className="lift group grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] items-center gap-x-5 gap-y-2 rounded-xl px-3 py-3.5 max-sm:grid-cols-1"
               >
                 <span>
@@ -112,6 +116,7 @@ export function LibraryChart({ guides }: { guides: Guide[] }) {
                   <span className="mt-1 flex items-center gap-2 text-xs text-muted">
                     <DifficultyDots value={g.verdict.difficulty} />
                     {g.paths.length} {g.paths.length === 1 ? "path" : "paths"}
+                    {g.origin === "live" && ", researched live"}
                   </span>
                 </span>
                 <span className="block">

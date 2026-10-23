@@ -1,8 +1,8 @@
 import Link from "next/link";
-import type { Guide, Path } from "@/lib/schema";
+import { guideHref, type Guide, type Path } from "@/lib/schema";
 import { fastestAndLongest, formatHours, pathSpan } from "@/lib/time";
 
-type Entry = { slug: string; name: string; time: string; note?: string };
+type Entry = { slug: string; href: string; name: string; time: string; note?: string };
 
 const short = (g: Guide) => g.name.split(" (")[0];
 const hasPhase = (p: Path, kind: Path["timeline"][number]["kind"]) => p.timeline.some((ph) => ph.kind === kind);
@@ -35,7 +35,7 @@ function Tile({
           {entries.map((e, i) => (
             <span key={e.slug}>
               {i > 0 && ", "}
-              <Link href={`/guides/${e.slug}`} className="font-medium underline decoration-current/30 underline-offset-2 hover:decoration-current">
+              <Link href={e.href} className="font-medium underline decoration-current/30 underline-offset-2 hover:decoration-current">
                 {e.name}
               </Link>
             </span>
@@ -45,7 +45,7 @@ function Tile({
         <ul className="mt-4 space-y-1.5 text-sm">
           {entries.map((e) => (
             <li key={e.slug} className="flex flex-wrap items-baseline justify-between gap-x-3">
-              <Link href={`/guides/${e.slug}`} className="font-medium underline decoration-current/30 underline-offset-2 hover:decoration-current">
+              <Link href={e.href} className="font-medium underline decoration-current/30 underline-offset-2 hover:decoration-current">
                 {e.name}
               </Link>
               <span className="tabular-nums opacity-80">
@@ -72,21 +72,21 @@ export function AtAGlance({ guides }: { guides: Guide[] }) {
     .map((r) => ({ r, p: r.g.paths.filter((p) => !hasPhase(p, "provider_review")).map((p) => ({ path: p, span: pathSpan(p) })).sort(byTime)[0] }))
     .filter((x) => x.p)
     .sort((a, b) => byTime(a.p, b.p))
-    .map(({ r, p }) => ({ slug: r.g.slug, name: short(r.g), time: timeOf(p.path), note: r.g.paths.length > 1 ? p.path.name : undefined }));
+    .map(({ r, p }) => ({ slug: r.g.slug, href: guideHref(r.g), name: short(r.g), time: timeOf(p.path), note: r.g.paths.length > 1 ? p.path.name : undefined }));
 
   const reviewed = rows
     .filter((r) => r.g.paths.every((p) => hasPhase(p, "provider_review")))
     .sort((a, b) => byTime(a.fastest, b.fastest))
-    .map((r) => ({ slug: r.g.slug, name: short(r.g), time: timeOf(r.fastest.path) }));
+    .map((r) => ({ slug: r.g.slug, href: guideHref(r.g), name: short(r.g), time: timeOf(r.fastest.path) }));
 
   const adminGate = rows
     .filter((r) => r.g.paths.some((p) => hasPhase(p, "customer_admin_approval")))
-    .map((r) => ({ slug: r.g.slug, name: short(r.g), time: "" }));
+    .map((r) => ({ slug: r.g.slug, href: guideHref(r.g), name: short(r.g), time: "" }));
 
   const months = rows
     .filter((r) => r.longest.span.max >= 24 * 30)
     .sort((a, b) => b.longest.span.max - a.longest.span.max)
-    .map((r) => ({ slug: r.g.slug, name: short(r.g), time: timeOf(r.longest.path), note: r.longest.path.name }));
+    .map((r) => ({ slug: r.g.slug, href: guideHref(r.g), name: short(r.g), time: timeOf(r.longest.path), note: r.longest.path.name }));
 
   return (
     <section aria-labelledby="glance" className="mt-2">

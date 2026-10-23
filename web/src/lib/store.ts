@@ -196,12 +196,16 @@ export const REFRESH_AFTER_DAYS = Number(process.env.REFRESH_AFTER_DAYS ?? 30);
 export const ageInDays = (g: Guide) => Math.floor((Date.now() - Date.parse(g.researchedOn)) / 86_400_000);
 export const canRefresh = (g: Guide) => g.origin === "live" && ageInDays(g) >= REFRESH_AFTER_DAYS;
 
-export async function listSaved(): Promise<SavedSummary[]> {
+export async function listSavedGuides(): Promise<Guide[]> {
   return (await db.listGuides())
     .map((raw) => Guide.safeParse(raw))
     .filter((p) => p.success)
-    .map(({ data: g }) => ({ slug: g!.slug, name: g!.name, researchedOn: g!.researchedOn, difficulty: g!.verdict.difficulty }))
+    .map((p) => p.data!)
     .sort((a, b) => b.researchedOn.localeCompare(a.researchedOn) || a.name.localeCompare(b.name));
+}
+
+export async function listSaved(): Promise<SavedSummary[]> {
+  return (await listSavedGuides()).map((g) => ({ slug: g.slug, name: g.name, researchedOn: g.researchedOn, difficulty: g.verdict.difficulty }));
 }
 
 export const acquireLock = (key: string) => db.lock(key);

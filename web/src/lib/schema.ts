@@ -117,6 +117,7 @@ export const Guide = GuideContent.extend({
 });
 
 export type Guide = z.infer<typeof Guide>;
+export const guideHref = (g: Pick<Guide, "origin" | "slug">) => `/${g.origin === "library" ? "guides" : "g"}/${g.slug}`;
 export type GuideContent = z.infer<typeof GuideContent>;
 export type Phase = z.infer<typeof Phase>;
 export type Path = z.infer<typeof Path>;
