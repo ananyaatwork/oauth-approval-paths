@@ -8,6 +8,26 @@ It is a guide library and a live research agent about **registering an OAuth app
 
 It does **not** perform OAuth, register apps, submit apps for review, or do business verification. Where a guide mentions business verification (LinkedIn's legal entity, PayPal's merchant checks), it is information for the developer.
 
+## The original review (2026-10-22)
+
+This is the list from the first fresh-eyes review of the project, in its original priority order, with where each item stands. The sections below the table give the detail.
+
+| # | Item | Status |
+|---|---|---|
+| 1 | **The 10 library apps are all on Composio's managed list**, so none show the case where a developer registers and gets approved themselves. Add apps that are not on the list (including payment gateways and a developing-market provider), add a "Composio-managed OAuth" badge to every guide, and say when a managed-app user would still need the guide (own branding, extra scopes, own quota, marketplace listing). | **Partly done.** Badge done. The "still need this guide" line is done. 1 of 11 new apps done (Spotify, not yet in the library index). 10 left. |
+| 2 | **"What we tested" is the thinnest part.** Everything comes from reading docs. Register real apps on 2 to 3 providers and record time taken, fields asked for, and where the console differs from the docs. Add a "tested by us" evidence level above "confirmed from docs". | **Not started.** Needs a logged-in developer account. |
+| 3 | **Fix the unfinished and broken README parts.** Placeholder text, garbled dash, setup steps that list the wrong keys, and 5 of 10 guides never re-checked. | **Done.** All four fixed, and all 10 guides are now re-checked (65 facts: 53 matched, 8 corrected, 4 could not be verified). |
+| 4 | **The live demo is fragile** for the exact scenario the brief describes: one run per browser, 15 per day shared, a 90-second run, and the weakest fallback model writing the answer. Add a reviewer bypass, pre-warm likely apps, and show progress during the wait. | **Partly done.** Reviewer bypass built, untested end to end. Pre-warming and the progress display check not done. |
+| 5 | **Live-guide quality has a known flaw.** The Dropbox headline said "up to 50 users" when the cap is 500. Add a second pass that checks the headline against the facts. | **Built, untested.** Needs a model key to run. |
+| 6 | **Show what an agent actually did for the developer.** The guide lists drafted scope justifications, privacy text and demo scripts but does not generate any. Add one real generated artifact per guide. | **Not started.** Needs a model key. See "Submission pack" below. |
+| 7 | **Rebalance effort.** The UI quality gate takes too much README space for a 6 to 8 hour assignment graded on evidence and agent use. | **Done.** Shortened and moved to the end. |
+| 8 | **Smaller things:** define the 1 to 5 difficulty score; add a staleness warning for old guides; say near the top that no person has checked any claim. | **Done.** Rubric in the writer prompt and on `/method`; warning after 90 days; the README verification paragraph says no person checked. |
+
+Added during the session, beyond the original list:
+
+- **Readiness checker** ("Check your app"): not started. See the to-do list.
+- **Reconnect info** (how often users must log in again): field added to the schema; Spotify has it; the other guides do not yet.
+
 ## Done on this branch
 
 - **Verified the other five guides** (GitHub, QuickBooks, Zoom, HubSpot, LinkedIn). With the first five, 65 facts across all 10 guides were re-checked: 53 matched, 8 corrected, 4 could not be verified. Logs: `research/verification/`.
