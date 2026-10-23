@@ -178,10 +178,12 @@ export async function researchApp(target: string, key: string, send: (e: TraceEv
   // checks it against the same excerpts. It runs only when a backup model wrote
   // the guide (where the Dropbox headline went wrong), so a normal run spends one
   // model call, and only while there's time left. If it fails the guide still ships.
+  // With a Groq key the check runs on Groq's separate free quota, so it runs every time.
   const wroteWithBackup = model !== GEMINI_MODELS[0];
+  const checkIsFree = !!process.env.GROQ_API_KEY;
   const timeLeft = HEADLINE_CHECK_DEADLINE_MS - (Date.now() - startedAt);
-  if (wroteWithBackup && timeLeft > 30_000) try {
-    send({ type: "status", message: `Checking the headline against the provider's pages, because a backup model (${model}) wrote it` });
+  if ((wroteWithBackup || checkIsFree) && timeLeft > 30_000) try {
+    send({ type: "status", message: "Checking the headline against the provider's pages" });
     const review = await Promise.race([
       reviewHeadline(guide, blocks.filter((b) => b.includes("PROVIDER PAGE")).join("\n\n---\n\n"), (m, error) =>
         send({ type: "status", message: error ? `${m} couldn't check the headline (${error.slice(0, 90)}); trying the next model` : `Checking the headline with ${m}` }),

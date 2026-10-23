@@ -31,9 +31,10 @@ export async function reviewHeadline(
     `Next action: ${guide.verdict.nextAction}`,
     "",
     "Provider excerpts:",
-    excerpts.slice(0, 30_000),
+    // About 4,500 tokens, so the check fits Groq's free 8,000-tokens-a-minute limit.
+    excerpts.slice(0, 18_000),
   ].join("\n");
-  const { content, model } = await generateJson(Review, SYSTEM, prompt, onAttempt);
+  const { content, model } = await generateJson(Review, SYSTEM, prompt, onAttempt, Infinity, "check");
   const changed = !content.headlineSupported && (content.headline !== guide.verdict.headline || content.nextAction !== guide.verdict.nextAction);
   return { changed, problem: content.problem, headline: content.headline, nextAction: content.nextAction, model };
 }
