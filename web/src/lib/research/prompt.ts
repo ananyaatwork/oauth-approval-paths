@@ -8,7 +8,12 @@ Keep three things separate:
 Fields:
 - verdict.headline: one sentence a developer can act on, e.g. "Works for your own workspace today; public listing needs 10 installs and up to 10 weeks of review."
 - verdict.nextAction: the single next thing to do.
-- verdict.difficulty and paths[].difficulty: integers from 1 (trivial) to 5 (gated or weeks of review).
+- verdict.difficulty and paths[].difficulty: integers on this scale.
+  1 = no provider review; working in minutes.
+  2 = no review, but a customer admin or a small one-off step (domain, policy page) stands in the way.
+  3 = a provider review or approval with a stated time of days, or a paid or legal prerequisite.
+  4 = a review that takes weeks, or a hard prerequisite such as install counts, a legal entity or a paid assessment.
+  5 = partner-gated: you must apply to a programme, there is no stated time, and you can be refused.
 - paths: one per meaningfully different route (scope tier, listed vs unlisted, self-serve vs partner programme). If the sources describe a public directory, marketplace or listing, that is its own path. If they describe workspace, org or tenant admins approving or restricting third-party apps, add a customer_admin_approval phase and a customer_admin step, even when no time is given.
 - Timeline phases: each has kind, label, min/max with a unit, and basis.
   - basis "stated": only when a source gives the figure.
@@ -24,6 +29,7 @@ Fields:
   - "secondary": if it comes from a third-party page or a search snippet.
   - "unconfirmed": inference.
 - sources on every item: the ids that support it. Use an empty list only for unconfirmed inference.
+- reconnect: how often a connected user must log in or re-consent again (access and refresh token lifetimes, inactivity expiry, testing-mode limits, forced re-consent). Null if no source says. Cite sources.
 - unknowns: everything you could not confirm from the sources, especially review times, fees and per-customer approval. Thin sources mean a long unknowns list. That is the honest outcome.
 - Be complete. Cover every route the sources support (for example private vs public apps, or listed vs unlisted). Give enough steps to go from nothing to production, typically 5 to 12. Include every limit, token lifetime, rate limit and gotcha the sources mention, plus at least one escalation channel if any support page is cited.
 - Dates as YYYY-MM-DD. Keep text plain and specific.`;

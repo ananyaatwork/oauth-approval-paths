@@ -1,0 +1,571 @@
+{
+  "slug": "spotify",
+  "origin": "library",
+  "researchedOn": "2026-10-22",
+  "model": null,
+  "verification": {
+    "checkedOn": "2026-10-22",
+    "checkedBy": "agent",
+    "claimsChecked": 8,
+    "corrections": [
+      "The one-Client-ID-per-developer limit was raised to 25 in July 2026 per Spotify's migration guide note and July 2026 changelog, so the guide now says so and cites the new source s12.",
+      "The headline was shortened to one sentence with the 5-user cap, organization and 250k MAU bar, and six-week review unchanged."
+    ]
+  },
+  "name": "Spotify (Web API)",
+  "website": "https://developer.spotify.com/dashboard",
+  "category": "Music",
+  "verdict": {
+    "difficulty": 4,
+    "headline": "A new app works in minutes but development mode caps it at 5 allowlisted users and needs a Premium-holding owner, and lifting that cap (extended quota) requires a registered organization with a launched service and at least 250k monthly active users, with review taking up to six weeks.",
+    "nextAction": "Create the app in the Spotify Developer Dashboard (owner needs Premium), register exact redirect URIs, and build against dev mode. Check honestly whether your organization meets the 250k MAU bar before planning on extended quota."
+  },
+  "appType": "OAuth 2.0 app registered in the Spotify Developer Dashboard. Authorization Code (server) or Authorization Code with PKCE (public clients) for user data.",
+  "paths": [
+    {
+      "name": "Development mode",
+      "whenThisApplies": "Learning, experimentation or a personal, non-commercial project with at most 5 users. This is the default for every new app.",
+      "difficulty": 2,
+      "timeline": [
+        {
+          "kind": "setup",
+          "label": "Create app, add redirect URIs, add allowlist users, code the OAuth flow",
+          "min": 1,
+          "max": 4,
+          "unit": "hours",
+          "basis": "estimated",
+          "note": "Our estimate; Spotify states no figure. No review is described for development mode. The owner needs an active Premium subscription.",
+          "confidence": "unconfirmed",
+          "sources": [
+            "s4",
+            "s7"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extended quota mode",
+      "whenThisApplies": "You need more than 5 users, or a higher rate limit, for a launched service run by a registered organization. Individuals have not been accepted since May 15, 2025.",
+      "difficulty": 4,
+      "timeline": [
+        {
+          "kind": "prerequisites",
+          "label": "Legal entity, launched service and at least 250k MAUs",
+          "min": null,
+          "max": null,
+          "unit": "weeks",
+          "basis": "no_stated_sla",
+          "note": "Depends on your business. Spotify publishes no figure.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "submission",
+          "label": "Questionnaire in the dashboard plus the form sent from a company email",
+          "min": null,
+          "max": null,
+          "unit": "days",
+          "basis": "no_stated_sla",
+          "note": "A 4-step questionnaire. Spotify states no preparation time.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "provider_review",
+          "label": "Spotify review of the application",
+          "min": null,
+          "max": 6,
+          "unit": "weeks",
+          "basis": "stated",
+          "note": "Spotify says the review can take up to six weeks. Feedback comes by email.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        },
+        {
+          "kind": "revisions",
+          "label": "Rejection or reapplication",
+          "min": null,
+          "max": null,
+          "unit": "weeks",
+          "basis": "no_stated_sla",
+          "note": "The page does not say what happens after a rejection or how to reapply.",
+          "confidence": "confirmed",
+          "sources": [
+            "s1"
+          ]
+        }
+      ]
+    }
+  ],
+  "beforeApproval": [
+    {
+      "item": "Development mode allows up to 5 authenticated users.",
+      "detail": "Users must be added to the allowlist first (Settings > Users Management > Add new user, with name and Spotify email).",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s8"
+      ]
+    },
+    {
+      "item": "The app owner needs an active Spotify Premium subscription for development mode apps.",
+      "detail": "Premium is not stated as a requirement for extended quota mode.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1",
+        "s8"
+      ]
+    },
+    {
+      "item": "Each development mode Client ID is limited to 5 users; the per-developer Client ID limit was 1 and was raised to 25 in July 2026.",
+      "detail": "Feb 2026 limits applied to new apps from Feb 11, 2026 and existing apps from Mar 9, 2026. Existing apps with more IDs or users keep them. Per the July 2026 changelog, development mode quotas are now counted per developer account rather than per Client ID.",
+      "confidence": "confirmed",
+      "sources": [
+        "s8",
+        "s9",
+        "s12"
+      ]
+    },
+    {
+      "item": "Development mode is intended for learning, experimentation and non-commercial personal projects.",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s9"
+      ]
+    },
+    {
+      "item": "Development mode has a lower rate limit and, from the Feb 2026 changes, fewer supported endpoints.",
+      "detail": "Removed or reduced: batch GETs for tracks, albums, artists, episodes, shows, audiobooks and chapters; browse new-releases and categories; artist top-tracks; GET /users/{id}. Search limit max 10, default 5. Extended quota apps are unaffected. Per the blog, endpoint changes for existing integrations were postponed.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5",
+        "s8",
+        "s9",
+        "s11"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "item": "Established business entity",
+      "detail": "A legally registered business or organization. Applications from individuals are not accepted since May 15, 2025.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Active, launched service",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "At least 250k monthly active users",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Available in key Spotify markets",
+      "detail": "The page does not list which markets.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Commercial viability and Developer Policy compliance",
+      "detail": "Detailed criteria are not given on the page.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "A company email address for the application",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Create the app",
+      "detail": "In the Dashboard choose Create an App, enter an App Name and Description (shown on the grant screen), tick the Developer Terms of Service box and click Create. Up to 25 apps per developer account per this page, consistent with the Client ID limit per developer being raised from 1 to 25 in July 2026.",
+      "owner": "you",
+      "agentHelp": "Draft the app name and description.",
+      "url": "https://developer.spotify.com/dashboard",
+      "confidence": "confirmed",
+      "sources": [
+        "s4",
+        "s8",
+        "s12"
+      ]
+    },
+    {
+      "title": "Register redirect URIs and website",
+      "detail": "HTTPS is required unless the address is loopback. localhost is not allowed; use http://127.0.0.1:PORT or http://[::1]:PORT. The URI must match exactly, including case and trailing slash. A loopback URI may be registered without a port and the port added at request time.",
+      "owner": "you",
+      "agentHelp": "List the exact redirect URIs per environment for pasting into Settings.",
+      "url": "https://developer.spotify.com/documentation/web-api/concepts/redirect_uri",
+      "confidence": "confirmed",
+      "sources": [
+        "s2",
+        "s7"
+      ]
+    },
+    {
+      "title": "Store the client secret",
+      "detail": "Keep it secret. If compromised, regenerate with the ROTATE button on the app overview page.",
+      "owner": "you",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s4"
+      ]
+    },
+    {
+      "title": "Add allowlist users in development mode",
+      "detail": "Settings > Users Management > Add new user, with name and Spotify email.",
+      "owner": "you",
+      "agentHelp": "Prepare the list of users to add.",
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Build the authorization flow",
+      "detail": "Use Authorization Code on a server, or Authorization Code with PKCE for public clients. PKCE needs client_id, response_type=code, redirect_uri, code_challenge_method=S256 and code_challenge; the token request sends grant_type, code, redirect_uri, client_id and code_verifier. Client Credentials cannot access user data.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow",
+      "confidence": "confirmed",
+      "sources": [
+        "s6",
+        "s7"
+      ]
+    },
+    {
+      "title": "Handle token refresh and 429 responses",
+      "detail": "Access tokens last 1 hour. A refresh response may not include a new refresh token; keep the old one then. On 429, wait the Retry-After seconds. On invalid_grant, discard the token and re-run authorization.",
+      "owner": "agent",
+      "agentHelp": null,
+      "url": "https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens",
+      "confidence": "confirmed",
+      "sources": [
+        "s3",
+        "s5"
+      ]
+    },
+    {
+      "title": "Apply for extended quota",
+      "detail": "Complete the Quota Extension Request questionnaire (4 steps) in the dashboard and submit the Google form from a company email.",
+      "owner": "you",
+      "agentHelp": "Draft answers about the service, user numbers and policy compliance for the owner to review and submit.",
+      "url": "https://developer.spotify.com/documentation/web-api/concepts/quota-modes",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "Spotify reviews the application",
+      "detail": "Can take up to six weeks. Feedback is sent to the email on your Spotify account.",
+      "owner": "provider",
+      "agentHelp": null,
+      "url": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    }
+  ],
+  "reconnect": {
+    "item": "Access tokens last 1 hour; refresh tokens last 6 months and refreshing does not extend them",
+    "detail": "After 6 months the user must authorize again. The token endpoint returns invalid_grant for an expired or revoked refresh token. The refresh token lifetime is stated for apps registered in the Developer Dashboard.",
+    "confidence": "confirmed",
+    "sources": [
+      "s3"
+    ]
+  },
+  "submissionChecklist": [
+    {
+      "item": "Registered organization, not an individual",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Launched service with at least 250k MAUs",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Submitted from a company email",
+      "detail": "Through the Quota Extension Request tab and the linked form.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "item": "Available in key Spotify markets and compliant with the Developer Policy",
+      "detail": null,
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    }
+  ],
+  "gotchas": [
+    {
+      "title": "Extended quota is out of reach for most small teams",
+      "detail": "The 250k MAU bar and the organization-only rule mean a startup or a solo developer will usually stay in the 5-user development mode.",
+      "confidence": "confirmed",
+      "sources": [
+        "s1"
+      ]
+    },
+    {
+      "title": "localhost is rejected as a redirect URI",
+      "detail": "Use http://127.0.0.1:PORT or http://[::1]:PORT. Everything else needs HTTPS and must match exactly.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Dynamic ports only work for loopback",
+      "detail": "Register the loopback IP without a port and add the port in the request. Not supported for other URIs.",
+      "confidence": "confirmed",
+      "sources": [
+        "s2"
+      ]
+    },
+    {
+      "title": "Premium lapse affects development mode apps",
+      "detail": "The owner needs an active Premium subscription for development mode apps.",
+      "confidence": "confirmed",
+      "sources": [
+        "s8"
+      ]
+    },
+    {
+      "title": "Spotify tightened development mode in February 2026",
+      "detail": "New apps from Feb 11, 2026 and existing apps from Mar 9, 2026: Premium owner, 5 users per app, and initially one Client ID per developer (raised to 25 in July 2026). Older docs and tutorials may show different limits.",
+      "confidence": "confirmed",
+      "sources": [
+        "s8",
+        "s9",
+        "s12"
+      ]
+    },
+    {
+      "title": "Refresh tokens expire after 6 months",
+      "detail": "Refreshing does not extend the lifetime, so rarely used connections need re-authorization.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Refresh responses may omit a new refresh token",
+      "detail": "Keep using the existing one when none is returned.",
+      "confidence": "confirmed",
+      "sources": [
+        "s3"
+      ]
+    },
+    {
+      "title": "Rate limit is a rolling 30 second window",
+      "detail": "Exact numbers per mode are not published; extended quota mode is described as much higher. Some endpoints have custom limits.",
+      "confidence": "confirmed",
+      "sources": [
+        "s5"
+      ]
+    },
+    {
+      "title": "The streaming scope requires the end user to have Premium",
+      "detail": "Spotify's scopes page states the user must have a Premium account for this scope.",
+      "confidence": "confirmed",
+      "sources": [
+        "s10"
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "symptom": "A sixth user cannot sign in",
+      "whatToDo": "Development mode allows 5 authenticated users. Remove an allowlist entry or apply for extended quota if your organization qualifies.",
+      "contact": null
+    },
+    {
+      "symptom": "Redirect URI error on authorize",
+      "whatToDo": "Make the redirect_uri exactly match a registered value (case, trailing slash). Replace localhost with 127.0.0.1.",
+      "contact": null
+    },
+    {
+      "symptom": "invalid_grant when refreshing",
+      "whatToDo": "The refresh token is expired, revoked or invalid. Discard it and send the user through authorization again.",
+      "contact": null
+    },
+    {
+      "symptom": "HTTP 429",
+      "whatToDo": "Wait the number of seconds in Retry-After, add backoff, use batch calls where still available, or apply for extended quota.",
+      "contact": null
+    },
+    {
+      "symptom": "Extended quota request not answered or rejected",
+      "whatToDo": "Spotify says feedback arrives by email within up to six weeks. No reapplication process or contact is documented.",
+      "contact": null
+    }
+  ],
+  "escalation": {
+    "channels": [
+      {
+        "label": "Email feedback from the quota review",
+        "url": null,
+        "note": "Sent to the email on your Spotify account. No documented SLA beyond up to six weeks."
+      }
+    ],
+    "haveReady": [
+      "Client ID of the app",
+      "Company email used for the application",
+      "MAU evidence and launch status of the service"
+    ]
+  },
+  "unknowns": [
+    "Whether a development mode app needs any Spotify review: no page describes one, but none says there is none.",
+    "What happens after an extended quota rejection and how to reapply.",
+    "Which markets count as key Spotify markets, and what commercial viability means in practice.",
+    "How 250k MAUs is measured and whether Spotify ever makes exceptions.",
+    "Exact rate limit numbers for development mode and extended quota mode.",
+    "Authorization code lifetime: the PKCE tutorial does not state one.",
+    "Whether refresh tokens expire on inactivity before 6 months.",
+    "Whether the March 9, 2026 endpoint changes for existing development mode apps have since been applied.",
+    "Dev mode setup time is our estimate.",
+    "No support channel or SLA was found; Spotify's blog index returned 404 and community forums were not opened.",
+    "Whether the 5-user cap per app was changed by the July 2026 changelog: the page we read mentions only the Client ID limit and per-account quota counting.",
+    "The Feb 2026 blog post does not restate the 250k MAU or organization bar, so those rest on the quota-modes page alone."
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://developer.spotify.com/documentation/web-api/concepts/quota-modes",
+      "title": "Quota modes",
+      "accessed": "2026-10-22",
+      "supports": "5 user cap, extended quota criteria, organizations only since May 15 2025, up to six weeks, application route, allowlist steps",
+      "kind": "primary"
+    },
+    {
+      "id": "s2",
+      "url": "https://developer.spotify.com/documentation/web-api/concepts/redirect_uri",
+      "title": "Redirect URIs",
+      "accessed": "2026-10-22",
+      "supports": "HTTPS, loopback, no localhost, exact match, dynamic port",
+      "kind": "primary"
+    },
+    {
+      "id": "s3",
+      "url": "https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens",
+      "title": "Refreshing tokens",
+      "accessed": "2026-10-22",
+      "supports": "1 hour access tokens, 6 month refresh tokens, invalid_grant, optional new refresh token",
+      "kind": "primary"
+    },
+    {
+      "id": "s4",
+      "url": "https://developer.spotify.com/documentation/web-api/concepts/apps",
+      "title": "Apps",
+      "accessed": "2026-10-22",
+      "supports": "App creation, fields, 25 apps, secret rotation, default development mode",
+      "kind": "primary"
+    },
+    {
+      "id": "s5",
+      "url": "https://developer.spotify.com/documentation/web-api/concepts/rate-limits",
+      "title": "Rate limits",
+      "accessed": "2026-10-22",
+      "supports": "Rolling 30 second window, mode differences, Retry-After",
+      "kind": "primary"
+    },
+    {
+      "id": "s6",
+      "url": "https://developer.spotify.com/documentation/web-api/concepts/authorization",
+      "title": "Authorization",
+      "accessed": "2026-10-22",
+      "supports": "Three grant types and when to use each",
+      "kind": "primary"
+    },
+    {
+      "id": "s7",
+      "url": "https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow",
+      "title": "Authorization code with PKCE flow",
+      "accessed": "2026-10-22",
+      "supports": "Request and token parameters, exact redirect match",
+      "kind": "primary"
+    },
+    {
+      "id": "s8",
+      "url": "https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide",
+      "title": "Migration: February 2026 Dev Mode Changes",
+      "accessed": "2026-10-22",
+      "supports": "Premium owner, 1 Client ID, 5 users, Feb 11 and Mar 9 2026 dates, removed endpoints",
+      "kind": "primary"
+    },
+    {
+      "id": "s9",
+      "url": "https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security",
+      "title": "Update on developer access and platform security",
+      "accessed": "2026-10-22",
+      "supports": "Reasons, restrictions, postponement of endpoint changes, intended scope of development mode",
+      "kind": "primary"
+    },
+    {
+      "id": "s10",
+      "url": "https://developer.spotify.com/documentation/web-api/concepts/scopes",
+      "title": "Scopes",
+      "accessed": "2026-10-22",
+      "supports": "streaming scope needs Premium",
+      "kind": "primary"
+    },
+    {
+      "id": "s11",
+      "url": "https://developer.spotify.com/documentation/web-api/references/changes/february-2026",
+      "title": "Web API changelog: February 2026",
+      "accessed": "2026-10-22",
+      "supports": "Removed endpoints, search limit reduction",
+      "kind": "primary"
+    },
+    {
+      "id": "s12",
+      "url": "https://developer.spotify.com/documentation/web-api/references/changes/july-2026",
+      "title": "Web API changelog: July 2026",
+      "accessed": "2026-10-22",
+      "supports": "Client IDs per developer raised from 1 to 25; dev mode quotas counted per developer account",
+      "kind": "primary"
+    }
+  ]
+}

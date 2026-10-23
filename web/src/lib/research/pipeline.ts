@@ -4,6 +4,7 @@ import { enforceProvenance } from "../provenance";
 import { makeSearcher, type SearchResult } from "./search";
 import { readPage, relevantText, type Page } from "./read";
 import { writeGuide } from "./write";
+import { reviewHeadline } from "./review";
 import { WRITER_SYSTEM } from "./prompt";
 
 const MAX_PAGES = 6;
@@ -147,6 +148,7 @@ export async function researchApp(target: string, key: string, send: (e: TraceEv
     beforeApproval: content.beforeApproval.map(strip),
     prerequisites: content.prerequisites.map(strip),
     steps: content.steps.map(strip),
+    reconnect: content.reconnect ? strip(content.reconnect) : null,
     submissionChecklist: content.submissionChecklist.map(strip),
     gotchas: content.gotchas.map(strip),
     sources,
@@ -159,6 +161,22 @@ export async function researchApp(target: string, key: string, send: (e: TraceEv
     new Set(sources.filter((s) => !(s.kind === "primary" && readUrls.has(s.url))).map((s) => s.url)),
   );
   send({ type: "provenance", downgraded, opened: pages.length });
+
+  // The headline is the sentence a reader trusts most, so a second narrow pass
+  // checks it against the same excerpts. If this step fails the guide still ships.
+  try {
+    send({ type: "status", message: "Checking the headline against the provider's pages" });
+    const review = await reviewHeadline(guide, blocks.filter((b) => b.includes("PROVIDER PAGE")).join("\n\n---\n\n"), (m, error) =>
+      send({ type: "status", message: error ? `${m} couldn't check the headline (${error.slice(0, 90)}); trying the next model` : `Checking the headline with ${m}` }),
+    );
+    if (review.changed) {
+      guide.verdict = { ...guide.verdict, headline: review.headline, nextAction: review.nextAction };
+      guide.unknowns.push(`The headline was rewritten by an automatic check because it was not fully supported by the provider's pages: ${review.problem ?? "figures did not match"}`);
+      send({ type: "status", message: "The headline didn't match the provider's pages, so it was rewritten" });
+    }
+  } catch (err) {
+    send({ type: "status", message: `Skipped the headline check (${err instanceof Error ? err.message.slice(0, 80) : "error"})` });
+  }
   if (downgraded > 0) {
     guide.unknowns.push(`${downgraded} fact(s) were downgraded automatically because they cite a third-party page or a search snippet, not a provider page we opened.`);
   }

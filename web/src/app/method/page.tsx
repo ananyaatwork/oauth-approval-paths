@@ -26,7 +26,12 @@ export default function Method() {
       <ol className="mt-2 list-decimal space-y-2 pl-5">
         <li>A research agent (Claude Opus 5.5) read each provider&rsquo;s developer docs and wrote notes with a tag and URL for every fact.</li>
         <li>A second agent mapped those notes into the guide format without adding facts. A validator checks the format and that every cited source exists.</li>
-        <li>A separate agent re-opened the live pages for the highest-impact facts in 5 guides (Google, Slack, Microsoft, Salesforce, Notion): 29 facts, 21 matched, 6 corrected, 2 couldn&rsquo;t be verified. Corrections are listed at the bottom of each guide, and the full logs are in the repo.</li>
+        <li>
+          A separate agent re-opened the live pages for the highest-impact facts in all 10 guides: 65 facts in total, of which 53 matched,
+          8 were corrected and 4 couldn&rsquo;t be verified. Corrections are listed at the bottom of each guide, and the full logs are in
+          the repo. The checking agents are the same kind of model as the writers, so this catches stale or misread facts, not shared blind
+          spots. No person has checked these.
+        </li>
       </ol>
 
       <h2 className="mt-10 text-lg font-semibold">Live guides</h2>
@@ -41,6 +46,27 @@ export default function Method() {
         </li>
       </ol>
       <p className="mt-3">Live guides are not reviewed by a person and say so at the top.</p>
+
+      <h2 className="mt-10 text-lg font-semibold">Difficulty, 1 to 5</h2>
+      <ol className="mt-2 list-decimal space-y-1 pl-5">
+        <li>No provider review. Working in minutes.</li>
+        <li>No review, but a customer admin or a small one-off step stands in the way.</li>
+        <li>A review with a stated time of days, or a paid or legal prerequisite.</li>
+        <li>A review that takes weeks, or a hard prerequisite such as install counts, a legal entity or a paid assessment.</li>
+        <li>Partner-gated: you apply to a programme, no time is stated and you can be refused.</li>
+      </ol>
+      <p className="mt-3">
+        Live guides are scored against this scale. The library guides were scored under the looser rule &ldquo;1 trivial, 5 gated or weeks of
+        review&rdquo;, so a score may differ by 1 point.
+      </p>
+
+      <h2 className="mt-10 text-lg font-semibold">The managed-OAuth badge</h2>
+      <p className="mt-2">
+        Each guide says whether Composio supplies the OAuth app, from a copy of Composio&rsquo;s own list. &ldquo;Yes&rdquo; means you can
+        connect users without registering anything, but you&rsquo;d still need the guide for your own branding, scopes, quota or marketplace
+        listing. &ldquo;Partly&rdquo; means Composio lists other products from the same company. The list changes, so the date it was copied
+        is shown.
+      </p>
 
       <h2 className="mt-10 text-lg font-semibold">What agents can and can&rsquo;t do for you</h2>
       <p className="mt-2">

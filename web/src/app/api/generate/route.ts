@@ -44,7 +44,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const { app, fp, refresh } = (await req.json().catch(() => ({}))) as { app?: string; fp?: string | null; refresh?: boolean };
+  const { app, fp, refresh, reviewer } = (await req.json().catch(() => ({}))) as { app?: string; fp?: string | null; refresh?: boolean; reviewer?: string };
   const target = (app ?? "").trim().slice(0, 200);
 
   const jar = await cookies();
@@ -52,6 +52,14 @@ export async function POST(req: Request) {
   const newCookie = !cookieId;
   cookieId ??= crypto.randomUUID();
   const visitor = visitorFrom(cookieId, fp);
+  // A secret link (?reviewer=<REVIEWER_KEY>) lets a reviewer run unfamiliar apps without the
+  // per-browser or daily limits. Without REVIEWER_KEY set, nothing is bypassed.
+  const expected = process.env.REVIEWER_KEY;
+  const free =
+    !!expected &&
+    typeof reviewer === "string" &&
+    reviewer.length === expected.length &&
+    crypto.timingSafeEqual(Buffer.from(reviewer), Buffer.from(expected));
 
   let controller!: ReadableStreamDefaultController<Uint8Array>;
   let open = true;
@@ -89,13 +97,13 @@ export async function POST(req: Request) {
             "Live research isn't set up on this deployment yet. It needs a search key (TAVILY_API_KEY or SERPER_API_KEY) and a writer key (GEMINI_API_KEY). The library and saved guides still work.",
         });
       }
-      if ((await runsLeft(visitor)) <= 0) {
+      if (!free && (await runsLeft(visitor)) <= 0) {
         return send({
           type: "limit",
           message: `Each browser gets ${RUN_LIMIT} live research ${RUN_LIMIT === 1 ? "run" : "runs"}, and this one has used ${RUN_LIMIT === 1 ? "it" : "them"}. Saved guides and the library stay open.`,
         });
       }
-      if ((await dailyLeft()) <= 0) {
+      if (!free && (await dailyLeft()) <= 0) {
         return send({
           type: "limit",
           message: "Today's free research capacity is used up. It resets at midnight UTC. Saved guides and the library stay open.",
@@ -105,7 +113,7 @@ export async function POST(req: Request) {
         return send({ type: "busy", message: `Someone is researching ${target} right now. Its guide will be saved here in a minute or two.` });
       }
 
-      await recordRun(visitor, 1);
+      if (!free) await recordRun(visitor, 1);
       charged = true;
       const progress: Progress = { key, app: target, stage: null, startedAt: Date.now(), lines: [] };
       // Progress writes are chained so they land in order, and never block the run.
@@ -124,10 +132,10 @@ export async function POST(req: Request) {
       const left = await runsLeft(visitor);
       send({ type: "guide", guide, href: `/g/${key}`, runsLeft: Number.isFinite(left) ? left : null });
     } catch (err) {
-      if (charged) await recordRun(visitor, -1);
+      if (charged && !free) await recordRun(visitor, -1);
       console.error(`[generate] ${key}:`, err);
       const reason = err instanceof Error ? err.message : "Something went wrong.";
-      send({ type: "error", message: charged ? `${reason} This attempt didn't use up your run.` : reason });
+      send({ type: "error", message: charged && !free ? `${reason} This attempt didn't use up your run.` : reason });
     } finally {
       if (charged) await endProgress(key).catch(() => {});
       if (locked) await releaseLock(key);

@@ -3,7 +3,14 @@
   "origin": "library",
   "researchedOn": "2026-10-21",
   "model": "claude-opus-5-5",
-  "verification": null,
+  "verification": {
+    "checkedOn": "2026-10-22",
+    "checkedBy": "agent",
+    "claimsChecked": 8,
+    "corrections": [
+      "The 10-token cap gotcha now says GitHub removes the oldest unused token first, then the least recently used, then the oldest overall, and that exceeding 10 tokens per hour triggers re-authorization instead of revocation."
+    ]
+  },
   "name": "GitHub",
   "website": "https://github.com",
   "category": "Developer tools",
@@ -402,7 +409,7 @@
     },
     {
       "title": "Token cap of 10 per user, app and scope",
-      "detail": "Past 10 tokens for the same user, app and scope combination, GitHub silently revokes the oldest one. Token creation is also limited to 10 per hour.",
+      "detail": "Past 10 tokens for the same user, app and scope combination, GitHub removes existing tokens: first the oldest unused one (created over a minute ago), then the least recently used, then the oldest overall. Token creation is also limited to 10 per hour; going over that triggers a re-authorization prompt rather than revoking tokens.",
       "confidence": "confirmed",
       "sources": [
         "s6"

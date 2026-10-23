@@ -1,0 +1,14 @@
+# Zoom guide: verification log (2026-10-22, agent)
+
+| # | Guide claim | Live page says (quote + URL) | Verdict |
+|---|---|---|---|
+| 1 | Beta cap: 10 additions for an account-level app, 100 for a user-level app | "The maximum number of additions for a private account-level application is 10. The maximum number of additions for a private user-level application is 100." https://developers.zoom.us/docs/distribute/sharing-private-and-beta-apps/ | MATCH |
+| 2 | Zoom approves Request to Share in 72 hours, no longer than 3-4 business days | "A member of the Zoom app review team responds to your request no longer than 3-4 business days." (s3); "72hrs - once all requirements have been met." https://developers.zoom.us/docs/distribute/app-submission/authorization-url-faq/ | MATCH |
+| 3 | Beta URL lasts 4 weeks plus two 4-week extensions (about 90 days); URLs stop working once published; limit increases reviewed within 24 hours via marketplace.security@zoom.us | "a standard duration of 4 weeks", "two additional 4-week extensions" (s3); "90 days to complete their testing", "We review extensions within 24hrs", "After you publish your beta app, the authorization URLs become invalid." (s4) | MATCH |
+| 4 | Private apps can be shared only inside your own Zoom account; beta apps can't be published | "You can only share private apps with members within your Zoom account." Beta apps cannot be published to the Marketplace. https://developers.zoom.us/docs/distribute/sharing-private-and-beta-apps/ | MATCH |
+| 5 | Public review has no stated SLA; two-phase review with security review and remediation report | "An app's review time varies based on app quality, usability, quantity and function of features, and clarity of information" (no SLA given); security review covers technical design review, OAuth scope evaluation, OWASP Top 10 testing; remediation report with action items. https://developers.zoom.us/docs/distribute/app-review-process/ | MATCH |
+| 6 | Access tokens last 1 hour, refresh tokens 90 days, refresh tokens rotate | "Access tokens expire after one hour."; "Refresh tokens expire after 90 days."; "You should always use the latest refresh token for the next refresh request". https://developers.zoom.us/docs/integrations/oauth/ | MATCH |
+| 7 | Admin pre-approval may be required; no deauth notifications for private/dev apps | "A Zoom account may require an app be pre-approved by a Marketplace admin before the end user may authorize it."; "Private apps or apps in development do not trigger deauthorization notifications." https://developers.zoom.us/docs/integrations/end-user-auth/ | MATCH |
+
+**Summary:** 7 claims checked: 7 MATCH, 0 CORRECTED, 0 COULD NOT VERIFY.
+No guide changes were needed. The forum-sourced 72-hour public review figure (s9) was not re-checked because it is secondary, not a provider docs page.

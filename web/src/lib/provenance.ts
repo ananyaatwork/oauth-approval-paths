@@ -33,6 +33,7 @@ export function enforceProvenance(
     ...guide.beforeApproval,
     ...guide.prerequisites,
     ...guide.steps,
+    ...(guide.reconnect ? [guide.reconnect] : []),
     ...guide.submissionChecklist,
     ...guide.gotchas,
   ];

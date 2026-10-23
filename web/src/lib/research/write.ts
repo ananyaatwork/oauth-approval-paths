@@ -34,20 +34,20 @@ function geminiSchema(node: unknown): unknown {
   return obj;
 }
 
-const SCHEMA = geminiSchema(z.toJSONSchema(WriterContent));
+const schemaFor = (zod: z.ZodType) => geminiSchema(z.toJSONSchema(zod));
 
 class SchemaRejected extends Error {}
 class Overloaded extends Error {}
 
-async function callGemini(model: string, system: string, prompt: string, withSchema: boolean): Promise<string> {
+async function callGemini(model: string, system: string, prompt: string, schema: unknown, withSchema: boolean): Promise<string> {
   const generationConfig: Record<string, unknown> = { responseMimeType: "application/json", temperature: 0.2, maxOutputTokens: 16384 };
-  if (withSchema) generationConfig.responseJsonSchema = SCHEMA;
+  if (withSchema) generationConfig.responseJsonSchema = schema;
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     headers: { "x-goog-api-key": process.env.GEMINI_API_KEY!, "Content-Type": "application/json" },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: "user", parts: [{ text: withSchema ? prompt : `${prompt}\n\nReturn JSON matching this JSON Schema exactly:\n${JSON.stringify(SCHEMA)}` }] }],
+      contents: [{ role: "user", parts: [{ text: withSchema ? prompt : `${prompt}\n\nReturn JSON matching this JSON Schema exactly:\n${JSON.stringify(schema)}` }] }],
       generationConfig,
     }),
     signal: AbortSignal.timeout(45_000),
@@ -70,37 +70,38 @@ async function callGemini(model: string, system: string, prompt: string, withSch
 
 // A 503 means the model is briefly overloaded, so it's worth one retry;
 // a 429 means the free quota is used up, so move straight to the next model.
-async function callWithRetry(model: string, system: string, prompt: string, withSchema: boolean) {
+async function callWithRetry(model: string, system: string, prompt: string, schema: unknown, withSchema: boolean) {
   try {
-    return await callGemini(model, system, prompt, withSchema);
+    return await callGemini(model, system, prompt, schema, withSchema);
   } catch (err) {
     if (!(err instanceof Overloaded)) throw err;
     await new Promise((r) => setTimeout(r, 4000));
-    return callGemini(model, system, prompt, withSchema);
+    return callGemini(model, system, prompt, schema, withSchema);
   }
 }
 
-async function viaGemini(model: string, system: string, prompt: string): Promise<WriterContent> {
+async function viaGemini<T>(model: string, system: string, prompt: string, zod: z.ZodType<T>): Promise<T> {
+  const schema = schemaFor(zod);
   let raw: string;
   try {
-    raw = await callWithRetry(model, system, prompt, true);
+    raw = await callWithRetry(model, system, prompt, schema, true);
   } catch (err) {
     if ((err as Error).name === "TimeoutError") throw new Error(`${model}: no answer within 45 seconds`);
     if (!(err instanceof SchemaRejected)) throw err;
-    raw = await callWithRetry(model, system, prompt, false);
+    raw = await callWithRetry(model, system, prompt, schema, false);
   }
   const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "");
-  const parsed = WriterContent.safeParse(JSON.parse(cleaned));
+  const parsed = zod.safeParse(JSON.parse(cleaned));
   if (!parsed.success) throw new Error(`${model}: output didn't match the guide format (${parsed.error.issues[0]?.path.join(".")})`);
   return parsed.data;
 }
 
-async function viaClaude(system: string, prompt: string): Promise<WriterContent> {
+async function viaClaude<T>(system: string, prompt: string, zod: z.ZodType<T>): Promise<T> {
   const client = new Anthropic();
   const res = await client.messages.parse({
     model: CLAUDE_MODEL,
     max_tokens: 32000,
-    output_config: { effort: "low", format: zodOutputFormat(WriterContent) },
+    output_config: { effort: "low", format: zodOutputFormat(zod) },
     system,
     messages: [{ role: "user", content: prompt }],
   });
@@ -109,14 +110,16 @@ async function viaClaude(system: string, prompt: string): Promise<WriterContent>
 }
 
 // Tries each model in turn: a quota error or bad output on one moves to the next.
-export async function writeGuide(
+export async function generateJson<T>(
+  zod: z.ZodType<T>,
   system: string,
   prompt: string,
   onAttempt: (model: string, error?: string) => void,
-): Promise<{ content: WriterContent; model: string }> {
-  const attempts: { model: string; run: () => Promise<WriterContent> }[] = [];
-  if (process.env.GEMINI_API_KEY) for (const m of GEMINI_MODELS) attempts.push({ model: m, run: () => viaGemini(m, system, prompt) });
-  if (process.env.ANTHROPIC_API_KEY) attempts.push({ model: CLAUDE_MODEL, run: () => viaClaude(system, prompt) });
+  models: string[] = GEMINI_MODELS,
+): Promise<{ content: T; model: string }> {
+  const attempts: { model: string; run: () => Promise<T> }[] = [];
+  if (process.env.GEMINI_API_KEY) for (const m of models) attempts.push({ model: m, run: () => viaGemini(m, system, prompt, zod) });
+  if (process.env.ANTHROPIC_API_KEY) attempts.push({ model: CLAUDE_MODEL, run: () => viaClaude(system, prompt, zod) });
 
   const errors: string[] = [];
   for (const a of attempts) {
@@ -131,3 +134,6 @@ export async function writeGuide(
   }
   throw new Error(`Every writer model failed. ${errors.join(" | ").slice(0, 400)}`);
 }
+
+export const writeGuide = (system: string, prompt: string, onAttempt: (model: string, error?: string) => void) =>
+  generateJson(WriterContent, system, prompt, onAttempt);

@@ -21,6 +21,7 @@ for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".json"))) {
       ...g.beforeApproval,
       ...g.prerequisites,
       ...g.steps,
+      ...(g.reconnect ? [g.reconnect] : []),
       ...g.submissionChecklist,
       ...g.gotchas,
     ].flatMap((c) => c.sources);

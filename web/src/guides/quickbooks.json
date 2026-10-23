@@ -3,7 +3,12 @@
   "origin": "library",
   "researchedOn": "2026-10-21",
   "model": "claude-opus-5-5",
-  "verification": null,
+  "verification": {
+    "checkedOn": "2026-10-22",
+    "checkedBy": "agent",
+    "claimsChecked": 6,
+    "corrections": []
+  },
   "name": "Intuit QuickBooks Online",
   "website": "https://developer.intuit.com",
   "category": "Accounting",

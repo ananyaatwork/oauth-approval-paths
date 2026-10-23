@@ -76,6 +76,17 @@ function StripSkeleton() {
   );
 }
 
+// A reviewer link carries ?reviewer=<key>; keep it for the tab so it survives navigation.
+function reviewerKey(): string | undefined {
+  try {
+    const fromUrl = new URLSearchParams(location.search).get("reviewer");
+    if (fromUrl) sessionStorage.setItem("oap_reviewer", fromUrl);
+    return fromUrl ?? sessionStorage.getItem("oap_reviewer") ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function Generator({
   known,
   saved,
@@ -133,6 +144,7 @@ export function Generator({
     setElapsed(0);
     setStartedAt(Date.now());
     setRunning(true);
+    reviewerKey(); // stores ?reviewer= before the address is rewritten
     history.replaceState(null, "", `/generate?app=${encodeURIComponent(target)}`);
     return ctrl;
   }
@@ -220,7 +232,7 @@ export function Generator({
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ app: target, fp: await browserFingerprint(), refresh }),
+        body: JSON.stringify({ app: target, fp: await browserFingerprint(), refresh, reviewer: reviewerKey() }),
         signal: ctrl.signal,
       });
       if (!res.body) throw new Error(`Request failed (${res.status})`);

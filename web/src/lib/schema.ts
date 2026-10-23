@@ -76,6 +76,9 @@ export const GuideContent = z.object({
   beforeApproval: z.array(Item),
   prerequisites: z.array(Item),
   steps: z.array(Step),
+  reconnect: Item.nullable()
+    .optional()
+    .describe("how often a connected user has to log in or re-consent: token and refresh-token lifetimes, inactivity expiry, testing-mode limits; null if no source says"),
   submissionChecklist: z.array(Item),
   gotchas: z.array(Gotcha),
   blockers: z.array(

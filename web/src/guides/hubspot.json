@@ -3,7 +3,12 @@
   "origin": "library",
   "researchedOn": "2026-10-21",
   "model": "claude-opus-5-5",
-  "verification": null,
+  "verification": {
+    "checkedOn": "2026-10-22",
+    "checkedBy": "agent",
+    "claimsChecked": 7,
+    "corrections": []
+  },
   "name": "HubSpot",
   "website": "https://developers.hubspot.com",
   "category": "CRM",
