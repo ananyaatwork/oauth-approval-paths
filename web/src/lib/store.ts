@@ -217,9 +217,11 @@ export async function listProgress(): Promise<Progress[]> {
 // A browser is counted by its cookie and by a fingerprint of the browser
 // itself, so clearing cookies or cache doesn't reset its run. Both are stored
 // only as salted hashes, and a run counts against both.
-export const RUN_LIMIT = Number(process.env.LIVE_RUNS_PER_VISITOR ?? 1);
+// 0 = unlimited. Unlimited while the live site is being tested (23 Oct 2026);
+// the plan is 3 per browser once testing is done.
+export const RUN_LIMIT = Number(process.env.LIVE_RUNS_PER_VISITOR ?? 0);
 // The hard guard on API quota: new research runs per UTC day, across everyone.
-export const DAILY_LIMIT = Number(process.env.LIVE_RUNS_PER_DAY ?? 15);
+export const DAILY_LIMIT = Number(process.env.LIVE_RUNS_PER_DAY ?? 50);
 const SALT = process.env.VISITOR_SALT ?? "oauth-approval-paths";
 const hash = (s: string) => crypto.createHash("sha256").update(SALT + s).digest("hex").slice(0, 32);
 const dayId = () => `day-${new Date().toISOString().slice(0, 10)}`;
