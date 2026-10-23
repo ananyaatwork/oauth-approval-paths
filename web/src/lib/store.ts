@@ -246,3 +246,15 @@ export async function dailyLeft(): Promise<number> {
 export async function recordRun(v: Visitor, delta: 1 | -1) {
   await Promise.all([...v.ids, dayId()].map((id) => db.addRuns(id, delta)));
 }
+
+// Reviewer-link runs skip the per-browser and public daily limits but have
+// their own daily cap, so a leaked link can't drain the free quota.
+export const REVIEWER_DAILY_LIMIT = Number(process.env.REVIEWER_RUNS_PER_DAY ?? 10);
+const reviewerDayId = () => `day-reviewer-${new Date().toISOString().slice(0, 10)}`;
+
+export async function reviewerDailyLeft(): Promise<number> {
+  if (REVIEWER_DAILY_LIMIT <= 0) return Infinity;
+  return Math.max(0, REVIEWER_DAILY_LIMIT - (await db.runs(reviewerDayId())));
+}
+
+export const recordReviewerRun = (delta: 1 | -1) => db.addRuns(reviewerDayId(), delta);

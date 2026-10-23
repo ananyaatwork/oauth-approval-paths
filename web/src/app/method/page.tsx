@@ -27,8 +27,8 @@ export default function Method() {
         <li>A research agent (Claude Opus 5.5) read each provider&rsquo;s developer docs and wrote notes with a tag and URL for every fact.</li>
         <li>A second agent mapped those notes into the guide format without adding facts. A validator checks the format and that every cited source exists.</li>
         <li>
-          A separate agent re-opened the live pages for the highest-impact facts in all 10 guides: 65 facts in total, of which 53 matched,
-          8 were corrected and 4 couldn&rsquo;t be verified. Corrections are listed at the bottom of each guide, and the full logs are in
+          A separate agent re-opened the live pages for the highest-impact facts in all 11 guides: 73 facts in total, of which 60 matched,
+          9 were corrected and 4 couldn&rsquo;t be verified. Corrections are listed at the bottom of each guide, and the full logs are in
           the repo. The checking agents are the same kind of model as the writers, so this catches stale or misread facts, not shared blind
           spots. No person has checked these.
         </li>
@@ -60,7 +60,7 @@ export default function Method() {
         review&rdquo;, so a score may differ by 1 point.
       </p>
 
-      <h2 className="mt-10 text-lg font-semibold">The managed-OAuth badge</h2>
+      <h2 id="managed" className="anchor mt-10 text-lg font-semibold">The managed-OAuth badge</h2>
       <p className="mt-2">
         Each guide says whether Composio supplies the OAuth app, from a copy of Composio&rsquo;s own list. &ldquo;Yes&rdquo; means you can
         connect users without registering anything, but you&rsquo;d still need the guide for your own branding, scopes, quota or marketplace

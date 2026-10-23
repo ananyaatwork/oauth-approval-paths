@@ -8,7 +8,8 @@ import { VerdictPanel } from "./VerdictPanel";
 import { RouteSpread } from "./RouteSpread";
 import { COMPOSIO_LIST_DATE, composioManaged } from "@/lib/managed";
 
-const STALE_AFTER_DAYS = 90;
+// Same age at which a live guide can be researched again (REFRESH_AFTER_DAYS).
+const STALE_AFTER_DAYS = 30;
 
 const OWNER_LABEL: Record<Step["owner"], string> = {
   agent: "Agent",
@@ -73,6 +74,21 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
   const facts = guide.steps.length + guide.gotchas.length + guide.prerequisites.length + guide.beforeApproval.length + guide.submissionChecklist.length;
 
   const managed = composioManaged(guide.name);
+  const company = guide.name.split(" (")[0];
+  const managedShort = managed.exact
+    ? "Yes, so you may not need to register your own app."
+    : managed.managed
+      ? `Partly: Composio covers related ${company} products (${managed.toolkits.join(", ")}).`
+      : "No, you register your own app and get it approved.";
+  const managedNote = [
+    managed.exact ? `Composio supplies the OAuth app for ${managed.toolkits.join(", ")}.` : "",
+    managed.managed
+      ? "You'd still need this guide for your own name on the consent screen, scopes beyond Composio's defaults, your own rate-limit quota, or a marketplace listing."
+      : "",
+    `From Composio's list as copied on ${formatDate(COMPOSIO_LIST_DATE)}.`,
+  ]
+    .filter(Boolean)
+    .join(" ");
   const ageDays = Math.floor((Date.now() - Date.parse(guide.researchedOn)) / 86_400_000);
 
   const nav: NavItem[] = [
@@ -173,21 +189,17 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
             ? `${guide.verification.claimsChecked} facts re-checked against live pages by ${guide.verification.checkedBy === "human" ? "a person" : "an independent agent"} on ${formatDate(guide.verification.checkedOn)}.`
             : "Not yet re-checked."}
         </p>
-        {ageDays >= STALE_AFTER_DAYS && (
-          <p className="mt-3 max-w-[72ch] rounded-lg border border-line bg-surface-2 p-3 text-sm">
-            This guide was researched {ageDays} days ago. Review times, caps and consent rules have changed at several providers within a few
-            months, so check the provider&rsquo;s pages before relying on a number.
+        {/* Live guides show their age and a "Research again" button on their own page. */}
+        {guide.origin === "library" && ageDays >= STALE_AFTER_DAYS && (
+          <p className="mt-2 max-w-[72ch] text-sm">
+            Researched {ageDays} days ago. Review times and caps change, so check the provider&rsquo;s pages before relying on a number.
           </p>
         )}
-        <p className="mt-3 max-w-[72ch] text-sm">
-          <span className="font-medium">Composio-managed OAuth:</span>{" "}
-          {managed.exact
-            ? `Yes. Composio supplies the OAuth app for ${managed.toolkits.join(", ")}, so you can connect users without doing any of this.`
-            : managed.managed
-              ? `Partly. Composio supplies the OAuth app for related ${guide.name.split(" ")[0]} toolkits (${managed.toolkits.join(", ")}), not necessarily this one. Check the toolkit page.`
-              : "No. Composio doesn\u2019t supply an OAuth app for this one, so you register your own and get it approved."}{" "}
-          {managed.managed && "You still need this guide for your own name on the consent screen, scopes beyond Composio\u2019s defaults, your own rate-limit quota, or a marketplace listing."}{" "}
-          <span className="text-muted">Composio&rsquo;s list as copied {formatDate(COMPOSIO_LIST_DATE)}.</span>
+        <p className="mt-3 max-w-[72ch] text-sm" title={managedNote}>
+          <span className="font-medium">Composio-managed OAuth:</span> {managedShort}{" "}
+          <a href="/method#managed" className="text-[13px] text-muted underline underline-offset-2 hover:text-ink">
+            What this means
+          </a>
         </p>
         {guide.appType && (
           <p className="mt-2 max-w-[72ch] text-sm">
@@ -244,6 +256,16 @@ export function GuideView({ guide, actions, notice }: { guide: Guide; actions?: 
                 </ul>
               </div>
             </div>
+            {guide.reconnect && (
+              <div className="mt-8 max-w-[72ch] text-sm">
+                <h3 className="font-semibold">How often users must reconnect</h3>
+                <p className="mt-3">
+                  <span className="font-medium">{guide.reconnect.item}</span>{" "}
+                  <Evidence level={guide.reconnect.confidence} sources={guide.reconnect.sources} sourceInfo={sourceInfo} />
+                  {guide.reconnect.detail && <span className="block text-muted">{guide.reconnect.detail}</span>}
+                </p>
+              </div>
+            )}
           </Section>
 
           <Section id="split" title="Who does what">

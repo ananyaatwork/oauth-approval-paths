@@ -8,7 +8,7 @@ import { GuideContent } from "../schema";
 export const WriterContent = GuideContent.omit({ sources: true });
 export type WriterContent = z.infer<typeof WriterContent>;
 
-const GEMINI_MODELS = (process.env.GEMINI_MODELS ?? "gemini-3.6-flash,gemini-3.8-flash,gemini-3.5-flash-lite")
+export const GEMINI_MODELS = (process.env.GEMINI_MODELS ?? "gemini-3.6-flash,gemini-3.8-flash,gemini-3.5-flash-lite")
   .split(",")
   .map((m) => m.trim())
   .filter(Boolean);
@@ -110,19 +110,25 @@ async function viaClaude<T>(system: string, prompt: string, zod: z.ZodType<T>): 
 }
 
 // Tries each model in turn: a quota error or bad output on one moves to the next.
+// No new attempt starts after `startBy` (a timestamp), because one attempt can
+// take about 95 s and the route is stopped at 300 s with nothing saved.
 export async function generateJson<T>(
   zod: z.ZodType<T>,
   system: string,
   prompt: string,
   onAttempt: (model: string, error?: string) => void,
-  models: string[] = GEMINI_MODELS,
+  startBy = Infinity,
 ): Promise<{ content: T; model: string }> {
   const attempts: { model: string; run: () => Promise<T> }[] = [];
-  if (process.env.GEMINI_API_KEY) for (const m of models) attempts.push({ model: m, run: () => viaGemini(m, system, prompt, zod) });
+  if (process.env.GEMINI_API_KEY) for (const m of GEMINI_MODELS) attempts.push({ model: m, run: () => viaGemini(m, system, prompt, zod) });
   if (process.env.ANTHROPIC_API_KEY) attempts.push({ model: CLAUDE_MODEL, run: () => viaClaude(system, prompt, zod) });
 
   const errors: string[] = [];
   for (const a of attempts) {
+    if (Date.now() > startBy) {
+      errors.push("out of time before trying the next model");
+      break;
+    }
     onAttempt(a.model);
     try {
       return { content: await a.run(), model: a.model };
@@ -135,5 +141,5 @@ export async function generateJson<T>(
   throw new Error(`Every writer model failed. ${errors.join(" | ").slice(0, 400)}`);
 }
 
-export const writeGuide = (system: string, prompt: string, onAttempt: (model: string, error?: string) => void) =>
-  generateJson(WriterContent, system, prompt, onAttempt);
+export const writeGuide = (system: string, prompt: string, onAttempt: (model: string, error?: string) => void, startBy?: number) =>
+  generateJson(WriterContent, system, prompt, onAttempt, startBy);

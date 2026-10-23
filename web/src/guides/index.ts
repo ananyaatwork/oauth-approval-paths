@@ -9,7 +9,8 @@ import hubspot from "./hubspot.json";
 import notion from "./notion.json";
 import zoom from "./zoom.json";
 import linkedin from "./linkedin.json";
+import spotify from "./spotify.json";
 
-export const library = [github, slack, google, quickbooks, microsoft, salesforce, hubspot, notion, zoom, linkedin] as Guide[];
+export const library = [github, slack, google, quickbooks, microsoft, salesforce, hubspot, notion, zoom, linkedin, spotify] as Guide[];
 
 export const getGuide = (slug: string) => library.find((g) => g.slug === slug);

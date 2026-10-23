@@ -3,7 +3,7 @@ import type { TraceEvent } from "../trace";
 import { enforceProvenance } from "../provenance";
 import { makeSearcher, type SearchResult } from "./search";
 import { readPage, relevantText, type Page } from "./read";
-import { writeGuide } from "./write";
+import { GEMINI_MODELS, writeGuide } from "./write";
 import { reviewHeadline } from "./review";
 import { WRITER_SYSTEM } from "./prompt";
 
@@ -40,10 +40,18 @@ function officialSite(target: string, key: string, results: SearchResult[]) {
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
 }
 
+// The route may run for 300 s. The headline check is optional, so it only
+// starts with enough time left and is abandoned at this mark either way.
+const HEADLINE_CHECK_DEADLINE_MS = 240_000;
+// No new writer model is tried after this, so a slow run fails (and is
+// refunded) instead of being cut off mid-write.
+const WRITER_START_BY_MS = 190_000;
+
 const DOCS_HINT = /(developer|docs|api|oauth|auth|app|review|marketplace|publish|distribut|verif|scope|partner|integration)/i;
 
 export async function researchApp(target: string, key: string, send: (e: TraceEvent) => void): Promise<Guide> {
   const today = new Date().toISOString().slice(0, 10);
+  const startedAt = Date.now();
   const search = makeSearcher((from, reason, hasBackup) =>
     send({
       type: "status",
@@ -136,8 +144,12 @@ export async function researchApp(target: string, key: string, send: (e: TraceEv
     blocks.join("\n\n---\n\n"),
   ].join("\n");
 
-  const { content, model } = await writeGuide(WRITER_SYSTEM, prompt, (m, error) =>
-    send({ type: "status", message: error ? `${m} couldn't write the guide (${error.slice(0, 90)}); trying the next model` : `Writing the guide with ${m}` }),
+  const { content, model } = await writeGuide(
+    WRITER_SYSTEM,
+    prompt,
+    (m, error) =>
+      send({ type: "status", message: error ? `${m} couldn't write the guide (${error.slice(0, 90)}); trying the next model` : `Writing the guide with ${m}` }),
+    startedAt + WRITER_START_BY_MS,
   );
 
   const ids = new Set(sources.map((s) => s.id));
@@ -163,12 +175,19 @@ export async function researchApp(target: string, key: string, send: (e: TraceEv
   send({ type: "provenance", downgraded, opened: pages.length });
 
   // The headline is the sentence a reader trusts most, so a second narrow pass
-  // checks it against the same excerpts. If this step fails the guide still ships.
-  try {
-    send({ type: "status", message: "Checking the headline against the provider's pages" });
-    const review = await reviewHeadline(guide, blocks.filter((b) => b.includes("PROVIDER PAGE")).join("\n\n---\n\n"), (m, error) =>
-      send({ type: "status", message: error ? `${m} couldn't check the headline (${error.slice(0, 90)}); trying the next model` : `Checking the headline with ${m}` }),
-    );
+  // checks it against the same excerpts. It runs only when a backup model wrote
+  // the guide (where the Dropbox headline went wrong), so a normal run spends one
+  // model call, and only while there's time left. If it fails the guide still ships.
+  const wroteWithBackup = model !== GEMINI_MODELS[0];
+  const timeLeft = HEADLINE_CHECK_DEADLINE_MS - (Date.now() - startedAt);
+  if (wroteWithBackup && timeLeft > 30_000) try {
+    send({ type: "status", message: `Checking the headline against the provider's pages, because a backup model (${model}) wrote it` });
+    const review = await Promise.race([
+      reviewHeadline(guide, blocks.filter((b) => b.includes("PROVIDER PAGE")).join("\n\n---\n\n"), (m, error) =>
+        send({ type: "status", message: error ? `${m} couldn't check the headline (${error.slice(0, 90)}); trying the next model` : `Checking the headline with ${m}` }),
+      ),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("ran out of time")), timeLeft)),
+    ]);
     if (review.changed) {
       guide.verdict = { ...guide.verdict, headline: review.headline, nextAction: review.nextAction };
       guide.unknowns.push(`The headline was rewritten by an automatic check because it was not fully supported by the provider's pages: ${review.problem ?? "figures did not match"}`);

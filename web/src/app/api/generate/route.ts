@@ -17,8 +17,11 @@ import {
   getSaved,
   putProgress,
   recordRun,
+  recordReviewerRun,
   releaseLock,
+  reviewerDailyLeft,
   runsLeft,
+  REVIEWER_DAILY_LIMIT,
   saveGuide,
   visitorFrom,
   RUN_LIMIT,
@@ -109,11 +112,17 @@ export async function POST(req: Request) {
           message: "Today's free research capacity is used up. It resets at midnight UTC. Saved guides and the library stay open.",
         });
       }
+      if (free && (await reviewerDailyLeft()) <= 0) {
+        return send({
+          type: "limit",
+          message: `The reviewer link's ${REVIEWER_DAILY_LIMIT} runs for today are used up. They reset at midnight UTC. Saved guides and the library stay open.`,
+        });
+      }
       if (!(locked = await acquireLock(key))) {
         return send({ type: "busy", message: `Someone is researching ${target} right now. Its guide will be saved here in a minute or two.` });
       }
 
-      if (!free) await recordRun(visitor, 1);
+      await (free ? recordReviewerRun(1) : recordRun(visitor, 1));
       charged = true;
       const progress: Progress = { key, app: target, stage: null, startedAt: Date.now(), lines: [] };
       // Progress writes are chained so they land in order, and never block the run.
@@ -132,10 +141,10 @@ export async function POST(req: Request) {
       const left = await runsLeft(visitor);
       send({ type: "guide", guide, href: `/g/${key}`, runsLeft: Number.isFinite(left) ? left : null });
     } catch (err) {
-      if (charged && !free) await recordRun(visitor, -1);
+      if (charged) await (free ? recordReviewerRun(-1) : recordRun(visitor, -1));
       console.error(`[generate] ${key}:`, err);
       const reason = err instanceof Error ? err.message : "Something went wrong.";
-      send({ type: "error", message: charged && !free ? `${reason} This attempt didn't use up your run.` : reason });
+      send({ type: "error", message: charged ? `${reason} This attempt didn't use up your run.` : reason });
     } finally {
       if (charged) await endProgress(key).catch(() => {});
       if (locked) await releaseLock(key);

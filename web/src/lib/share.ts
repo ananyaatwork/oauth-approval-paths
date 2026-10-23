@@ -30,6 +30,7 @@ export function guideMarkdown(g: Guide): string {
     "## Blocks submission",
     ...g.prerequisites.map((i) => `- ${i.item} [${t(i.confidence)}]`),
     "",
+    ...(g.reconnect ? ["## How often users must reconnect", `- ${g.reconnect.item}${g.reconnect.detail ? ` ${g.reconnect.detail}` : ""} [${t(g.reconnect.confidence)}]`, ""] : []),
     "## Have ready for review",
     ...g.submissionChecklist.map((i) => `- [ ] ${i.item} [${t(i.confidence)}]`),
     "",

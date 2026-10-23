@@ -33,7 +33,7 @@ export async function reviewHeadline(
     "Provider excerpts:",
     excerpts.slice(0, 30_000),
   ].join("\n");
-  const { content, model } = await generateJson(Review, SYSTEM, prompt, onAttempt, ["gemini-3.6-flash", "gemini-3.5-flash-lite"]);
+  const { content, model } = await generateJson(Review, SYSTEM, prompt, onAttempt);
   const changed = !content.headlineSupported && (content.headline !== guide.verdict.headline || content.nextAction !== guide.verdict.nextAction);
   return { changed, problem: content.problem, headline: content.headline, nextAction: content.nextAction, model };
 }
