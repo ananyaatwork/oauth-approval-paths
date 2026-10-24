@@ -10,7 +10,8 @@
     "corrections": [
       "Brand review time changed from \"a manual review takes 2–3 business days\" to \"brand verification typically takes 2–3 business days, with no separate figure for a manual review\" in the timeline note and the blocker (sources s7, s10).",
       "Added a note to the restricted-scope review that Google's CASA help page and developer page disagree on which restricted-scope apps need CASA (sources s6, s10).",
-      "Added 2-Step Verification as the first prerequisite after a hands-on attempt on 24 Oct 2026 was blocked before project creation (source s15, screenshot docs/hands-on/google-0-mfa-blocked.png)."
+      "Added 2-Step Verification as the first prerequisite after a hands-on attempt on 24 Oct 2026 was blocked before project creation (source s15, screenshot docs/hands-on/google-0-mfa-blocked.png).",
+      "Hands-on on 24 Oct 2026: the Testing-mode cap of 100 matched the console, which adds that it is counted over the app's lifetime; that detail was added. The client was created with no review or wait."
     ]
   },
   "name": "Google (Gmail, Drive, Calendar)",
@@ -206,7 +207,7 @@
   "beforeApproval": [
     {
       "item": "Testing mode: up to 100 test users",
-      "detail": "Test users are added on Audience → Test users, for External apps only.",
+      "detail": "Test users are added on Audience → Test users, for External apps only. The console says the cap is \"counted over the entire lifetime of the app\", so removing a test user doesn't free a slot.",
       "confidence": "confirmed",
       "sources": [
         "s1"
@@ -249,7 +250,7 @@
   "prerequisites": [
     {
       "item": "2-Step Verification on the Google account you use for Google Cloud",
-      "detail": "Without it the Cloud console blocks you, so you can't create a project or an OAuth client at all. Google phased this in for personal accounts from May 2025; the console block we hit on 24 Oct 2026 said enforcement began 13 March 2026. After turning 2SV on, project creation was still blocked 20+ minutes later, though Google says it takes a few minutes. Found by trying the setup, not in the OAuth docs.",
+      "detail": "Without it the Cloud console blocks you, so you can't create a project or an OAuth client at all. Google phased this in for personal accounts from May 2025; the block we hit on 24 Oct 2026 said enforcement began 13 March 2026. After turning 2SV on, the console loaded but project creation stayed blocked for over 20 minutes, though Google says it takes a few minutes. It cleared about 2 hours 45 minutes after our first attempt (other providers were tested in between); once it cleared, the OAuth client took 7 minutes. Found by trying the setup, not in the OAuth docs.",
       "confidence": "confirmed",
       "sources": [
         "s15"
