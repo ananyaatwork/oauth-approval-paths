@@ -9,7 +9,8 @@
     "claimsChecked": 6,
     "corrections": [
       "Brand review time changed from \"a manual review takes 2–3 business days\" to \"brand verification typically takes 2–3 business days, with no separate figure for a manual review\" in the timeline note and the blocker (sources s7, s10).",
-      "Added a note to the restricted-scope review that Google's CASA help page and developer page disagree on which restricted-scope apps need CASA (sources s6, s10)."
+      "Added a note to the restricted-scope review that Google's CASA help page and developer page disagree on which restricted-scope apps need CASA (sources s6, s10).",
+      "Added 2-Step Verification as the first prerequisite after a hands-on attempt on 24 Oct 2026 was blocked before project creation (source s15, screenshot docs/hands-on/google-0-mfa-blocked.png)."
     ]
   },
   "name": "Google (Gmail, Drive, Calendar)",
@@ -246,6 +247,14 @@
     }
   ],
   "prerequisites": [
+    {
+      "item": "2-Step Verification on the Google account you use for Google Cloud",
+      "detail": "Without it the Cloud console blocks you, so you can't create a project or an OAuth client at all. Google phased this in for personal accounts from May 2025; the console block we hit on 24 Oct 2026 said enforcement began 13 March 2026. After turning 2SV on, project creation was still blocked 20+ minutes later, though Google says it takes a few minutes. Found by trying the setup, not in the OAuth docs.",
+      "confidence": "confirmed",
+      "sources": [
+        "s15"
+      ]
+    },
     {
       "item": "Public homepage on a verified domain that describes the app",
       "detail": "It can't be just a login page.",
@@ -802,6 +811,14 @@
       "accessed": "2026-10-21",
       "supports": "Reports of long stalls",
       "kind": "secondary"
+    },
+    {
+      "id": "s15",
+      "url": "https://docs.cloud.google.com/docs/authentication/mfa-requirement",
+      "title": "Google Cloud: 2-step verification requirement",
+      "accessed": "2026-10-24",
+      "supports": "2SV required before using the Google Cloud console; phased in for personal accounts from 12 May 2025",
+      "kind": "primary"
     }
   ]
 }
