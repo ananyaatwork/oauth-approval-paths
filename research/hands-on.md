@@ -25,10 +25,19 @@ How: open the guide, open the provider's page, find the sentence. Claude fetched
 
 ## Apps I set up
 
-| Provider | What I did | Time it took | Guide said | Matched? | What surprised me |
-|---|---|---|---|---|---|
-| GitHub | Created an OAuth App (Settings → Developer settings) | | Minutes, no review | | |
-| Google | Created an OAuth client with the consent screen in Testing mode | | | | |
-| Slack | Created an app in my own free workspace and installed it | | Minutes in your own workspace; Marketplace needs 10 workspaces | | |
+Done on 24 Oct 2026 in my own free accounts. Claude in Chrome clicked through the consoles while I watched and signed in myself. No client secrets were generated or captured.
 
-Screenshots are in `docs/`. No client secrets are in them.
+| Provider | What I did | Time it took | Guide said | Matched? | What I found |
+|---|---|---|---|---|---|
+| GitHub | Created an OAuth App (Settings → Developer settings → New OAuth App) | 4 min, sign-in included | Minutes, no review; up to 10 callback URLs; "Expire user access tokens" on by default | **Yes** | "Application created successfully" and the client ID straight away. No review, no user cap ("0 users"), no extra checks. The form now calls the field **Redirect URIs** ("You may add up to 10") with an **Allow wildcard matching** option; the guide's wording is "callback URL", same limit. There's a "List this application in the Marketplace" button right on the new app. The GitHub App form matched the guide too: webhook **Active** by default with a required URL, permission groups, Setup URL, and "Only on this account" vs "Any account". |
+| Google | Tried to create a project for an OAuth client in Testing mode | Blocked after 1 min | Testing mode works right away for up to 100 test users | **Blocked before the guide's first step** | The console said: "Google Cloud access blocked. Effective from 13 March 2026, Google Cloud has begun to enforce two-step verification (2SV), also called multi-factor authentication (MFA)." A first-time Terms of Service dialog sits on top. **The guide doesn't mention this.** A developer without 2SV can't create a project, so they can't get a client ID at all. |
+| Slack | Create an app in my own free workspace and install it | | Minutes in your own workspace; Marketplace needs 10 workspaces | | |
+| Dropbox | Create a development app and read the production form | | 500 dev users; 2 weeks to get approved after 50 | | |
+
+Screenshots are in `docs/hands-on/`:
+- `github-1-form.png`: the OAuth App form
+- `github-2-registered.png`: the app right after creation, with its client ID. The app is a throwaway and has no secret.
+- `github-3-github-app-form.png`: the GitHub App form's webhook and setup fields
+- `google-0-mfa-blocked.png`: the 2SV block, with my name and email covered
+
+**What this says about the guides:** the GitHub guide held up. The Google guide missed a blocker that comes before everything else it describes, and it's a new one: Google started enforcing it on 13 March 2026, after the guide's sources were written. Reading docs can't find this kind of blocker. Doing the setup can.
