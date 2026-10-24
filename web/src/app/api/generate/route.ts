@@ -91,7 +91,8 @@ export async function POST(req: Request) {
       if (lib) return send({ type: "saved", guide: lib, href: `/guides/${lib.slug}`, origin: "library" });
       const saved = await getSaved(key);
       // A saved guide is served as is, unless the visitor asked to redo one that's old enough.
-      if (saved && !(refresh && canRefresh(saved))) return send({ type: "saved", guide: saved, href: `/g/${key}`, origin: "live" });
+      // The reviewer link can redo one at any age, e.g. after a spot-check finds a mistake.
+      if (saved && !(refresh && (free || canRefresh(saved)))) return send({ type: "saved", guide: saved, href: `/g/${key}`, origin: "live" });
 
       if (!searchConfigured() || !writerConfigured()) {
         return send({
