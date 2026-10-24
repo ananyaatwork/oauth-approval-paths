@@ -1,5 +1,9 @@
 # OAuth Approval Paths
 
+I built this for the APM Integrations take-home. The question I kept coming back to was simple: if a developer's agent needs Slack or Google tomorrow, how long until their real users can connect, and who are they waiting on? The docs answer how to write the OAuth flow. They mostly don't answer that. So every guide here leads with time, splits it by whose wait it is, and shows which facts come from the provider's own pages and which we couldn't confirm.
+
+![Home page](docs/home.png)
+
 **What it is:** a guide library that tells a developer how long it takes to get an OAuth app approved by a provider, what blocks it, who they wait on, and which parts an agent can do for them. It covers 11 providers: 10 picked because each has a different kind of wait, plus Spotify, the first of a set that Composio doesn't manage, so a developer has to register and get approved themselves. You can also type in any other app, and an agent researches it live and writes a guide in the same format.
 
 - **Live demo:** https://greenlight-lime-iota.vercel.app
@@ -15,6 +19,28 @@ Three things get mixed up:
 3. **Each end user's connection.** A consent and token per user. For some providers each *customer's admin* must also approve the app.
 
 What hurts isn't the OAuth flow. It's that you can't plan around layer 1. Docs rarely state review times, the blockers that stop you before you can even submit are scattered, and on GitHub and Microsoft the longest wait sits with each customer's admin, not the provider. Managed OAuth directories such as Composio's tell you *whether* you need your own app. They don't tell you what getting it approved involves. That's the gap this project fills.
+
+## Who it's for, and how I'd measure it
+
+**Who it's for.** First, a developer at a company building an agent who has to decide which integrations to promise, and when. Second, the integrations team at a platform like Composio, who need to know which providers they can manage for customers and which ones each customer will have to get approved themselves. The first person needs a date they can plan around. The second needs to know where the hidden waits are.
+
+**What I'd measure if this were a product:**
+
+| Metric | Why it matters | Where it stands today |
+|---|---|---|
+| Accuracy of high-impact facts | A wrong review time costs a developer weeks | 60 of 73 library facts matched on re-check (82%), 9 corrected, 4 unverifiable. Hand checks are in `research/hands-on.md` |
+| Live research success rate | A failed run means no answer | 13 of about 25 runs on the live site saved a guide (22–24 Oct). Every failure I could see was a free-tier model being busy, out of quota or out of time, and those runs are refunded. Shopify and eBay failed 2–3 times each, then went through the next day once Gemini's quota reset |
+| Time to a guide | People leave a slow page | 40–79 s when Gemini writes it, 194–215 s when the NVIDIA backup does |
+| Repeat lookups served from saved guides | Each app should cost one run, ever | Every app after its first run opens instantly. Not instrumented yet |
+| Predicted vs actual approval time | The real test of the product | Not measured. It needs developers to report back when they're approved (see next steps) |
+
+**Cost per run.** Today it's $0: every search and model key is on a free tier with no card. A run makes 3 web searches (3 Tavily credits out of 1,000 free a month, so about 330 runs a month), reads about 6 pages for free, and makes one model call of roughly 20–30k tokens in and 5–8k out, plus a small headline check. Those token counts are my estimate from the prompt size, not measured. On a paid Flash-class model that's around a cent or two per guide, so the real cost is the quota, not the money. That's why runs are capped per browser and per day, and why each app is researched once and then saved.
+
+**What I'd do next:**
+1. **Close the loop on accuracy.** Ask developers who follow a guide to report when they were actually approved, and show that next to the guide's estimate.
+2. **Watch for changes.** Re-fetch each guide's cited pages weekly and flag the guide when one changes, instead of waiting 30 days.
+3. **A person checks the live guides that get the most visits**, so the popular ones move from "researched live" to "checked".
+4. **Connect it to the managed list.** For apps Composio already manages, lead with "you may not need your own app" and show only the cases where you do (your own branding, higher limits, a marketplace listing).
 
 ## Key decisions
 
@@ -59,6 +85,8 @@ These ran through the real app with free-tier keys. Gemini's bigger models were 
 
 On the deployed site (22 Oct, with Upstash storage): Linear (79 s) and Gusto (56 s) were written by gemini-3.8-flash because gemini-3.6-flash's free daily quota was used up. Dropbox failed twice when all three models were out of quota or overloaded; both runs were refunded and nothing half-written was saved.
 
+**Ten apps Composio doesn't manage (23–24 Oct, on the live site):** Pipedrive, Xero, DocuSign, Shopify, PayPal, Mollie, Razorpay, Etsy, eBay and the Amazon Selling Partner API are all saved and show up on the home page next to the library, labelled "researched live". Gemini wrote Xero, Razorpay, Etsy and eBay in 40–70 s. NVIDIA's Nemotron wrote Pipedrive, DocuSign, PayPal and Amazon in 194–212 s while Gemini was busy. Shopify and eBay needed a retry the next day. Third-party pages were cited heavily for PayPal and Amazon, so 16 facts in each were capped at "secondary" by the evidence check.
+
 **Spot-check (Dropbox):** the facts match Dropbox's developer guide. Once an app links 50 users, you have two weeks to get production approval. But the headline oversimplifies: it says "works for up to 50 users", while the cap is 500 and 50 is only where the two-week deadline starts. The lighter fallback model loses nuance like this, which is why live guides say they haven't been checked by a person.
 
 ## Running it
@@ -78,7 +106,7 @@ Deploying to Vercel: import the repo, set the root directory to `web`, and add `
 ## Limitations
 
 - **11 guides, not 100.** They were chosen for variety of wait. The same pipeline (research, convert, validate, re-check) scales, but each guide still needs a check.
-- **No real provider setup was attempted.** That needs logged-in developer accounts, and the brief says no paid accounts. "Attempted" here means reading and re-reading the docs, not submitting apps.
+- **Hands-on setup is limited to free accounts.** What I set up myself, and the facts I checked by hand, are in `research/hands-on.md`. Nothing was submitted for a real provider review, since that needs a real product and can take weeks.
 - **Spot-checks were done by an agent, not a person.** They covered all 11 guides, 5 to 8 facts each (73 in total), which is a sample, not every fact. Live guides get no re-check beyond the headline pass.
 - **Live guides are unreviewed.** They depend on what's public. Providers with gated partner portals (e.g. Gusto) will mostly come back "unconfirmed", which is intended.
 - **Some figures are estimates.** Setup durations are marked "estimated". Provider review times are only shown where a provider states them.
