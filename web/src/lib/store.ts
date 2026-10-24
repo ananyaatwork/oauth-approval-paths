@@ -223,7 +223,7 @@ export async function listProgress(): Promise<Progress[]> {
 // only as salted hashes, and a run counts against both.
 // 0 = unlimited. Unlimited while the live site is being tested (23 Oct 2026);
 // the plan is 3 per browser once testing is done.
-export const RUN_LIMIT = Number(process.env.LIVE_RUNS_PER_VISITOR ?? 0);
+export const RUN_LIMIT = Number(process.env.LIVE_RUNS_PER_VISITOR ?? 3);
 // The hard guard on API quota: new research runs per UTC day, across everyone.
 export const DAILY_LIMIT = Number(process.env.LIVE_RUNS_PER_DAY ?? 50);
 const SALT = process.env.VISITOR_SALT ?? "oauth-approval-paths";

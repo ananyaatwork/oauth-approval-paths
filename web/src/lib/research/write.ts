@@ -251,13 +251,13 @@ export async function generateJson<T>(
   const compat = COMPAT.filter((p) => p.key && p.tasks.includes(task));
   // The small check goes to Groq first, so it doesn't spend the writer's Gemini quota.
   if (task === "check") for (const p of compat.filter((c) => c.name === "Groq")) for (const m of p.models) attempts.push({ model: m, run: () => viaCompat(p, m, system, prompt, zod, finishBy) });
-  // Order: the main Gemini models, then the free backups, then Gemini's lightest
-  // model last, since it writes the thinnest guides (the Dropbox headline slip).
+  // Order: every Gemini model, lightest last, then the free backups. Flash-Lite
+  // answers in about 30 s while Nemotron needs 2-3 minutes and can run out of
+  // the 300 s budget on big doc sets (Shopify, eBay); the headline check covers
+  // Flash-Lite's tendency to drop caveats (the Dropbox headline slip).
   const gemini = process.env.GEMINI_API_KEY ? GEMINI_MODELS : [];
-  const lightest = gemini.length > 2 ? gemini.slice(-1) : [];
-  for (const m of gemini.slice(0, gemini.length - lightest.length)) attempts.push({ model: m, run: () => viaGemini(m, system, prompt, zod) });
+  for (const m of gemini) attempts.push({ model: m, run: () => viaGemini(m, system, prompt, zod) });
   for (const p of compat.filter((c) => task === "write" || c.name !== "Groq")) for (const m of p.models) attempts.push({ model: m, run: () => viaCompat(p, m, system, prompt, zod, finishBy) });
-  for (const m of lightest) attempts.push({ model: m, run: () => viaGemini(m, system, prompt, zod) });
   if (process.env.ANTHROPIC_API_KEY) attempts.push({ model: CLAUDE_MODEL, run: () => viaClaude(system, prompt, zod) });
 
   const errors: string[] = [];
