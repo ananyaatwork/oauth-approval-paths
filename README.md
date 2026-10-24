@@ -28,7 +28,7 @@ What hurts isn't the OAuth flow. It's that you can't plan around layer 1. Docs r
 
 | Metric | Why it matters | Where it stands today |
 |---|---|---|
-| Accuracy of high-impact facts | A wrong review time costs a developer weeks | 60 of 73 library facts matched on re-check (82%), 9 corrected, 4 unverifiable. Hand checks are in `research/hands-on.md` |
+| Accuracy of high-impact facts | A wrong review time costs a developer weeks | 60 of 73 library facts matched on re-check (82%), 9 corrected, 4 unverifiable. A second spot-check of 10 claims a developer would act on (24 Oct): 6 match, 2 partly right, 1 wrong (Amazon's live headline), 1 can't be confirmed. Quotes are in `research/hands-on.md` |
 | Live research success rate | A failed run means no answer | 13 of about 25 runs on the live site saved a guide (22–24 Oct). Every failure I could see was a free-tier model being busy, out of quota or out of time, and those runs are refunded. Shopify and eBay failed 2–3 times each, then went through the next day once Gemini's quota reset |
 | Time to a guide | People leave a slow page | 40–79 s when Gemini writes it, 194–215 s when the NVIDIA backup does |
 | Repeat lookups served from saved guides | Each app should cost one run, ever | Every app after its first run opens instantly. Not instrumented yet |
